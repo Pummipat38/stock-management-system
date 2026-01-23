@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model StockItem {
+  id              String   @id @default(cuid())
+  myobNumber      String
+  model           String
+  partName        String
+  partNumber      String
+  revision        String
+  poNumber        String
+  receivedQty     Int
+  receivedDate    DateTime
+  supplier        String?
+  customer        String?
+  issuedQty       Int?
+  invoiceNumber   String?
+  issueDate       DateTime?
+  dueDate         DateTime?
+  event           String?
+  withdrawalNumber String? // เลขใบเบิก
+  remarks         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  transactions    Transaction[]
+}
+
+model Transaction {
+  id            String      @id @default(cuid())
+  stockItemId   String
+  type          String      // 'RECEIVE', 'ISSUE', or 'NG'
+  quantity      Int
+  invoiceNumber String?
+  transactionDate DateTime
+  dueDate       DateTime?
+  remarks       String?
+  createdAt     DateTime    @default(now())
+  
+  // Relations
+  stockItem     StockItem   @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+}
+
+model NGItem {
+  id              String   @id @default(cuid())
+  myobNumber      String
+  model           String
+  partName        String
+  partNumber      String
+  revision        String?
+  poNumber        String?
+  receivedDate    DateTime
+  supplier        String?
+  issuedQty       Int
+  invoiceNumber   String?
+  issueDate       DateTime
+  customer        String?
+  event           String?
+  withdrawalNumber String?
+  ngProblem       String?
+  remarks         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

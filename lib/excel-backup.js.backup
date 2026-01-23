@@ -1,0 +1,282 @@
+const fs = require('fs');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const FIFOSheetExcelManager = require('./fifo-sheet-excel');
+
+const prisma = new PrismaClient();
+
+class ExcelBackupManager {
+  constructor() {
+    this.backupDir = 'D:\\stock-backups';
+    this.excelDir = 'D:\\stock-backups\\excel';
+    this.fifoManager = new FIFOSheetExcelManager();
+    this.ensureDirectories();
+  }
+
+  ensureDirectories() {
+    [this.backupDir, this.excelDir].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+  }
+
+  async createDualBackup() {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      
+      // 1. สร้าง JSON Backup (เดิม)
+      const jsonResult = await this.createJSONBackup(timestamp);
+      
+      // 2. สร้าง Excel Backup (ใหม่)
+      const excelResult = await this.createExcelBackup(timestamp);
+      
+      console.log('🎉 Dual Backup สำเร็จ!');
+      console.log(`📄 JSON: ${jsonResult.fileName}`);
+      console.log(`📊 Excel: ${excelResult.fileName}`);
+      
+      return {
+        success: true,
+        json: jsonResult,
+        excel: excelResult
+      };
+
+    } catch (error) {
+      console.error('❌ Dual Backup ล้มเหลว:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async createJSONBackup(timestamp) {
+    const allData = await prisma.stockItem.findMany({
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const backupData = {
+      metadata: {
+        version: '2.0',
+        createdAt: new Date().toISOString(),
+        type: 'dual_backup',
+        totalRecords: allData.length,
+        totalReceived: allData.reduce((sum, item) => sum + (item.receivedQty || 0), 0),
+        totalIssued: allData.reduce((sum, item) => sum + (item.issuedQty || 0), 0),
+        format: 'JSON'
+      },
+      data: allData
+    };
+
+    const fileName = `stock-backup-${timestamp}.json`;
+    const filePath = path.join(this.backupDir, fileName);
+    
+    fs.writeFileSync(filePath, JSON.stringify(backupData, null, 2), 'utf8');
+    
+    return {
+      fileName,
+      filePath,
+      recordCount: allData.length,
+      format: 'JSON'
+    };
+  }
+
+  async createExcelBackup(timestamp) {
+    const allData = await prisma.stockItem.findMany({
+      orderBy: { createdAt: 'asc' }
+    });
+
+    // สร้างข้อมูลสำหรับ Excel (CSV format)
+    const csvData = this.convertToCSV(allData);
+    
+    const fileName = `stock-backup-${timestamp}.csv`;
+    const filePath = path.join(this.excelDir, fileName);
+    
+    fs.writeFileSync(filePath, csvData, 'utf8');
+    
+    // สร้าง Excel Summary
+    const summaryData = this.createSummaryCSV(allData);
+    const summaryFileName = `stock-summary-${timestamp}.csv`;
+    const summaryPath = path.join(this.excelDir, summaryFileName);
+    
+    fs.writeFileSync(summaryPath, summaryData, 'utf8');
+    
+    // สร้าง FIFO Excel แยกตาม Part (1 Part = 1 Sheet)
+    const fifoResult = await this.fifoManager.createFIFOExcelByParts();
+    
+    return {
+      fileName,
+      filePath,
+      summaryFileName,
+      summaryPath,
+      fifoFileName: fifoResult.success ? fifoResult.fileName : null,
+      fifoFilePath: fifoResult.success ? fifoResult.filePath : null,
+      recordCount: allData.length,
+      format: 'CSV/Excel + FIFO Sheets'
+    };
+  }
+
+  convertToCSV(data) {
+    if (data.length === 0) return '';
+
+    // Header
+    const headers = [
+      'ID',
+      'MYOB Number',
+      'Model',
+      'Part Name',
+      'Part Number',
+      'Revision',
+      'PO Number',
+      'Received Qty',
+      'Received Date',
+      'Supplier',
+      'Issued Qty',
+      'Issue Date',
+      'Customer',
+      'Invoice Number',
+      'Event',
+      'Withdrawal Number',
+      'Remarks',
+      'Created At',
+      'Updated At'
+    ];
+
+    // Data rows
+    const rows = data.map(item => [
+      item.id || '',
+      item.myobNumber || '',
+      item.model || '',
+      item.partName || '',
+      item.partNumber || '',
+      item.revision || '',
+      item.poNumber || '',
+      item.receivedQty || 0,
+      item.receivedDate ? new Date(item.receivedDate).toLocaleDateString('th-TH') : '',
+      item.supplier || '',
+      item.issuedQty || 0,
+      item.issueDate ? new Date(item.issueDate).toLocaleDateString('th-TH') : '',
+      item.customer || '',
+      item.invoiceNumber || '',
+      item.event || '',
+      item.withdrawalNumber || '',
+      item.remarks || '',
+      new Date(item.createdAt).toLocaleString('th-TH'),
+      new Date(item.updatedAt).toLocaleString('th-TH')
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // Add BOM for Thai characters
+    return '\ufeff' + csvContent;
+  }
+
+  createSummaryCSV(data) {
+    // สร้างสรุปตาม Part Number
+    const summary = new Map();
+    
+    data.forEach(item => {
+      const key = `${item.myobNumber}-${item.partNumber}`;
+      
+      if (!summary.has(key)) {
+        summary.set(key, {
+          myobNumber: item.myobNumber,
+          partName: item.partName,
+          partNumber: item.partNumber,
+          totalReceived: 0,
+          totalIssued: 0,
+          balance: 0,
+          lastActivity: item.updatedAt
+        });
+      }
+      
+      const part = summary.get(key);
+      part.totalReceived += item.receivedQty || 0;
+      part.totalIssued += item.issuedQty || 0;
+      part.balance = part.totalReceived - part.totalIssued;
+      
+      if (new Date(item.updatedAt) > new Date(part.lastActivity)) {
+        part.lastActivity = item.updatedAt;
+      }
+    });
+
+    // Header สำหรับ Summary
+    const headers = [
+      'MYOB Number',
+      'Part Name', 
+      'Part Number',
+      'Total Received',
+      'Total Issued',
+      'Balance',
+      'Last Activity'
+    ];
+
+    // Data rows สำหรับ Summary
+    const rows = Array.from(summary.values()).map(part => [
+      part.myobNumber,
+      part.partName,
+      part.partNumber,
+      part.totalReceived,
+      part.totalIssued,
+      part.balance,
+      new Date(part.lastActivity).toLocaleString('th-TH')
+    ]);
+
+    // เพิ่มสรุปรวม
+    const totalReceived = Array.from(summary.values()).reduce((sum, part) => sum + part.totalReceived, 0);
+    const totalIssued = Array.from(summary.values()).reduce((sum, part) => sum + part.totalIssued, 0);
+    const totalBalance = totalReceived - totalIssued;
+
+    rows.unshift(['=== SUMMARY ===', '', '', totalReceived, totalIssued, totalBalance, '']);
+    rows.unshift(['Total Parts', summary.size, '', '', '', '', '']);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    return '\ufeff' + csvContent;
+  }
+
+  async exportCurrentDataToExcel() {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const result = await this.createExcelBackup(timestamp);
+      
+      console.log('📊 Export Excel สำเร็จ!');
+      console.log(`📄 รายละเอียด: ${result.fileName}`);
+      console.log(`📋 สรุป: ${result.summaryFileName}`);
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Export Excel ล้มเหลว:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  listBackupFiles() {
+    const jsonFiles = fs.readdirSync(this.backupDir)
+      .filter(file => file.endsWith('.json'))
+      .map(file => ({
+        name: file,
+        type: 'JSON',
+        path: path.join(this.backupDir, file),
+        size: fs.statSync(path.join(this.backupDir, file)).size,
+        mtime: fs.statSync(path.join(this.backupDir, file)).mtime
+      }));
+
+    const excelFiles = fs.readdirSync(this.excelDir)
+      .filter(file => file.endsWith('.csv'))
+      .map(file => ({
+        name: file,
+        type: 'Excel/CSV',
+        path: path.join(this.excelDir, file),
+        size: fs.statSync(path.join(this.excelDir, file)).size,
+        mtime: fs.statSync(path.join(this.excelDir, file)).mtime
+      }));
+
+    return [...jsonFiles, ...excelFiles]
+      .sort((a, b) => new Date(b.mtime) - new Date(a.mtime));
+  }
+}
+
+module.exports = ExcelBackupManager;

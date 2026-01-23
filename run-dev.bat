@@ -1,0 +1,6 @@
+@echo off
+cd /d "%~dp0"
+echo Starting Stock Management System...
+echo Please wait...
+npm run dev
+pause
