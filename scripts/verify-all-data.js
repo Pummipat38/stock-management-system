@@ -2,13 +2,14 @@ require('dotenv').config({path: '.env'});
 const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
 const fs = require('fs');
+const path = require('path');
 
 async function verifyAllData() {
   try {
     console.log('🔍 ตรวจสอบข้อมูลทั้งหมดใน Supabase...');
     
     // 1. นับข้อมูลใน Supabase
-    const supabaseCount = await prisma.StockItem.count();
+    const supabaseCount = await prisma.stockItem.count();
     console.log(`📊 ข้อมูลใน Supabase: ${supabaseCount} รายการ`);
     
     // 2. อ่านไฟล์ backup ต้นทาง
@@ -37,7 +38,7 @@ async function verifyAllData() {
     
     for (let i = 0; i < Math.min(5, data.data.length); i++) {
       const backupItem = data.data[i];
-      const supabaseItem = await prisma.StockItem.findFirst({
+      const supabaseItem = await prisma.stockItem.findFirst({
         where: {
           partNumber: backupItem.partNumber,
           poNumber: backupItem.poNumber,
@@ -54,8 +55,8 @@ async function verifyAllData() {
     
     // 5. สรุปข้อมูลสำคัญ
     console.log('\n📈 สรุปข้อมูลสำคัญ:');
-    console.log(`- จำนวน Part Number ที่แตกต่างกันใน Supabase: ${await prisma.StockItem.groupBy({by: ['partNumber']}).then(g => g.length)}`);
-    console.log(`- จำนวน PO ที่แตกต่างกัน: ${await prisma.StockItem.groupBy({by: ['poNumber']}).then(g => g.length)}`);
+    console.log(`- จำนวน Part Number ที่แตกต่างกันใน Supabase: ${await prisma.stockItem.groupBy({by: ['partNumber']}).then(g => g.length)}`);
+    console.log(`- จำนวน PO ที่แตกต่างกัน: ${await prisma.stockItem.groupBy({by: ['poNumber']}).then(g => g.length)}`);
     
     // 6. ตรวจสอบว่ามีข้อมูลจากไฟล์ backup อื่นไหม
     const backupDir = 'D:\\stock-backups';

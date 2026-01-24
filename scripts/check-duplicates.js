@@ -7,18 +7,18 @@ async function checkDuplicates() {
     console.log('🔍 กำลังตรวจสอบข้อมูลซ้ำ...');
     
     // นับรายการทั้งหมด
-    const totalCount = await prisma.StockItem.count();
+    const totalCount = await prisma.stockItem.count();
     console.log('📊 จำนวนรายการทั้งหมด:', totalCount);
     
     // ตรวจสอบซ้ำจาก partNumber + poNumber + receivedDate
     const duplicates = await prisma.$queryRaw`
       SELECT 
-        partNumber,
-        poNumber,
-        receivedDate,
+        "partNumber" as "partNumber",
+        "poNumber" as "poNumber",
+        "receivedDate" as "receivedDate",
         COUNT(*) as count
-      FROM StockItem 
-      GROUP BY partNumber, poNumber, receivedDate 
+      FROM "StockItem" 
+      GROUP BY "partNumber", "poNumber", "receivedDate" 
       HAVING COUNT(*) > 1
       ORDER BY count DESC
       LIMIT 10
@@ -27,7 +27,7 @@ async function checkDuplicates() {
     if (duplicates.length > 0) {
       console.log('\n⚠️ พบข้อมูลซ้ำ (partNumber + poNumber + receivedDate):');
       duplicates.forEach((dup, i) => {
-        console.log(`  ${i+1}. Part: ${dup.partnumber} | PO: ${dup.ponumber || 'ไม่มี'} | วันที่: ${dup.receiveddate?.toISOString().split('T')[0]} | ซ้ำ: ${dup.count} รายการ`);
+        console.log(`  ${i+1}. Part: ${dup.partNumber} | PO: ${dup.poNumber || 'ไม่มี'} | วันที่: ${dup.receivedDate?.toISOString().split('T')[0]} | ซ้ำ: ${dup.count} รายการ`);
       });
     } else {
       console.log('\n✅ ไม่พบข้อมูลซ้ำ (partNumber + poNumber + receivedDate)');
@@ -36,10 +36,10 @@ async function checkDuplicates() {
     // ตรวจสอบ partNumber ซ้ำ
     const partDuplicates = await prisma.$queryRaw`
       SELECT 
-        partNumber,
+        "partNumber" as "partNumber",
         COUNT(*) as count
-      FROM StockItem 
-      GROUP BY partNumber 
+      FROM "StockItem" 
+      GROUP BY "partNumber" 
       HAVING COUNT(*) > 1
       ORDER BY count DESC
       LIMIT 10
@@ -48,7 +48,7 @@ async function checkDuplicates() {
     if (partDuplicates.length > 0) {
       console.log('\n🔄 Part Number ที่ปรากฏหลายครั้ง:');
       partDuplicates.forEach((dup, i) => {
-        console.log(`  ${i+1}. ${dup.partnumber} - ${dup.count} รายการ`);
+        console.log(`  ${i+1}. ${dup.partNumber} - ${dup.count} รายการ`);
       });
     } else {
       console.log('\n✅ ไม่มี Part Number ซ้ำ');
@@ -59,7 +59,7 @@ async function checkDuplicates() {
       SELECT 
         id,
         COUNT(*) as count
-      FROM StockItem 
+      FROM "StockItem" 
       GROUP BY id 
       HAVING COUNT(*) > 1
     `;

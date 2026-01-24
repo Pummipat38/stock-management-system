@@ -8,7 +8,7 @@ async function resetAndUpload() {
     console.log('🔄 ลบข้อมูลเก่าทั้งหมด...');
     
     // ลบข้อมูลทั้งหมด
-    await prisma.StockItem.deleteMany({});
+    await prisma.stockItem.deleteMany({});
     console.log('✅ ลบข้อมูลเก่าเรียบร้อย');
     
     console.log('📖 อ่านไฟล์ backup...');
@@ -26,7 +26,7 @@ async function resetAndUpload() {
       
       for (const item of batch) {
         try {
-          await prisma.StockItem.create({
+          await prisma.stockItem.create({
             data: {
               myobNumber: item.myobNumber || '',
               model: item.model || '',
