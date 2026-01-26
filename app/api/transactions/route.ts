@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +33,6 @@ export async function GET(request: NextRequest) {
     
     // ตรวจสอบและส่งข้อมูลเป็น array เสมอ
     const result = Array.isArray(transactions) ? transactions : [];
-    console.log('API Response:', result);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching transactions:', error);

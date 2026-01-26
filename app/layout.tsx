@@ -1,15 +1,24 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import PwaRegister from '@/components/PwaRegister'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Stock Management System',
   description: 'ระบบจัดการสต็อกสินค้า พร้อม MYOB Integration',
+  manifest: '/manifest.webmanifest',
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>"
+    icon: [
+      { url: '/pwa/icon/192', type: 'image/png', sizes: '192x192' },
+      { url: '/pwa/icon/512', type: 'image/png', sizes: '512x512' }
+    ]
   }
+}
+
+export const viewport: Viewport = {
+  themeColor: '#10b981'
 }
 
 export default function RootLayout({
@@ -20,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <PwaRegister />
         <div className="relative min-h-screen">
           <div className="fixed inset-0 flex items-end justify-center pointer-events-none pb-12 z-30">
             <span className="text-[120px] sm:text-[180px] font-black uppercase tracking-[0.25em] text-white/20 select-none text-center leading-none">

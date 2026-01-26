@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-});
+import prisma from '@/lib/prisma';
 
 // GET /api/stock
 export async function GET() {
@@ -14,9 +10,12 @@ export async function GET() {
     
     // ตรวจสอบและส่งข้อมูลเป็น array เสมอ
     const result = Array.isArray(stockItems) ? stockItems : [];
-    console.log('API Response:', result);
-    
-    return NextResponse.json(result);
+
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 's-maxage=10, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Error fetching stock items:', error);
     // ส่ง empty array แทนการส่ง error object
@@ -28,7 +27,6 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    console.log('Received data:', data);
     
     // Validate required fields
     if (!data.myobNumber || !data.model || !data.partName || !data.partNumber || !data.poNumber) {
@@ -47,7 +45,6 @@ export async function POST(request: Request) {
 
     // Ensure database connection
     await prisma.$connect();
-    console.log('Database connected');
 
     const stockItem = await prisma.stockItem.create({
       data: {
@@ -70,8 +67,6 @@ export async function POST(request: Request) {
         remarks: data.remarks ? String(data.remarks) : null,
       },
     });
-    
-    console.log('Created stock item:', stockItem);
     
     // สร้าง Backup หลังจากเซฟข้อมูลสำเร็จ
     try {
@@ -102,7 +97,5 @@ export async function POST(request: Request) {
       { error: 'Failed to create stock item', details: errorMessage },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -57,68 +57,14 @@ const formatDueDate = (value?: string) => {
   }).format(date);
 };
 
-interface DashboardStats {
-  totalItems: number;
-  lowStockItems: number;
-  recentTransactions: number;
-  totalReceived: number;
-  totalIssued: number;
-}
-
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalItems: 0,
-    lowStockItems: 0,
-    recentTransactions: 0,
-    totalReceived: 0,
-    totalIssued: 0
-  });
-  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [dueAlerts, setDueAlerts] = useState<DueAlertItem[]>([]);
   const [isDueAlertOpen, setIsDueAlertOpen] = useState(false);
   const [alertCountdown, setAlertCountdown] = useState(0);
 
-  const fetchStats = async () => {
-    try {
-      // Fetch stock items
-      const stockResponse = await fetch('/api/stock');
-      const stockData = await stockResponse.json();
-      const items = Array.isArray(stockData) ? stockData : [];
-      
-      // Fetch transactions
-      const transactionResponse = await fetch('/api/transactions');
-      const transactionData = await transactionResponse.json();
-      const transactions = Array.isArray(transactionData) ? transactionData : [];
-
-      // Calculate stats
-      const totalItems = items.length;
-      const lowStockItems = items.filter(item => {
-        const balance = item.receivedQty - (item.issuedQty || 0);
-        return balance <= 10;
-      }).length;
-      
-      const totalReceived = items.reduce((sum, item) => sum + item.receivedQty, 0);
-      const totalIssued = items.reduce((sum, item) => sum + (item.issuedQty || 0), 0);
-      const recentTransactions = transactions.length;
-
-      setStats({
-        totalItems,
-        lowStockItems,
-        recentTransactions,
-        totalReceived,
-        totalIssued
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     setMounted(true);
-    fetchStats();
   }, []);
 
   useEffect(() => {
@@ -211,35 +157,6 @@ export default function Dashboard() {
       delay: 'delay-600'
     },
   ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 via-emerald-800 via-teal-700 to-green-600 relative overflow-hidden">
-      {/* Blue Gradient Background Effects */}
-      <div className="absolute inset-0">
-        {/* Main Blue Glow */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-purple-500/30 via-blue-500/40 to-sky-400/35 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-gradient-to-bl from-blue-600/25 via-indigo-500/30 to-purple-600/25 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-tr from-sky-500/20 via-blue-500/25 to-cyan-400/20 rounded-full blur-xl animate-pulse delay-1500"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-88 h-88 bg-gradient-to-tl from-blue-700/30 via-indigo-600/35 to-purple-500/25 rounded-full blur-2xl animate-pulse delay-2000"></div>
-        
-        {/* Additional Blue Accents */}
-        <div className="absolute top-10 left-10 w-60 h-60 bg-gradient-to-br from-purple-400/15 via-blue-400/20 to-sky-300/15 rounded-full blur-xl animate-pulse delay-500"></div>
-        <div className="absolute top-20 right-20 w-64 h-64 bg-gradient-to-bl from-blue-500/20 via-indigo-400/25 to-purple-500/15 rounded-full blur-xl animate-pulse delay-1200"></div>
-        <div className="absolute bottom-10 left-20 w-56 h-56 bg-gradient-to-tr from-sky-400/18 via-blue-400/22 to-cyan-300/16 rounded-full blur-xl animate-pulse delay-1800"></div>
-        <div className="absolute bottom-20 right-10 w-68 h-68 bg-gradient-to-tl from-blue-600/25 via-indigo-500/30 to-purple-400/20 rounded-full blur-xl animate-pulse delay-2400"></div>
-      </div>
-        <div className="container mx-auto px-4 py-8 relative z-10">
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-              <div className="text-lg text-white/80 font-medium">กำลังโหลดข้อมูล...</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 via-emerald-800 via-teal-700 to-green-600 relative overflow-hidden">

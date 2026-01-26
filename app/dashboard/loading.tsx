@@ -1,6 +1,4 @@
-'use client';
-
-export default function Loading() {
+ export default function Loading() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 via-emerald-800 via-teal-700 to-green-600 relative overflow-hidden">
       {/* Animated Background Elements */}

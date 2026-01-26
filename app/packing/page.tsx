@@ -523,7 +523,6 @@ function DueDeliveryPage() {
 
   useEffect(() => {
     try {
-      localStorage.removeItem('packingRecords');
       const saved = localStorage.getItem('dueRecords');
       if (saved) {
         const parsed = JSON.parse(saved) as DueRecord[];
