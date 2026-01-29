@@ -9,6 +9,7 @@ export const maxDuration = 60;
 type DueRecordInput = {
   deliveryType?: string;
   myobNumber?: string;
+  productRequestNo?: string;
   customer?: string;
   countryOfOrigin?: string;
   sampleRequestSheet?: string;
@@ -18,9 +19,18 @@ type DueRecordInput = {
   revisionLevel?: string;
   revisionNumber?: string;
   event?: string;
+  supplier?: string;
   customerPo?: string;
+  prPo?: string;
+  purchase?: string;
+  invoiceIn?: string;
+  invoiceOut?: string;
+  withdrawalNumber?: string;
   quantity?: number;
   dueDate?: string;
+  dueSupplierToCustomer?: string;
+  dueSupplierToRk?: string;
+  dueRkToCustomer?: string;
   isDelivered?: boolean;
   deliveredAt?: string | null;
 };
@@ -59,6 +69,7 @@ type PreparedDueRecord = {
   dedupeKey: string;
   deliveryType: string;
   myobNumber: string;
+  productRequestNo: string;
   customer: string;
   countryOfOrigin: string;
   sampleRequestSheet: string;
@@ -68,9 +79,18 @@ type PreparedDueRecord = {
   revisionLevel: string;
   revisionNumber: string;
   event: string;
+  supplier: string;
   customerPo: string;
+  prPo: string;
+  purchase: string;
+  invoiceIn: string;
+  invoiceOut: string;
+  withdrawalNumber: string;
   quantity: number;
   dueDate: string;
+  dueSupplierToCustomer: string;
+  dueSupplierToRk: string;
+  dueRkToCustomer: string;
   isDelivered: boolean;
   deliveredAt: Date | null;
 };
@@ -102,6 +122,7 @@ export async function POST(request: Request) {
     for (const item of records) {
       const deliveryType = normalizeText(item.deliveryType);
       const myobNumber = normalizeText(item.myobNumber);
+      const productRequestNo = normalizeText(item.productRequestNo);
       const customer = normalizeText(item.customer);
       const countryOfOrigin = normalizeText(item.countryOfOrigin);
       const sampleRequestSheet = normalizeText(item.sampleRequestSheet);
@@ -111,8 +132,17 @@ export async function POST(request: Request) {
       const revisionLevel = normalizeText(item.revisionLevel);
       const revisionNumber = normalizeText(item.revisionNumber);
       const event = normalizeText(item.event);
+      const supplier = normalizeText(item.supplier);
       const customerPo = normalizeText(item.customerPo);
+      const prPo = normalizeText(item.prPo);
+      const purchase = normalizeText(item.purchase);
+      const invoiceIn = normalizeText(item.invoiceIn);
+      const invoiceOut = normalizeText(item.invoiceOut);
+      const withdrawalNumber = normalizeText(item.withdrawalNumber);
       const dueDate = normalizeText(item.dueDate);
+      const dueSupplierToCustomer = normalizeText(item.dueSupplierToCustomer);
+      const dueSupplierToRk = normalizeText(item.dueSupplierToRk);
+      const dueRkToCustomer = normalizeText(item.dueRkToCustomer);
       const quantity = Number(item.quantity) || 0;
 
       if (!deliveryType || !customer || !model || !partNumber || !partName || !event || !customerPo || !dueDate) {
@@ -146,6 +176,7 @@ export async function POST(request: Request) {
         dedupeKey,
         deliveryType,
         myobNumber,
+        productRequestNo,
         customer,
         countryOfOrigin,
         sampleRequestSheet,
@@ -155,9 +186,18 @@ export async function POST(request: Request) {
         revisionLevel,
         revisionNumber,
         event,
+        supplier,
         customerPo,
+        prPo,
+        purchase,
+        invoiceIn,
+        invoiceOut,
+        withdrawalNumber,
         quantity,
         dueDate,
+        dueSupplierToCustomer,
+        dueSupplierToRk,
+        dueRkToCustomer,
         isDelivered: Boolean(item.isDelivered),
         deliveredAt,
       });
@@ -178,6 +218,7 @@ export async function POST(request: Request) {
             ${r.dedupeKey},
             ${r.deliveryType},
             ${r.myobNumber},
+            ${r.productRequestNo},
             ${r.customer},
             ${r.countryOfOrigin},
             ${r.sampleRequestSheet},
@@ -187,9 +228,18 @@ export async function POST(request: Request) {
             ${r.revisionLevel},
             ${r.revisionNumber},
             ${r.event},
+            ${r.supplier},
             ${r.customerPo},
+            ${r.prPo},
+            ${r.purchase},
+            ${r.invoiceIn},
+            ${r.invoiceOut},
+            ${r.withdrawalNumber},
             ${r.quantity},
             ${r.dueDate},
+            ${r.dueSupplierToCustomer},
+            ${r.dueSupplierToRk},
+            ${r.dueRkToCustomer},
             ${r.isDelivered},
             ${r.deliveredAt}
           )`
@@ -201,6 +251,7 @@ export async function POST(request: Request) {
             dedupe_key,
             delivery_type,
             myob_number,
+            product_request_no,
             customer,
             country_of_origin,
             sample_request_sheet,
@@ -210,9 +261,18 @@ export async function POST(request: Request) {
             revision_level,
             revision_number,
             event,
+            supplier,
             customer_po,
+            pr_po,
+            purchase,
+            invoice_in,
+            invoice_out,
+            withdrawal_number,
             quantity,
             due_date,
+            due_supplier_to_customer,
+            due_supplier_to_rk,
+            due_rk_to_customer,
             is_delivered,
             delivered_at
           )
@@ -220,6 +280,7 @@ export async function POST(request: Request) {
           on conflict (dedupe_key) do update set
             delivery_type = excluded.delivery_type,
             myob_number = excluded.myob_number,
+            product_request_no = excluded.product_request_no,
             customer = excluded.customer,
             country_of_origin = excluded.country_of_origin,
             sample_request_sheet = excluded.sample_request_sheet,
@@ -229,9 +290,18 @@ export async function POST(request: Request) {
             revision_level = excluded.revision_level,
             revision_number = excluded.revision_number,
             event = excluded.event,
+            supplier = excluded.supplier,
             customer_po = excluded.customer_po,
+            pr_po = excluded.pr_po,
+            purchase = excluded.purchase,
+            invoice_in = excluded.invoice_in,
+            invoice_out = excluded.invoice_out,
+            withdrawal_number = excluded.withdrawal_number,
             quantity = excluded.quantity,
             due_date = excluded.due_date,
+            due_supplier_to_customer = excluded.due_supplier_to_customer,
+            due_supplier_to_rk = excluded.due_supplier_to_rk,
+            due_rk_to_customer = excluded.due_rk_to_customer,
             is_delivered = excluded.is_delivered,
             delivered_at = excluded.delivered_at,
             updated_at = now();

@@ -26,6 +26,16 @@ interface DueRecord extends DueFormData {
   updatedAt: string;
   isDelivered?: boolean;
   deliveredAt?: string;
+  productRequestNo?: string;
+  supplier?: string;
+  prPo?: string;
+  purchase?: string;
+  invoiceIn?: string;
+  invoiceOut?: string;
+  withdrawalNumber?: string;
+  dueSupplierToCustomer?: string;
+  dueSupplierToRk?: string;
+  dueRkToCustomer?: string;
 }
 
 interface DuePartRow {
@@ -689,6 +699,7 @@ function DueDeliveryPage() {
       type DueRecordInput = {
         deliveryType?: string;
         myobNumber?: string;
+        productRequestNo?: string;
         customer?: string;
         countryOfOrigin?: string;
         sampleRequestSheet?: string;
@@ -698,14 +709,25 @@ function DueDeliveryPage() {
         revisionLevel?: string;
         revisionNumber?: string;
         event?: string;
+        supplier?: string;
         customerPo?: string;
+        prPo?: string;
+        purchase?: string;
+        invoiceIn?: string;
+        invoiceOut?: string;
+        withdrawalNumber?: string;
         quantity?: number;
         dueDate?: string;
+        dueSupplierToCustomer?: string;
+        dueSupplierToRk?: string;
+        dueRkToCustomer?: string;
         isDelivered?: boolean;
         deliveredAt?: string | null;
       };
 
       const records: DueRecordInput[] = [];
+      let clientSkipped = 0;
+      const clientSkipSamples: string[] = [];
 
       for (const sheetName of workbook.SheetNames) {
         const sheet = workbook.Sheets[sheetName];
@@ -739,6 +761,9 @@ function DueDeliveryPage() {
 
           const row = buildRowObject(headerRow, rawRow ?? []);
 
+          const productRequestNo = normalizeText(
+            pick(row, ['product request no.', 'product request no', 'productrequestno', 'product request', 'request no', 'product request no :'])
+          );
           const customer = normalizeText(pick(row, ['customer', 'CUSTOMER', 'Customer', 'ลูกค้า']));
           const model = normalizeText(pick(row, ['model', 'MODEL', 'Model', 'โมเดล']));
           const partNumber = normalizeText(
@@ -746,9 +771,25 @@ function DueDeliveryPage() {
           );
           const partName = normalizeText(pick(row, ['partName', 'part_name', 'PART NAME', 'Part Name', 'part name', 'ชื่อชิ้นส่วน', 'PART NAME ']));
           const event = normalizeText(pick(row, ['event', 'EVENT', 'Event', 'อีเว้น', 'เหตุการณ์']));
-          const customerPo = normalizeText(pick(row, ['customerPo', 'customer_po', 'PO', 'PO NO', 'PO NO.', 'Customer PO', 'customer po', 'PO:', 'เลข PO', 'PO NO.']));
-          const dueDate = normalizeDueDate(pick(row, ['dueDate', 'due_date', 'DUE DATE', 'Due Date', 'due date', 'กำหนดส่ง', 'DUE']));
-          const quantityRaw = pick(row, ['quantity', 'QTY', 'qty', 'Quantity', 'จำนวน']);
+          const supplier = normalizeText(pick(row, ['supplier', 'SUPPLIER', 'Supplier']));
+          const prPo = normalizeText(pick(row, ['pr/po', 'pr / po', 'PR/PO', 'PR / PO', 'prpo', 'PR PO', 'pr po']));
+          const customerPo = normalizeText(
+            pick(row, ['customerPo', 'customer_po', 'PO', 'PO NO', 'PO NO.', 'Customer PO', 'customer po', 'PO:', 'เลข PO', 'PR/PO', 'PR / PO', 'pr/po', 'pr / po'])
+          );
+          const purchase = normalizeText(pick(row, ['purchase', 'puchase', 'PUCHASE', 'PUCHASE ', 'Purchase']));
+          const invoiceIn = normalizeText(pick(row, ['invoice in', 'INVOICE IN', 'invoicein', 'invoice_in']));
+          const invoiceOut = normalizeText(pick(row, ['invoice out', 'INVOICE OUT', 'invoiceout', 'invoice_out']));
+          const withdrawalNumber = normalizeText(
+            pick(row, ['withdrawalNumber', 'withdrawal_number', 'withdrawal', 'withdrawal no', 'withdrawal no.', 'เลขที่ใบเบิก', 'เลขใบเบิก', 'ใบเบิก'])
+          );
+
+          const dueSupplierToCustomer = normalizeDueDate(
+            pick(row, ['due supplier to customer', 'Due Supplier to Customer', 'DUE SUPPLIER TO CUSTOMER', 'duesuppliertocustomer'])
+          );
+          const dueSupplierToRk = normalizeDueDate(pick(row, ['due supplier to rk', 'Due Supplier to RK', 'DUE SUPPLIER TO RK', 'duesuppliertork']));
+          const dueRkToCustomer = normalizeDueDate(pick(row, ['due rk to customer', 'Due RK to Customer', 'DUE RK TO CUSTOMER', 'duerktocustomer']));
+
+          const quantityRaw = pick(row, ['qty to customer', 'QTY to Customer', 'QTY TO CUSTOMER', 'quantity', 'QTY', 'qty', 'Quantity', 'จำนวน']);
           const quantity = Number(String(quantityRaw ?? '').replace(/[^0-9.-]/g, '')) || 0;
 
           const myobNumber = normalizeText(pick(row, ['myobNumber', 'myob_number', 'MYOB', 'MYOB NO', 'MYOB NO.', 'MYOB NUMBER', 'MYOB NUMBER ']));
@@ -757,7 +798,20 @@ function DueDeliveryPage() {
             pick(row, ['sampleRequestSheet', 'sample_request_sheet', 'SAMPLE REQUEST SHEET', 'Sample Request Sheet', 'เอกสารขอชิ้นงาน'])
           );
           const revisionLevel = normalizeText(pick(row, ['revisionLevel', 'revision_level', 'REV LEVEL', 'REV LEVEL.', 'REV', 'rev']));
-          const revisionNumber = normalizeText(pick(row, ['revisionNumber', 'revision_number', 'REV NO', 'REV NO.', 'REVISION', 'revision']));
+          const revisionNumber = normalizeText(
+            pick(row, ['revisionNumber', 'revision_number', 'DWG REV.', 'DWG REV', 'dwg rev', 'dwg rev.', 'REV NO', 'REV NO.', 'REVISION', 'revision'])
+          );
+
+          let dueDate = normalizeDueDate(pick(row, ['dueDate', 'due_date', 'DUE DATE', 'Due Date', 'due date', 'กำหนดส่ง', 'DUE']));
+          if (!normalizeText(dueDate)) {
+            if (inferredType === 'international') {
+              dueDate = normalizeDueDate(dueSupplierToCustomer);
+            } else {
+              dueDate = normalizeDueDate(dueRkToCustomer || dueSupplierToRk || dueSupplierToCustomer);
+            }
+          }
+
+          const finalCustomerPo = normalizeText(customerPo || prPo);
 
           const isDeliveredRaw = pick(row, ['isDelivered', 'is_delivered', 'DELIVERED', 'Delivered', 'ส่งแล้ว']);
           const isDelivered =
@@ -770,9 +824,36 @@ function DueDeliveryPage() {
           const deliveredAtRaw = pick(row, ['deliveredAt', 'delivered_at', 'DELIVERED AT', 'Delivered At', 'วันที่ส่ง']);
           const deliveredAt = deliveredAtRaw ? normalizeDueDate(deliveredAtRaw) : null;
 
+          const requiredMissing =
+            !normalizeText(customer) ||
+            !normalizeText(model) ||
+            !normalizeText(partNumber) ||
+            !normalizeText(partName) ||
+            !normalizeText(event) ||
+            !normalizeText(finalCustomerPo) ||
+            !normalizeText(dueDate);
+
+          if (requiredMissing) {
+            clientSkipped++;
+            if (clientSkipSamples.length < 10) {
+              const fields = [
+                !normalizeText(customer) ? 'CUSTOMER' : null,
+                !normalizeText(model) ? 'MODEL' : null,
+                !normalizeText(partNumber) ? 'PART NO.' : null,
+                !normalizeText(partName) ? 'PART NAME' : null,
+                !normalizeText(event) ? 'EVENT' : null,
+                !normalizeText(finalCustomerPo) ? 'PR/PO' : null,
+                !normalizeText(dueDate) ? 'DUE' : null,
+              ].filter(Boolean);
+              clientSkipSamples.push(`sheet=${sheetName} missing=${fields.join(',')}`);
+            }
+            continue;
+          }
+
           records.push({
             deliveryType: inferredType,
             myobNumber,
+            productRequestNo,
             customer,
             countryOfOrigin,
             sampleRequestSheet,
@@ -782,9 +863,18 @@ function DueDeliveryPage() {
             revisionLevel,
             revisionNumber,
             event,
-            customerPo,
+            supplier,
+            customerPo: finalCustomerPo,
+            prPo,
+            purchase,
+            invoiceIn,
+            invoiceOut,
+            withdrawalNumber,
             quantity,
             dueDate,
+            dueSupplierToCustomer,
+            dueSupplierToRk,
+            dueRkToCustomer,
             isDelivered,
             deliveredAt,
           });
@@ -835,7 +925,9 @@ function DueDeliveryPage() {
         totalErrors += Number(payload?.errorsCount ?? 0);
       }
 
-      const summary = `Import สำเร็จ: records=${records.length}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}`;
+      const clientSkippedNote = clientSkipped > 0 ? `, clientSkipped=${clientSkipped}` : '';
+      const sampleNote = clientSkipSamples.length > 0 ? `\nตัวอย่างแถวที่ถูกข้าม: ${clientSkipSamples.join(' | ')}` : '';
+      const summary = `Import สำเร็จ: records=${records.length}${clientSkippedNote}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}${sampleNote}`;
       setImportMessage(summary);
       await loadDueRecords(undefined, true);
     } catch (error) {
@@ -1568,106 +1660,144 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-x-auto"
               >
-                <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-3 py-2">
+                <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
                   <div
-                    className={`grid min-w-[2400px] ${
+                    className={`grid min-w-[3400px] ${
                       isSelectMode
-                        ? 'grid-cols-[60px_170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
-                        : 'grid-cols-[170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
-                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full`}
+                        ? selectedType === 'international'
+                          ? 'grid-cols-[60px_140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                          : 'grid-cols-[60px_140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                        : selectedType === 'international'
+                          ? 'grid-cols-[140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                          : 'grid-cols-[140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full whitespace-nowrap border border-white/20`}
                   >
-                    {isSelectMode && <span className="px-2 py-1 flex items-center justify-center border-white/40">เลือก</span>}
-                    <span className="px-2 py-1 flex items-center justify-center">Customer</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Country</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">SRS</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Type</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">MYOB</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Model</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Part No</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Part Name</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Rev L</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Rev N</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Event</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">PO</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Qty</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Due</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Del</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Del At</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Created</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Updated</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Action</span>
+                    {isSelectMode && <span className="px-2 py-1 flex items-center justify-center">เลือก</span>}
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Product Request No.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Sample Request Sheet</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Customer</span>
+                    {selectedType === 'international' && (
+                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Country of Origin</span>
+                    )}
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Model</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Part No.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Part Name</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">DWG Rev.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Event</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Supplier</span>
+                    {selectedType === 'international' ? (
+                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due Supplier to Customer</span>
+                    ) : (
+                      <>
+                        <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due Supplier to RK</span>
+                        <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due RK to Customer</span>
+                      </>
+                    )}
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">QTY to Customer</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">MYOB</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">PR/PO</span>
+                    {selectedType === 'domestic' && (
+                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Withdrawal No.</span>
+                    )}
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">PUCHASE</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Invoice In</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Invoice Out</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Del</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Del At</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Created</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Updated</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Action</span>
                   </div>
                 </div>
-                <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
-                {filteredByType.length === 0 ? (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
-                    <div className="text-5xl mb-4">📄</div>
-                    <div className="text-2xl text-white">No DUE records yet</div>
-                    <div className="text-white/60">Press “Add Record” to create a new entry</div>
-                  </div>
-                ) : (
-                  filteredByType.map(record => (
-                    <div key={record.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-2">
-                      <div className="flex flex-col gap-4">
+
+                <div className="max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
+                  {filteredByType.length === 0 ? (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
+                      <div className="text-5xl mb-4">📄</div>
+                      <div className="text-2xl text-white">No DUE records yet</div>
+                      <div className="text-white/60">Press “Add Record” to create a new entry</div>
+                    </div>
+                  ) : (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+                      {filteredByType.map((record, index) => (
                         <div
-                          className={`grid min-w-[2400px] ${
-                            isSelectMode
-                              ? 'grid-cols-[60px_170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
-                              : 'grid-cols-[170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
-                          } items-stretch gap-0 text-white/90 text-sm w-full`}
+                          key={record.id}
+                          className={index === 0 ? '' : 'border-t border-white/20'}
                         >
-                          {isSelectMode && (
-                            <div className="flex items-center justify-center border-white/30">
-                              <input
-                                type="checkbox"
-                                checked={selectedIds.includes(record.id)}
-                                onChange={() => toggleSelectId(record.id)}
-                                className="h-4 w-4 rounded border-white/40 text-amber-400"
-                              />
-                            </div>
-                          )}
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.customer}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.countryOfOrigin || '-'}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">
-                            <span className="text-base px-3 py-1.5 rounded-full bg-white/20 text-white/85 w-fit">
-                              {record.deliveryType === 'domestic' ? 'Domestic' : 'International'}
-                            </span>
-                          </div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.myobNumber || '-'}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.model}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.partNumber}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.partName}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.revisionLevel || '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.revisionNumber || '-'}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.event || '-'}</div>
-                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.customerPo || '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.quantity} PCS</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{formatDueDate(record.dueDate)}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.isDelivered ? 'YES' : 'NO'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</div>
-                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">
-                            {listMode === 'pending' ? (
-                              <button
-                                onClick={() => openDeliverForm(record)}
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 text-lg max-w-full"
-                              >
-                                📁 ส่งงาน
-                              </button>
-                            ) : (
-                              <span className="bg-white/15 text-white/80 px-4 py-2 rounded-lg text-sm">
-                                ส่งแล้ว {record.deliveredAt ? `(${record.deliveredAt.split('T')[0]})` : ''}
-                              </span>
+                          <div
+                            className={`grid min-w-[3400px] ${
+                              isSelectMode
+                                ? selectedType === 'international'
+                                  ? 'grid-cols-[60px_140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                                  : 'grid-cols-[60px_140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                                : selectedType === 'international'
+                                  ? 'grid-cols-[140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                                  : 'grid-cols-[140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                            } items-stretch gap-0 text-white/90 text-sm w-full border-l border-r border-white/20`}
+                          >
+                            {isSelectMode && (
+                              <div className="flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedIds.includes(record.id)}
+                                  onChange={() => toggleSelectId(record.id)}
+                                  className="h-4 w-4 rounded border-white/40 text-amber-400"
+                                />
+                              </div>
                             )}
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.customer}</div>
+                            {selectedType === 'international' && (
+                              <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.countryOfOrigin || '-'}</div>
+                            )}
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.revisionNumber || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
+                            {selectedType === 'international' ? (
+                              <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToCustomer || record.dueDate)}</div>
+                            ) : (
+                              <>
+                                <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
+                                <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
+                              </>
+                            )}
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.quantity} PCS</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.customerPo || '-'}</div>
+                            {selectedType === 'domestic' && (
+                              <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
+                            )}
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
+                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.isDelivered ? 'YES' : 'NO'}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</div>
+                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">
+                              {listMode === 'pending' ? (
+                                <button
+                                  onClick={() => openDeliverForm(record)}
+                                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 text-lg max-w-full"
+                                >
+                                  📁 ส่งงาน
+                                </button>
+                              ) : (
+                                <span className="bg-white/15 text-white/80 px-4 py-2 rounded-lg text-sm">
+                                  ส่งแล้ว {record.deliveredAt ? `(${record.deliveredAt.split('T')[0]})` : ''}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))
-                )}
-              </div>
+                  )}
+                </div>
               </div>
             </div>
 

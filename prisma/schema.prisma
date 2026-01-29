@@ -76,6 +76,7 @@ model DueRecord {
   dedupeKey          String   @unique @map("dedupe_key")
   deliveryType       String   @map("delivery_type")
   myobNumber         String   @map("myob_number")
+  productRequestNo   String   @default("") @map("product_request_no")
   customer           String
   countryOfOrigin    String   @map("country_of_origin")
   sampleRequestSheet String   @map("sample_request_sheet")
@@ -85,9 +86,18 @@ model DueRecord {
   revisionLevel      String   @map("revision_level")
   revisionNumber     String   @map("revision_number")
   event              String
+  supplier           String   @default("")
   customerPo         String   @map("customer_po")
+  prPo               String   @default("") @map("pr_po")
+  purchase           String   @default("")
+  invoiceIn          String   @default("") @map("invoice_in")
+  invoiceOut         String   @default("") @map("invoice_out")
+  withdrawalNumber   String   @default("") @map("withdrawal_number")
   quantity           Int
   dueDate            String   @map("due_date")
+  dueSupplierToCustomer String @default("") @map("due_supplier_to_customer")
+  dueSupplierToRk     String  @default("") @map("due_supplier_to_rk")
+  dueRkToCustomer     String  @default("") @map("due_rk_to_customer")
   isDelivered        Boolean  @default(false) @map("is_delivered")
   deliveredAt        DateTime? @map("delivered_at")
   createdAt          DateTime @default(now()) @map("created_at")
