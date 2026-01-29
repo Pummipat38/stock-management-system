@@ -521,19 +521,65 @@ function DueDeliveryPage() {
   const [isDeliverFormOpen, setIsDeliverFormOpen] = useState(false);
   const [isStockInsufficient, setIsStockInsufficient] = useState(false);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dueRecords');
-      if (saved) {
-        const parsed = JSON.parse(saved) as DueRecord[];
-        setRecords(parsed.map(record => ({ ...record, isDelivered: record.isDelivered ?? false })));
-      }
-    } catch (error) {
-      console.error('Error loading due records:', error);
+  const loadDueRecords = async (signal?: AbortSignal, bypassCache = false) => {
+    const url = bypassCache ? `/api/due-records?ts=${Date.now()}` : '/api/due-records';
+    const response = await fetch(url, { signal });
+    if (!response.ok) {
       setRecords([]);
-    } finally {
-      setLoading(false);
+      return;
     }
+    const data = await response.json();
+    const normalized = Array.isArray(data) ? (data as DueRecord[]) : [];
+    setRecords(normalized.map(record => ({ ...record, isDelivered: record.isDelivered ?? false })));
+  };
+
+  const syncDueRecords = async (nextRecords: DueRecord[]) => {
+    const response = await fetch('/api/due-records/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ records: nextRecords }),
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(text || 'Failed to sync due records');
+    }
+    return response.json().catch(() => null);
+  };
+
+  const migrateLegacyLocalStorage = async () => {
+    const saved = localStorage.getItem('dueRecords');
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed) || parsed.length === 0) return;
+    const response = await fetch('/api/due-records/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ records: parsed }),
+    });
+    if (response.ok) {
+      localStorage.removeItem('dueRecords');
+    }
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const init = async () => {
+      try {
+        await migrateLegacyLocalStorage();
+        await loadDueRecords(controller.signal);
+      } catch (error) {
+        console.error('Error loading due records:', error);
+        setRecords([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+    return () => controller.abort();
   }, []);
 
 
@@ -639,7 +685,7 @@ function DueDeliveryPage() {
     setIsDeliverTypeOpen(true);
   };
 
-  const handleSelectDeliverType = (type: 'new' | 'mass') => {
+  const handleSelectDeliverType = async (type: 'new' | 'mass') => {
     if (!deliverRecord) return;
     setIsDeliverTypeOpen(false);
     if (type === 'mass') {
@@ -650,7 +696,13 @@ function DueDeliveryPage() {
           : item
       );
       setRecords(nextRecords);
-      localStorage.setItem('dueRecords', JSON.stringify(nextRecords));
+      try {
+        await syncDueRecords(nextRecords);
+        await loadDueRecords(undefined, true);
+      } catch (error) {
+        console.error('Error syncing due records:', error);
+        alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
+      }
       setDeliverRecord(null);
       alert('บันทึกงาน MASS สำเร็จ (ไม่ตัดสต๊อก)');
       return;
@@ -768,7 +820,13 @@ function DueDeliveryPage() {
           : item
       );
       setRecords(nextRecords);
-      localStorage.setItem('dueRecords', JSON.stringify(nextRecords));
+      try {
+        await syncDueRecords(nextRecords);
+        await loadDueRecords(undefined, true);
+      } catch (error) {
+        console.error('Error syncing due records:', error);
+        alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
+      }
       setStockItems(prev => [...prev]);
       closeDeliverForm();
       alert('ตัดสต็อกและบันทึกการจ่ายออกสำเร็จ!');
@@ -778,7 +836,7 @@ function DueDeliveryPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const now = new Date().toISOString();
     let nextRecords: DueRecord[] = [];
@@ -821,7 +879,16 @@ function DueDeliveryPage() {
     }
 
     setRecords(nextRecords);
-    localStorage.setItem('dueRecords', JSON.stringify(nextRecords));
+    try {
+      const result = await syncDueRecords(nextRecords);
+      if (result && typeof result.upserted === 'number' && result.upserted === 0) {
+        throw new Error('upserted=0');
+      }
+      await loadDueRecords(undefined, true);
+    } catch (error) {
+      console.error('Error syncing due records:', error);
+      alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
+    }
     setEditingRecord(null);
     setFormData(createEmptyForm(formData.deliveryType));
     setPartRows([createEmptyPartRow()]);
@@ -882,7 +949,7 @@ function DueDeliveryPage() {
     handleEditRecord(targetRecord);
   };
 
-  const handleRestoreSelected = () => {
+  const handleRestoreSelected = async () => {
     if (selectedIds.length === 0) {
       alert('กรุณาเลือกรายการที่ต้องการส่งกลับ');
       return;
@@ -894,7 +961,13 @@ function DueDeliveryPage() {
         : record
     );
     setRecords(nextRecords);
-    localStorage.setItem('dueRecords', JSON.stringify(nextRecords));
+    try {
+      await syncDueRecords(nextRecords);
+      await loadDueRecords(undefined, true);
+    } catch (error) {
+      console.error('Error syncing due records:', error);
+      alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
+    }
     setSelectedIds([]);
     setIsSelectMode(false);
     setListMode('pending');

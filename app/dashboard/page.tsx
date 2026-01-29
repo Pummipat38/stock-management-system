@@ -63,39 +63,51 @@ export default function Dashboard() {
   const [isDueAlertOpen, setIsDueAlertOpen] = useState(false);
   const [alertCountdown, setAlertCountdown] = useState(0);
 
+  const loadDueAlerts = async (signal?: AbortSignal) => {
+    const response = await fetch('/api/due-records?isDelivered=false', {
+      signal,
+    });
+    if (!response.ok) {
+      setDueAlerts([]);
+      setIsDueAlertOpen(false);
+      return;
+    }
+
+    const records = (await response.json()) as DueRecord[];
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const msPerDay = 1000 * 60 * 60 * 24;
+
+    const nextAlerts = (Array.isArray(records) ? records : [])
+      .filter(record => !record.isDelivered)
+      .map(record => {
+        const parsed = parseDueDateValue(record.dueDate);
+        if (!parsed) return null;
+        const startOfDue = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+        const diffDays = Math.ceil((startOfDue.getTime() - startOfToday.getTime()) / msPerDay);
+        if (diffDays < 1 || diffDays > 5) return null;
+        return { record, daysLeft: diffDays };
+      })
+      .filter((item): item is DueAlertItem => Boolean(item))
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+
+    setDueAlerts(nextAlerts);
+    setIsDueAlertOpen(nextAlerts.length > 0);
+  };
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
-    try {
-      const saved = localStorage.getItem('dueRecords');
-      const records = saved ? (JSON.parse(saved) as DueRecord[]) : [];
-      const today = new Date();
-      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const msPerDay = 1000 * 60 * 60 * 24;
-
-      const nextAlerts = records
-        .filter(record => !record.isDelivered)
-        .map(record => {
-          const parsed = parseDueDateValue(record.dueDate);
-          if (!parsed) return null;
-          const startOfDue = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-          const diffDays = Math.ceil((startOfDue.getTime() - startOfToday.getTime()) / msPerDay);
-          if (diffDays < 1 || diffDays > 5) return null;
-          return { record, daysLeft: diffDays };
-        })
-        .filter((item): item is DueAlertItem => Boolean(item))
-        .sort((a, b) => a.daysLeft - b.daysLeft);
-
-      setDueAlerts(nextAlerts);
-      setIsDueAlertOpen(nextAlerts.length > 0);
-    } catch (error) {
+    const controller = new AbortController();
+    loadDueAlerts(controller.signal).catch(error => {
       console.error('Error loading due alerts:', error);
       setDueAlerts([]);
       setIsDueAlertOpen(false);
-    }
+    });
+    return () => controller.abort();
   }, [mounted]);
 
   useEffect(() => {

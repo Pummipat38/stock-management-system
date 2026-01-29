@@ -70,3 +70,28 @@ model NGItem {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model DueRecord {
+  id                 String   @id @default(cuid())
+  dedupeKey          String   @unique @map("dedupe_key")
+  deliveryType       String   @map("delivery_type")
+  myobNumber         String   @map("myob_number")
+  customer           String
+  countryOfOrigin    String   @map("country_of_origin")
+  sampleRequestSheet String   @map("sample_request_sheet")
+  model              String
+  partNumber         String   @map("part_number")
+  partName           String   @map("part_name")
+  revisionLevel      String   @map("revision_level")
+  revisionNumber     String   @map("revision_number")
+  event              String
+  customerPo         String   @map("customer_po")
+  quantity           Int
+  dueDate            String   @map("due_date")
+  isDelivered        Boolean  @default(false) @map("is_delivered")
+  deliveredAt        DateTime? @map("delivered_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("due_records")
+}
