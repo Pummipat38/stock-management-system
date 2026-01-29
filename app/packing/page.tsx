@@ -501,6 +501,11 @@ function DueDeliveryPage() {
   const [listMode, setListMode] = useState<'pending' | 'delivered'>('pending');
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<DueFormData>(createEmptyForm('domestic'));
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importKey, setImportKey] = useState('');
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
@@ -546,6 +551,45 @@ function DueDeliveryPage() {
       throw new Error(text || 'Failed to sync due records');
     }
     return response.json().catch(() => null);
+  };
+
+  const handleImportExcel = async () => {
+    if (!importFile) {
+      alert('กรุณาเลือกไฟล์ Excel');
+      return;
+    }
+    if (!importKey.trim()) {
+      alert('กรุณาใส่รหัสผ่าน');
+      return;
+    }
+
+    setImportLoading(true);
+    setImportMessage(null);
+    try {
+      const form = new FormData();
+      form.append('file', importFile);
+      form.append('key', importKey.trim());
+
+      const response = await fetch('/api/due-records/import', {
+        method: 'POST',
+        body: form,
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const details = payload?.details || payload?.error || 'Import failed';
+        throw new Error(details);
+      }
+
+      const summary = `Import สำเร็จ: upserted=${payload?.upserted ?? 0}, skipped=${payload?.skipped ?? 0}, errors=${payload?.errorsCount ?? 0}`;
+      setImportMessage(summary);
+      await loadDueRecords(undefined, true);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      setImportMessage('Import ไม่สำเร็จ: ' + msg);
+    } finally {
+      setImportLoading(false);
+    }
   };
 
   const migrateLegacyLocalStorage = async () => {
@@ -999,13 +1043,22 @@ function DueDeliveryPage() {
               </div>
             </h1>
             <div className="absolute top-0 right-0">
-              <button
-                type="button"
-                onClick={() => window.history.back()}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
-              >
-                ← BACK
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsImportOpen(true)}
+                  className="bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white px-5 py-3 rounded-lg text-sm font-semibold shadow-md transition-all duration-200 border border-white/25 hover:border-white/40"
+                >
+                  Import Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.history.back()}
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
+                >
+                  ← BACK
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1055,6 +1108,79 @@ function DueDeliveryPage() {
               ))}
             </div>
           </div>
+
+          {isImportOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
+              <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800">Import DUE จาก Excel</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (importLoading) return;
+                      setIsImportOpen(false);
+                      setImportMessage(null);
+                      setImportFile(null);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 font-semibold"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="px-6 py-5 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ไฟล์ Excel (.xlsx)</label>
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                      className="block w-full text-sm text-gray-700"
+                      disabled={importLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label>
+                    <input
+                      type="password"
+                      value={importKey}
+                      onChange={(e) => setImportKey(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                      placeholder="ใส่รหัสผ่านเพื่อ Import"
+                      disabled={importLoading}
+                    />
+                  </div>
+                  {importMessage && (
+                    <div className="text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                      {importMessage}
+                    </div>
+                  )}
+                </div>
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (importLoading) return;
+                      setIsImportOpen(false);
+                      setImportMessage(null);
+                      setImportFile(null);
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    disabled={importLoading}
+                  >
+                    ปิด
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleImportExcel}
+                    className="px-4 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-semibold disabled:opacity-60"
+                    disabled={importLoading}
+                  >
+                    {importLoading ? 'กำลัง Import...' : 'Import'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
