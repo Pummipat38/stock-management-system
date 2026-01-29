@@ -1,1 +1,1 @@
-export { POST, runtime } from '../import/route';
+export { POST, runtime, maxDuration } from '../import/route';

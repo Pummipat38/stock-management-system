@@ -24,6 +24,7 @@ type DueRecordInput = {
 };
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 function normalizeText(value: unknown) {
   return String(value ?? '').trim();

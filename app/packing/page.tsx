@@ -563,7 +563,7 @@ function DueDeliveryPage() {
       return;
     }
 
-    const maxBytes = 4 * 1024 * 1024;
+    const maxBytes = 20 * 1024 * 1024;
     if (importFile.size > maxBytes) {
       setImportMessage(
         `Import ไม่สำเร็จ: ไฟล์ใหญ่เกินไป (${(importFile.size / (1024 * 1024)).toFixed(2)} MB). กรุณาแยกไฟล์ให้เล็กกว่า ${(maxBytes / (1024 * 1024)).toFixed(0)} MB แล้วลองใหม่`
@@ -574,23 +574,221 @@ function DueDeliveryPage() {
     setImportLoading(true);
     setImportMessage(null);
     try {
-      const form = new FormData();
-      form.append('file', importFile);
-      form.append('key', importKey.trim());
+      const XLSX = (await import('xlsx')) as typeof import('xlsx');
 
-      const response = await fetch('/api/due-records/import-excel', {
-        method: 'POST',
-        body: form,
-      });
+      const normalizeText = (value: unknown) => String(value ?? '').trim();
+      const normalizeHeader = (value: unknown) => normalizeText(value).replace(/\s+/g, ' ').trim().toLowerCase();
+      const normalizeDueDate = (value: unknown) => {
+        if (value instanceof Date) return value.toISOString().slice(0, 10);
+        return normalizeText(value);
+      };
 
-      const rawText = await response.text().catch(() => '');
-      const payload = rawText ? (JSON.parse(rawText) as any) : null;
-      if (!response.ok) {
-        const details = payload?.details || payload?.error || rawText || 'Import failed';
-        throw new Error(`[${response.status}] ${String(details).slice(0, 800)}`);
+      const scoreHeaderRow = (headers: unknown[]) => {
+        const required = ['customer', 'model', 'part', 'event', 'po', 'due'];
+        const joined = headers.map(normalizeHeader).join(' | ');
+        let score = 0;
+        for (const token of required) {
+          if (joined.includes(token)) score++;
+        }
+        return score;
+      };
+
+      const buildRowObject = (headers: string[], row: unknown[]) => {
+        const obj: Record<string, unknown> = {};
+        for (let i = 0; i < headers.length; i++) {
+          const key = headers[i] ?? `col_${i}`;
+          obj[key] = row[i];
+        }
+        return obj;
+      };
+
+      const pick = (row: Record<string, unknown>, aliases: string[]) => {
+        const normalizeKey = (value: string) =>
+          value
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '')
+            .replace(/[^a-z0-9\u0E00-\u0E7F]/g, '');
+
+        for (const key of aliases) {
+          if (Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+          const found = Object.keys(row).find(k => k.trim().toLowerCase() === key.trim().toLowerCase());
+          if (found) return row[found];
+
+          const aliasNorm = normalizeKey(key);
+          const foundLoose = Object.keys(row).find(k => {
+            const kNorm = normalizeKey(k);
+            if (!kNorm || !aliasNorm) return false;
+            return kNorm.includes(aliasNorm) || aliasNorm.includes(kNorm);
+          });
+          if (foundLoose) return row[foundLoose];
+        }
+        return undefined;
+      };
+
+      const inferDeliveryTypeFromSheetName = (name: string) => {
+        const lower = name.toLowerCase();
+        if (lower.includes('inter')) return 'international';
+        if (lower.includes('int')) return 'international';
+        if (lower.includes('dom')) return 'domestic';
+        if (lower.includes('thai')) return 'domestic';
+        return null;
+      };
+
+      setImportMessage('กำลังอ่านไฟล์ Excel...');
+      const buffer = await importFile.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+
+      type DueRecordInput = {
+        deliveryType?: string;
+        myobNumber?: string;
+        customer?: string;
+        countryOfOrigin?: string;
+        sampleRequestSheet?: string;
+        model?: string;
+        partNumber?: string;
+        partName?: string;
+        revisionLevel?: string;
+        revisionNumber?: string;
+        event?: string;
+        customerPo?: string;
+        quantity?: number;
+        dueDate?: string;
+        isDelivered?: boolean;
+        deliveredAt?: string | null;
+      };
+
+      const records: DueRecordInput[] = [];
+
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        if (!sheet) continue;
+
+        const inferredType = inferDeliveryTypeFromSheetName(sheetName);
+        if (!inferredType) continue;
+
+        const matrix = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: '',
+          raw: false,
+        }) as unknown[][];
+
+        let headerRowIndex = -1;
+        for (let i = 0; i < Math.min(40, matrix.length); i++) {
+          const score = scoreHeaderRow(matrix[i] ?? []);
+          if (score >= 4) {
+            headerRowIndex = i;
+            break;
+          }
+        }
+        if (headerRowIndex === -1) continue;
+
+        const headerRow = (matrix[headerRowIndex] ?? []).map(normalizeHeader);
+        const dataRows = matrix.slice(headerRowIndex + 1);
+
+        for (const rawRow of dataRows) {
+          const nonEmptyCount = (rawRow ?? []).filter((v: unknown) => normalizeText(v) !== '').length;
+          if (nonEmptyCount === 0) continue;
+
+          const row = buildRowObject(headerRow, rawRow ?? []);
+
+          const customer = normalizeText(pick(row, ['customer', 'CUSTOMER', 'Customer', 'ลูกค้า']));
+          const model = normalizeText(pick(row, ['model', 'MODEL', 'Model', 'โมเดล']));
+          const partNumber = normalizeText(
+            pick(row, ['partNumber', 'part_number', 'PART NO', 'PART NO.', 'PART NO ', 'Part No', 'part no', 'Part No.', 'part no.', 'พาร์ท', 'พาร์ทโน', 'PART NO.'])
+          );
+          const partName = normalizeText(pick(row, ['partName', 'part_name', 'PART NAME', 'Part Name', 'part name', 'ชื่อชิ้นส่วน', 'PART NAME ']));
+          const event = normalizeText(pick(row, ['event', 'EVENT', 'Event', 'อีเว้น', 'เหตุการณ์']));
+          const customerPo = normalizeText(pick(row, ['customerPo', 'customer_po', 'PO', 'PO NO', 'PO NO.', 'Customer PO', 'customer po', 'PO:', 'เลข PO', 'PO NO.']));
+          const dueDate = normalizeDueDate(pick(row, ['dueDate', 'due_date', 'DUE DATE', 'Due Date', 'due date', 'กำหนดส่ง', 'DUE']));
+          const quantityRaw = pick(row, ['quantity', 'QTY', 'qty', 'Quantity', 'จำนวน']);
+          const quantity = Number(String(quantityRaw ?? '').replace(/[^0-9.-]/g, '')) || 0;
+
+          const myobNumber = normalizeText(pick(row, ['myobNumber', 'myob_number', 'MYOB', 'MYOB NO', 'MYOB NO.', 'MYOB NUMBER', 'MYOB NUMBER ']));
+          const countryOfOrigin = normalizeText(pick(row, ['countryOfOrigin', 'country_of_origin', 'Country', 'COUNTRY', 'ประเทศ']));
+          const sampleRequestSheet = normalizeText(
+            pick(row, ['sampleRequestSheet', 'sample_request_sheet', 'SAMPLE REQUEST SHEET', 'Sample Request Sheet', 'เอกสารขอชิ้นงาน'])
+          );
+          const revisionLevel = normalizeText(pick(row, ['revisionLevel', 'revision_level', 'REV LEVEL', 'REV LEVEL.', 'REV', 'rev']));
+          const revisionNumber = normalizeText(pick(row, ['revisionNumber', 'revision_number', 'REV NO', 'REV NO.', 'REVISION', 'revision']));
+
+          const isDeliveredRaw = pick(row, ['isDelivered', 'is_delivered', 'DELIVERED', 'Delivered', 'ส่งแล้ว']);
+          const isDelivered =
+            String(isDeliveredRaw ?? '').toLowerCase() === 'true' ||
+            String(isDeliveredRaw ?? '').toLowerCase() === 'yes' ||
+            String(isDeliveredRaw ?? '').toLowerCase() === 'y' ||
+            String(isDeliveredRaw ?? '').toLowerCase() === 'ส่งแล้ว' ||
+            String(isDeliveredRaw ?? '') === '1';
+
+          const deliveredAtRaw = pick(row, ['deliveredAt', 'delivered_at', 'DELIVERED AT', 'Delivered At', 'วันที่ส่ง']);
+          const deliveredAt = deliveredAtRaw ? normalizeDueDate(deliveredAtRaw) : null;
+
+          records.push({
+            deliveryType: inferredType,
+            myobNumber,
+            customer,
+            countryOfOrigin,
+            sampleRequestSheet,
+            model,
+            partNumber,
+            partName,
+            revisionLevel,
+            revisionNumber,
+            event,
+            customerPo,
+            quantity,
+            dueDate,
+            isDelivered,
+            deliveredAt,
+          });
+        }
       }
 
-      const summary = `Import สำเร็จ: upserted=${payload?.upserted ?? 0}, skipped=${payload?.skipped ?? 0}, errors=${payload?.errorsCount ?? 0}`;
+      if (records.length === 0) {
+        throw new Error('ไม่พบข้อมูลที่นำเข้าได้ (ตรวจสอบชื่อชีทว่า Domestic/International และมีหัวตารางถูกต้อง)');
+      }
+
+      const chunkSize = 200;
+      const totalBatches = Math.ceil(records.length / chunkSize);
+      let totalUpserted = 0;
+      let totalSkipped = 0;
+      let totalErrors = 0;
+
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        const start = batchIndex * chunkSize;
+        const end = Math.min(start + chunkSize, records.length);
+        const batch = records.slice(start, end);
+        setImportMessage(`กำลังนำเข้า... ${batchIndex + 1}/${totalBatches} (${end}/${records.length})`);
+
+        const res = await fetch('/api/due-records/import-batch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ key: importKey.trim(), records: batch }),
+        });
+
+        const text = await res.text().catch(() => '');
+        let payload: any = null;
+        if (text) {
+          try {
+            payload = JSON.parse(text) as any;
+          } catch {
+            payload = null;
+          }
+        }
+
+        if (!res.ok) {
+          const details = payload?.details || payload?.error || text || 'Import failed';
+          throw new Error(`[${res.status}] ${String(details).slice(0, 800)}`);
+        }
+
+        totalUpserted += Number(payload?.upserted ?? 0);
+        totalSkipped += Number(payload?.skipped ?? 0);
+        totalErrors += Number(payload?.errorsCount ?? 0);
+      }
+
+      const summary = `Import สำเร็จ: records=${records.length}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}`;
       setImportMessage(summary);
       await loadDueRecords(undefined, true);
     } catch (error) {
