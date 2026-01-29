@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import * as XLSX from 'xlsx';
+import { randomUUID } from 'crypto';
 
 type DueRecordInput = {
   deliveryType?: string;
@@ -143,6 +145,37 @@ async function checkDueRecordsSchema() {
   return { missing };
 }
 
+type PreparedDueRecord = {
+  sheet: string;
+  row: number;
+  id: string;
+  dedupeKey: string;
+  deliveryType: string;
+  myobNumber: string;
+  customer: string;
+  countryOfOrigin: string;
+  sampleRequestSheet: string;
+  model: string;
+  partNumber: string;
+  partName: string;
+  revisionLevel: string;
+  revisionNumber: string;
+  event: string;
+  customerPo: string;
+  quantity: number;
+  dueDate: string;
+  isDelivered: boolean;
+  deliveredAt: Date | null;
+};
+
+function chunkArray<T>(arr: T[], chunkSize: number) {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    chunks.push(arr.slice(i, i + chunkSize));
+  }
+  return chunks;
+}
+
 export async function POST(request: Request) {
   try {
     const expected = process.env.DUE_IMPORT_KEY;
@@ -201,6 +234,7 @@ export async function POST(request: Request) {
     const errors: Array<{ sheet: string; row: number; message: string }> = [];
     const skippedSamples: Array<{ sheet: string; row: number; missing: string[] }> = [];
     const skippedMissingCounts: Record<string, number> = {};
+    const preparedRows: PreparedDueRecord[] = [];
     let totalRows = 0;
     let parsedRows = 0;
     let upserted = 0;
@@ -318,61 +352,112 @@ export async function POST(request: Request) {
           continue;
         }
 
-        parsedRows++;
-
         const dedupeKey = computeDedupeKey(record);
-        try {
-          const deliveredAtDate =
-            record.deliveredAt === null || record.deliveredAt === undefined || record.deliveredAt === ''
-              ? null
-              : new Date(record.deliveredAt);
+        const deliveredAtDate =
+          record.deliveredAt === null || record.deliveredAt === undefined || record.deliveredAt === ''
+            ? null
+            : new Date(record.deliveredAt);
 
-          await prisma.dueRecord.upsert({
-            where: { dedupeKey },
-            create: {
-              dedupeKey,
-              deliveryType: record.deliveryType ?? '',
-              myobNumber: record.myobNumber ?? '',
-              customer: record.customer ?? '',
-              countryOfOrigin: record.countryOfOrigin ?? '',
-              sampleRequestSheet: record.sampleRequestSheet ?? '',
-              model: record.model ?? '',
-              partNumber: record.partNumber ?? '',
-              partName: record.partName ?? '',
-              revisionLevel: record.revisionLevel ?? '',
-              revisionNumber: record.revisionNumber ?? '',
-              event: record.event ?? '',
-              customerPo: record.customerPo ?? '',
-              quantity: Number(record.quantity) || 0,
-              dueDate: record.dueDate ?? '',
-              isDelivered: Boolean(record.isDelivered),
-              deliveredAt: deliveredAtDate,
-            },
-            update: {
-              deliveryType: record.deliveryType ?? '',
-              myobNumber: record.myobNumber ?? '',
-              customer: record.customer ?? '',
-              countryOfOrigin: record.countryOfOrigin ?? '',
-              sampleRequestSheet: record.sampleRequestSheet ?? '',
-              model: record.model ?? '',
-              partNumber: record.partNumber ?? '',
-              partName: record.partName ?? '',
-              revisionLevel: record.revisionLevel ?? '',
-              revisionNumber: record.revisionNumber ?? '',
-              event: record.event ?? '',
-              customerPo: record.customerPo ?? '',
-              quantity: Number(record.quantity) || 0,
-              dueDate: record.dueDate ?? '',
-              isDelivered: Boolean(record.isDelivered),
-              deliveredAt: deliveredAtDate,
-            },
-          });
+        preparedRows.push({
+          sheet: sheetName,
+          row: rowNumber,
+          id: randomUUID(),
+          dedupeKey,
+          deliveryType: record.deliveryType ?? '',
+          myobNumber: record.myobNumber ?? '',
+          customer: record.customer ?? '',
+          countryOfOrigin: record.countryOfOrigin ?? '',
+          sampleRequestSheet: record.sampleRequestSheet ?? '',
+          model: record.model ?? '',
+          partNumber: record.partNumber ?? '',
+          partName: record.partName ?? '',
+          revisionLevel: record.revisionLevel ?? '',
+          revisionNumber: record.revisionNumber ?? '',
+          event: record.event ?? '',
+          customerPo: record.customerPo ?? '',
+          quantity: Number(record.quantity) || 0,
+          dueDate: record.dueDate ?? '',
+          isDelivered: Boolean(record.isDelivered),
+          deliveredAt: deliveredAtDate,
+        });
+      }
+    }
 
-          upserted++;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Unknown error';
-          errors.push({ sheet: sheetName, row: rowNumber, message: msg });
-        }
+    parsedRows = preparedRows.length;
+    const chunks = chunkArray(preparedRows, 200);
+    for (const chunk of chunks) {
+      if (chunk.length === 0) continue;
+      try {
+        const values = chunk.map(r =>
+          Prisma.sql`(
+            ${r.id},
+            ${r.dedupeKey},
+            ${r.deliveryType},
+            ${r.myobNumber},
+            ${r.customer},
+            ${r.countryOfOrigin},
+            ${r.sampleRequestSheet},
+            ${r.model},
+            ${r.partNumber},
+            ${r.partName},
+            ${r.revisionLevel},
+            ${r.revisionNumber},
+            ${r.event},
+            ${r.customerPo},
+            ${r.quantity},
+            ${r.dueDate},
+            ${r.isDelivered},
+            ${r.deliveredAt}
+          )`
+        );
+
+        const query = Prisma.sql`
+          insert into due_records (
+            id,
+            dedupe_key,
+            delivery_type,
+            myob_number,
+            customer,
+            country_of_origin,
+            sample_request_sheet,
+            model,
+            part_number,
+            part_name,
+            revision_level,
+            revision_number,
+            event,
+            customer_po,
+            quantity,
+            due_date,
+            is_delivered,
+            delivered_at
+          )
+          values ${Prisma.join(values)}
+          on conflict (dedupe_key) do update set
+            delivery_type = excluded.delivery_type,
+            myob_number = excluded.myob_number,
+            customer = excluded.customer,
+            country_of_origin = excluded.country_of_origin,
+            sample_request_sheet = excluded.sample_request_sheet,
+            model = excluded.model,
+            part_number = excluded.part_number,
+            part_name = excluded.part_name,
+            revision_level = excluded.revision_level,
+            revision_number = excluded.revision_number,
+            event = excluded.event,
+            customer_po = excluded.customer_po,
+            quantity = excluded.quantity,
+            due_date = excluded.due_date,
+            is_delivered = excluded.is_delivered,
+            delivered_at = excluded.delivered_at,
+            updated_at = now();
+        `;
+
+        const affected = await prisma.$executeRaw(query);
+        upserted += typeof affected === 'number' ? affected : 0;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        errors.push({ sheet: chunk[0].sheet, row: chunk[0].row, message: msg });
       }
     }
 
