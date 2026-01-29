@@ -578,7 +578,7 @@ function DueDeliveryPage() {
       form.append('file', importFile);
       form.append('key', importKey.trim());
 
-      const response = await fetch('/api/due-records/import', {
+      const response = await fetch('/api/due-records/import-excel', {
         method: 'POST',
         body: form,
       });
