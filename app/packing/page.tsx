@@ -698,6 +698,8 @@ function DueDeliveryPage() {
 
       type DueRecordInput = {
         deliveryType?: string;
+        sourceSheet?: string;
+        sourceRow?: number;
         myobNumber?: string;
         productRequestNo?: string;
         customer?: string;
@@ -755,11 +757,13 @@ function DueDeliveryPage() {
         const headerRow = (matrix[headerRowIndex] ?? []).map(normalizeHeader);
         const dataRows = matrix.slice(headerRowIndex + 1);
 
-        for (const rawRow of dataRows) {
+        for (let dataRowIndex = 0; dataRowIndex < dataRows.length; dataRowIndex++) {
+          const rawRow = dataRows[dataRowIndex];
           const nonEmptyCount = (rawRow ?? []).filter((v: unknown) => normalizeText(v) !== '').length;
           if (nonEmptyCount === 0) continue;
 
           const row = buildRowObject(headerRow, rawRow ?? []);
+          const sourceRow = headerRowIndex + 2 + dataRowIndex;
 
           const productRequestNo = normalizeText(
             pick(row, ['product request no.', 'product request no', 'productrequestno', 'product request', 'request no', 'product request no :'])
@@ -845,13 +849,14 @@ function DueDeliveryPage() {
                 !normalizeText(finalCustomerPo) ? 'PR/PO' : null,
                 !normalizeText(dueDate) ? 'DUE' : null,
               ].filter(Boolean);
-              clientSkipSamples.push(`sheet=${sheetName} missing=${fields.join(',')}`);
+              clientSkipSamples.push(`sheet=${sheetName} row=${sourceRow} missing=${fields.join(',')}`);
             }
-            continue;
           }
 
           records.push({
             deliveryType: inferredType,
+            sourceSheet: sheetName,
+            sourceRow,
             myobNumber,
             productRequestNo,
             customer,
@@ -925,8 +930,8 @@ function DueDeliveryPage() {
         totalErrors += Number(payload?.errorsCount ?? 0);
       }
 
-      const clientSkippedNote = clientSkipped > 0 ? `, clientSkipped=${clientSkipped}` : '';
-      const sampleNote = clientSkipSamples.length > 0 ? `\nตัวอย่างแถวที่ถูกข้าม: ${clientSkipSamples.join(' | ')}` : '';
+      const clientSkippedNote = clientSkipped > 0 ? `, warnings=${clientSkipped}` : '';
+      const sampleNote = clientSkipSamples.length > 0 ? `\nตัวอย่างแถวที่ข้อมูลไม่ครบ: ${clientSkipSamples.join(' | ')}` : '';
       const summary = `Import สำเร็จ: records=${records.length}${clientSkippedNote}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}${sampleNote}`;
       setImportMessage(summary);
       await loadDueRecords(undefined, true);

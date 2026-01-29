@@ -8,6 +8,8 @@ export const maxDuration = 60;
 
 type DueRecordInput = {
   deliveryType?: string;
+  sourceSheet?: string;
+  sourceRow?: number;
   myobNumber?: string;
   productRequestNo?: string;
   customer?: string;
@@ -53,6 +55,15 @@ function computeDedupeKey(input: DueRecordInput) {
     normalizeText(input.customerPo).toLowerCase(),
     normalizeText(input.dueDate),
     String(Number(input.quantity) || 0),
+  ].join('|');
+}
+
+function computeFallbackDedupeKey(input: DueRecordInput) {
+  return [
+    'fallback',
+    normalizeText(input.deliveryType).toLowerCase(),
+    normalizeText(input.sourceSheet).toLowerCase(),
+    String(Number(input.sourceRow) || 0),
   ].join('|');
 }
 
@@ -123,6 +134,8 @@ export async function POST(request: Request) {
       const deliveryType = normalizeText(item.deliveryType);
       const myobNumber = normalizeText(item.myobNumber);
       const productRequestNo = normalizeText(item.productRequestNo);
+      const sourceSheet = normalizeText(item.sourceSheet);
+      const sourceRow = Number(item.sourceRow) || 0;
       const customer = normalizeText(item.customer);
       const countryOfOrigin = normalizeText(item.countryOfOrigin);
       const sampleRequestSheet = normalizeText(item.sampleRequestSheet);
@@ -145,26 +158,34 @@ export async function POST(request: Request) {
       const dueRkToCustomer = normalizeText(item.dueRkToCustomer);
       const quantity = Number(item.quantity) || 0;
 
-      if (!deliveryType || !customer || !model || !partNumber || !partName || !event || !customerPo || !dueDate) {
+      if (!deliveryType) {
         skipped++;
         continue;
       }
 
-      const dedupeKey = computeDedupeKey({
-        ...item,
-        deliveryType,
-        myobNumber,
-        customer,
-        model,
-        partNumber,
-        partName,
-        revisionLevel,
-        revisionNumber,
-        event,
-        customerPo,
-        dueDate,
-        quantity,
-      });
+      const missingCore = !customer || !model || !partNumber || !partName || !event || !customerPo || !dueDate;
+      const dedupeKey = missingCore
+        ? computeFallbackDedupeKey({
+            ...item,
+            deliveryType,
+            sourceSheet,
+            sourceRow,
+          })
+        : computeDedupeKey({
+            ...item,
+            deliveryType,
+            myobNumber,
+            customer,
+            model,
+            partNumber,
+            partName,
+            revisionLevel,
+            revisionNumber,
+            event,
+            customerPo,
+            dueDate,
+            quantity,
+          });
 
       const deliveredAt =
         item.deliveredAt === null || item.deliveredAt === undefined || item.deliveredAt === ''
