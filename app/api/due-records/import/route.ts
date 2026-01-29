@@ -92,6 +92,42 @@ function buildRowObject(headers: string[], row: unknown[]) {
   return obj;
 }
 
+async function checkDueRecordsSchema() {
+  const expectedColumns = [
+    'id',
+    'dedupe_key',
+    'delivery_type',
+    'myob_number',
+    'customer',
+    'country_of_origin',
+    'sample_request_sheet',
+    'model',
+    'part_number',
+    'part_name',
+    'revision_level',
+    'revision_number',
+    'event',
+    'customer_po',
+    'quantity',
+    'due_date',
+    'is_delivered',
+    'delivered_at',
+    'created_at',
+    'updated_at',
+  ];
+
+  const rows = await prisma.$queryRaw<{ column_name: string }[]>`
+    select column_name
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'due_records'
+  `;
+
+  const existing = new Set((rows ?? []).map(r => String(r.column_name).toLowerCase()));
+  const missing = expectedColumns.filter(c => !existing.has(c));
+  return { missing };
+}
+
 export async function POST(request: Request) {
   try {
     const expected = process.env.DUE_IMPORT_KEY;
@@ -111,6 +147,37 @@ export async function POST(request: Request) {
     const file = form.get('file');
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
+    }
+
+    try {
+      const { missing } = await checkDueRecordsSchema();
+      if (missing.length > 0) {
+        const sql = missing
+          .filter(col => col !== 'id' && col !== 'dedupe_key')
+          .map(col => {
+            if (col === 'is_delivered') return `alter table due_records add column if not exists is_delivered boolean not null default false;`;
+            if (col === 'quantity') return `alter table due_records add column if not exists quantity integer not null default 0;`;
+            if (col === 'delivered_at') return `alter table due_records add column if not exists delivered_at timestamptz null;`;
+            if (col === 'created_at' || col === 'updated_at') return `alter table due_records add column if not exists ${col} timestamptz not null default now();`;
+            return `alter table due_records add column if not exists ${col} text not null default '';`;
+          })
+          .join('\n');
+
+        return NextResponse.json(
+          {
+            error: 'Supabase table due_records is missing columns',
+            missing,
+            sql,
+          },
+          { status: 500 }
+        );
+      }
+    } catch (schemaError) {
+      const msg = schemaError instanceof Error ? schemaError.message : String(schemaError);
+      return NextResponse.json(
+        { error: 'Failed to validate due_records schema', details: msg },
+        { status: 500 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
