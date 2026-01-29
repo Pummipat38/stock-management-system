@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StockItem } from '@/types/stock';
 
 interface DueFormData {
@@ -525,6 +525,53 @@ function DueDeliveryPage() {
   });
   const [isDeliverFormOpen, setIsDeliverFormOpen] = useState(false);
   const [isStockInsufficient, setIsStockInsufficient] = useState(false);
+
+  const dueTableXRef = useRef<HTMLDivElement | null>(null);
+  const dueBottomScrollRef = useRef<HTMLDivElement | null>(null);
+  const dueXSyncingRef = useRef(false);
+  const [dueTableScrollWidth, setDueTableScrollWidth] = useState(0);
+
+  const syncDueHorizontalScroll = (source: 'table' | 'bar') => {
+    if (dueXSyncingRef.current) return;
+    const table = dueTableXRef.current;
+    const bar = dueBottomScrollRef.current;
+    if (!table || !bar) return;
+
+    dueXSyncingRef.current = true;
+    const next = source === 'table' ? table.scrollLeft : bar.scrollLeft;
+    if (source === 'table') {
+      bar.scrollLeft = next;
+    } else {
+      table.scrollLeft = next;
+    }
+    window.setTimeout(() => {
+      dueXSyncingRef.current = false;
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (view !== 'list') return;
+    const el = dueTableXRef.current;
+    if (!el) return;
+
+    const update = () => {
+      setDueTableScrollWidth(el.scrollWidth);
+    };
+
+    update();
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => update());
+      ro.observe(el);
+    }
+
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      if (ro) ro.disconnect();
+    };
+  }, [view, isSelectMode, selectedType, listMode, records.length]);
 
   const loadDueRecords = async (signal?: AbortSignal, bypassCache = false) => {
     const url = bypassCache ? `/api/due-records?ts=${Date.now()}` : '/api/due-records';
@@ -1432,7 +1479,7 @@ function DueDeliveryPage() {
         </div>
 
         {view === 'list' ? (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-20">
             <div className="sticky top-0 z-30 space-y-3">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -1516,35 +1563,39 @@ function DueDeliveryPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-5 py-4">
+              <div
+                ref={dueTableXRef}
+                onScroll={() => syncDueHorizontalScroll('table')}
+                className="overflow-x-auto"
+              >
+                <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-3 py-2">
                   <div
-                    className={`grid min-w-[2200px] ${
+                    className={`grid min-w-[2400px] ${
                       isSelectMode
-                        ? 'grid-cols-[70px_220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
-                        : 'grid-cols-[220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
-                    } items-stretch gap-0 text-white/85 text-xl uppercase tracking-wide text-center w-full whitespace-nowrap`}
+                        ? 'grid-cols-[60px_170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
+                        : 'grid-cols-[170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
+                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full`}
                   >
-                    {isSelectMode && <span className="flex items-center justify-center">เลือก</span>}
-                    <span className="flex items-center justify-center">Customer</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Country</span>
-                    <span className="flex items-center justify-center border-l border-white/40">SRS</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Type</span>
-                    <span className="flex items-center justify-center border-l border-white/40">MYOB</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Model</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Part No</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Part Name</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Rev Level</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Rev No</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Event</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Customer PO</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Qty</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Due Date</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Delivered</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Delivered At</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Created</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Updated</span>
-                    <span className="flex items-center justify-center border-l border-white/40">Action</span>
+                    {isSelectMode && <span className="px-2 py-1 flex items-center justify-center border-white/40">เลือก</span>}
+                    <span className="px-2 py-1 flex items-center justify-center">Customer</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Country</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">SRS</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Type</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">MYOB</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Model</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Part No</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Part Name</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Rev L</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Rev N</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Event</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">PO</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Qty</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Due</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Del</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Del At</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Created</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Updated</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/40">Action</span>
                   </div>
                 </div>
                 <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
@@ -1556,17 +1607,17 @@ function DueDeliveryPage() {
                   </div>
                 ) : (
                   filteredByType.map(record => (
-                    <div key={record.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-5">
+                    <div key={record.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-2">
                       <div className="flex flex-col gap-4">
                         <div
-                          className={`grid min-w-[2200px] ${
+                          className={`grid min-w-[2400px] ${
                             isSelectMode
-                              ? 'grid-cols-[70px_220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
-                              : 'grid-cols-[220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
-                          } items-stretch gap-0 text-white/90 text-lg w-full whitespace-nowrap`}
+                              ? 'grid-cols-[60px_170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
+                              : 'grid-cols-[170px_110px_140px_90px_90px_90px_140px_220px_80px_80px_140px_170px_70px_110px_90px_120px_120px_120px_120px_140px]'
+                          } items-stretch gap-0 text-white/90 text-sm w-full`}
                         >
                           {isSelectMode && (
-                            <div className="flex items-center justify-center">
+                            <div className="flex items-center justify-center border-white/30">
                               <input
                                 type="checkbox"
                                 checked={selectedIds.includes(record.id)}
@@ -1575,29 +1626,29 @@ function DueDeliveryPage() {
                               />
                             </div>
                           )}
-                          <span className="flex items-center justify-center text-white font-semibold text-xl">{record.customer}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.countryOfOrigin || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.sampleRequestSheet || '-'}</span>
-                          <div className="flex items-center justify-center border-l border-white/30">
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.customer}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.countryOfOrigin || '-'}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">
                             <span className="text-base px-3 py-1.5 rounded-full bg-white/20 text-white/85 w-fit">
                               {record.deliveryType === 'domestic' ? 'Domestic' : 'International'}
                             </span>
                           </div>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.myobNumber || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.model}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.partNumber}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.partName}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.revisionLevel || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.revisionNumber || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.event || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.customerPo || '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.quantity} PCS</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{formatDueDate(record.dueDate)}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.isDelivered ? 'YES' : 'NO'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</span>
-                          <span className="flex items-center justify-center border-l border-white/30">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</span>
-                          <div className="flex items-center justify-center border-l border-white/30">
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.myobNumber || '-'}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.model}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.partNumber}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.partName}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.revisionLevel || '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.revisionNumber || '-'}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.event || '-'}</div>
+                          <div className="px-2 py-1 flex items-center border-l border-white/30 whitespace-normal break-words">{record.customerPo || '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.quantity} PCS</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{formatDueDate(record.dueDate)}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.isDelivered ? 'YES' : 'NO'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</div>
+                          <div className="px-2 py-1 flex items-center justify-center border-l border-white/30">
                             {listMode === 'pending' ? (
                               <button
                                 onClick={() => openDeliverForm(record)}
@@ -1619,6 +1670,17 @@ function DueDeliveryPage() {
               </div>
               </div>
             </div>
+
+            <div className="fixed left-0 right-0 bottom-0 z-40 px-8 pb-6">
+              <div
+                ref={dueBottomScrollRef}
+                onScroll={() => syncDueHorizontalScroll('bar')}
+                className="h-6 overflow-x-auto overflow-y-hidden rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm"
+              >
+                <div style={{ width: Math.max(dueTableScrollWidth, 0), height: 1 }} />
+              </div>
+            </div>
+
             {isDeliverTypeOpen && deliverRecord && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
                 <div className="w-full max-w-lg rounded-2xl border border-white/30 bg-white/15 p-6 text-white shadow-2xl backdrop-blur-sm">
