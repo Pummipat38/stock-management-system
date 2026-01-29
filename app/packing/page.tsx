@@ -1516,26 +1516,38 @@ function DueDeliveryPage() {
                 </div>
               </div>
 
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-5 py-4 overflow-x-auto">
-                <div
-                  className={`grid min-w-[980px] ${
-                    isSelectMode
-                      ? 'grid-cols-[0.4fr_1.8fr_0.7fr_0.7fr_1.6fr_1.1fr_0.6fr_0.9fr_0.8fr]'
-                      : 'grid-cols-[1.8fr_0.7fr_0.7fr_1.6fr_1.1fr_0.6fr_0.9fr_0.8fr]'
-                  } items-stretch gap-0 text-white/85 text-xl uppercase tracking-wide text-center w-full whitespace-nowrap`}
-                >
-                  {isSelectMode && <span className="truncate flex items-center justify-center">เลือก</span>}
-                  <span className="truncate flex items-center justify-center">Customer</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Type</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Model</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Part No</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Event</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Qty</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Due Date</span>
-                  <span className="truncate flex items-center justify-center border-l border-white/40">Status</span>
+              <div className="overflow-x-auto">
+                <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-5 py-4">
+                  <div
+                    className={`grid min-w-[2200px] ${
+                      isSelectMode
+                        ? 'grid-cols-[70px_220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
+                        : 'grid-cols-[220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
+                    } items-stretch gap-0 text-white/85 text-xl uppercase tracking-wide text-center w-full whitespace-nowrap`}
+                  >
+                    {isSelectMode && <span className="flex items-center justify-center">เลือก</span>}
+                    <span className="flex items-center justify-center">Customer</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Country</span>
+                    <span className="flex items-center justify-center border-l border-white/40">SRS</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Type</span>
+                    <span className="flex items-center justify-center border-l border-white/40">MYOB</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Model</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Part No</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Part Name</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Rev Level</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Rev No</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Event</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Customer PO</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Qty</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Due Date</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Delivered</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Delivered At</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Created</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Updated</span>
+                    <span className="flex items-center justify-center border-l border-white/40">Action</span>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto pr-1 overflow-x-auto">
+                <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
                 {filteredByType.length === 0 ? (
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
                     <div className="text-5xl mb-4">📄</div>
@@ -1544,13 +1556,13 @@ function DueDeliveryPage() {
                   </div>
                 ) : (
                   filteredByType.map(record => (
-                    <div key={record.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-5 min-w-[980px]">
+                    <div key={record.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-5">
                       <div className="flex flex-col gap-4">
                         <div
-                          className={`grid min-w-[980px] ${
+                          className={`grid min-w-[2200px] ${
                             isSelectMode
-                              ? 'grid-cols-[0.4fr_1.8fr_0.7fr_0.7fr_1.6fr_1.1fr_0.6fr_0.9fr_0.8fr]'
-                              : 'grid-cols-[1.8fr_0.7fr_0.7fr_1.6fr_1.1fr_0.6fr_0.9fr_0.8fr]'
+                              ? 'grid-cols-[70px_220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
+                              : 'grid-cols-[220px_140px_160px_120px_140px_140px_140px_180px_240px_110px_110px_160px_220px_90px_120px_120px_150px_170px_170px_160px]'
                           } items-stretch gap-0 text-white/90 text-lg w-full whitespace-nowrap`}
                         >
                           {isSelectMode && (
@@ -1563,42 +1575,28 @@ function DueDeliveryPage() {
                               />
                             </div>
                           )}
-                          <div className="min-w-0 flex flex-col justify-center">
-                            <div className="text-white font-semibold text-xl truncate whitespace-nowrap">{record.customer}</div>
-                            <div className="text-base text-white/70 truncate whitespace-nowrap">
-                              <span className="inline-flex items-center gap-2">
-                                {record.countryOfOrigin ? (
-                                  <img
-                                    src={getCountryFlagUrl(record.countryOfOrigin)}
-                                    alt={record.countryOfOrigin}
-                                    className="h-[18px] w-[24px] rounded-sm"
-                                  />
-                                ) : (
-                                  <span className="text-lg">🏳️</span>
-                                )}
-                                {record.countryOfOrigin || '-'} • {record.sampleRequestSheet || '-'}
-                              </span>
-                            </div>
-                            <div className="text-sm text-white/60 truncate whitespace-nowrap">PO: {record.customerPo || '-'}</div>
-                          </div>
+                          <span className="flex items-center justify-center text-white font-semibold text-xl">{record.customer}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.countryOfOrigin || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.sampleRequestSheet || '-'}</span>
                           <div className="flex items-center justify-center border-l border-white/30">
                             <span className="text-base px-3 py-1.5 rounded-full bg-white/20 text-white/85 w-fit">
                               {record.deliveryType === 'domestic' ? 'Domestic' : 'International'}
                             </span>
                           </div>
-                          <span className="truncate text-center flex items-center justify-center border-l border-white/30">{record.model}</span>
-                          <div className="min-w-0 flex flex-col items-center justify-center border-l border-white/30">
-                            <div className="truncate text-center">{record.partNumber}</div>
-                            <div className="text-base text-white/80 truncate text-center">{record.partName}</div>
-                            <div className="text-sm text-white/60 truncate text-center">Rev {record.revisionLevel}-{record.revisionNumber}</div>
-                          </div>
-                          <span className="truncate text-center flex items-center justify-center border-l border-white/30">{record.event || '-'}</span>
-                          <span className="truncate text-center flex items-center justify-center border-l border-white/30">
-                            {record.quantity} PCS
-                          </span>
-                          <span className="truncate text-center flex items-center justify-center border-l border-white/30">
-                            {formatDueDate(record.dueDate)}
-                          </span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.myobNumber || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.model}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.partNumber}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.partName}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.revisionLevel || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.revisionNumber || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.event || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.customerPo || '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.quantity} PCS</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{formatDueDate(record.dueDate)}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.isDelivered ? 'YES' : 'NO'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</span>
+                          <span className="flex items-center justify-center border-l border-white/30">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</span>
                           <div className="flex items-center justify-center border-l border-white/30">
                             {listMode === 'pending' ? (
                               <button
@@ -1618,6 +1616,7 @@ function DueDeliveryPage() {
                     </div>
                   ))
                 )}
+              </div>
               </div>
             </div>
             {isDeliverTypeOpen && deliverRecord && (
