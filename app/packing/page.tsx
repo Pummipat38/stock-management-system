@@ -895,6 +895,7 @@ function DueDeliveryPage() {
       let totalUpserted = 0;
       let totalSkipped = 0;
       let totalErrors = 0;
+      const serverErrorSamples: string[] = [];
 
       for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
         const start = batchIndex * chunkSize;
@@ -928,11 +929,24 @@ function DueDeliveryPage() {
         totalUpserted += Number(payload?.upserted ?? 0);
         totalSkipped += Number(payload?.skipped ?? 0);
         totalErrors += Number(payload?.errorsCount ?? 0);
+
+        if (Array.isArray(payload?.errors)) {
+          for (const e of payload.errors) {
+            if (serverErrorSamples.length >= 5) break;
+            const batchNo = e?.batch ?? batchIndex + 1;
+            const msg = String(e?.message ?? '').slice(0, 200);
+            if (msg) serverErrorSamples.push(`batch=${batchNo} ${msg}`);
+          }
+        }
       }
 
       const clientSkippedNote = clientSkipped > 0 ? `, warnings=${clientSkipped}` : '';
       const sampleNote = clientSkipSamples.length > 0 ? `\nตัวอย่างแถวที่ข้อมูลไม่ครบ: ${clientSkipSamples.join(' | ')}` : '';
-      const summary = `Import สำเร็จ: records=${records.length}${clientSkippedNote}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}${sampleNote}`;
+      const serverErrorNote =
+        serverErrorSamples.length > 0
+          ? `\nรายละเอียด error จาก server: ${serverErrorSamples.join(' | ')}`
+          : '';
+      const summary = `Import สำเร็จ: records=${records.length}${clientSkippedNote}, upserted=${totalUpserted}, skipped=${totalSkipped}, errors=${totalErrors}${sampleNote}${serverErrorNote}`;
       setImportMessage(summary);
       await loadDueRecords(undefined, true);
     } catch (error) {

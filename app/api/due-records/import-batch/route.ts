@@ -226,14 +226,22 @@ export async function POST(request: Request) {
 
     const chunks = chunkArray(prepared, 200);
     let upserted = 0;
+    let deduped = 0;
     const errors: Array<{ batch: number; message: string }> = [];
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       if (chunk.length === 0) continue;
 
+      const uniqueMap = new Map<string, PreparedDueRecord>();
+      for (const row of chunk) uniqueMap.set(row.dedupeKey, row);
+      const uniqueChunk = Array.from(uniqueMap.values());
+      deduped += chunk.length - uniqueChunk.length;
+
+      if (uniqueChunk.length === 0) continue;
+
       try {
-        const values = chunk.map(r =>
+        const values = uniqueChunk.map(r =>
           Prisma.sql`(
             ${r.id},
             ${r.dedupeKey},
@@ -341,6 +349,7 @@ export async function POST(request: Request) {
       received: records.length,
       accepted: prepared.length,
       skipped,
+      deduped,
       upserted,
       errorsCount: errors.length,
       errors: errors.slice(0, 20),
