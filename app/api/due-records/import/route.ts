@@ -50,10 +50,25 @@ function computeDedupeKey(input: DueRecordInput) {
 }
 
 function pick(row: Record<string, unknown>, aliases: string[]) {
+  const normalizeKey = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9\u0E00-\u0E7F]/g, '');
+
   for (const key of aliases) {
     if (Object.prototype.hasOwnProperty.call(row, key)) return row[key];
     const found = Object.keys(row).find(k => k.trim().toLowerCase() === key.trim().toLowerCase());
     if (found) return row[found];
+
+    const aliasNorm = normalizeKey(key);
+    const foundLoose = Object.keys(row).find(k => {
+      const kNorm = normalizeKey(k);
+      if (!kNorm || !aliasNorm) return false;
+      return kNorm.includes(aliasNorm) || aliasNorm.includes(kNorm);
+    });
+    if (foundLoose) return row[foundLoose];
   }
   return undefined;
 }
@@ -184,6 +199,8 @@ export async function POST(request: Request) {
     const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
 
     const errors: Array<{ sheet: string; row: number; message: string }> = [];
+    const skippedSamples: Array<{ sheet: string; row: number; missing: string[] }> = [];
+    const skippedMissingCounts: Record<string, number> = {};
     let totalRows = 0;
     let parsedRows = 0;
     let upserted = 0;
@@ -281,8 +298,23 @@ export async function POST(request: Request) {
           deliveredAt,
         };
 
-        if (!record.deliveryType || !record.customer || !record.model || !record.partNumber || !record.partName || !record.event || !record.customerPo || !record.dueDate) {
+        const missingFields: string[] = [];
+        if (!record.deliveryType) missingFields.push('deliveryType');
+        if (!record.customer) missingFields.push('customer');
+        if (!record.model) missingFields.push('model');
+        if (!record.partNumber) missingFields.push('partNumber');
+        if (!record.partName) missingFields.push('partName');
+        if (!record.event) missingFields.push('event');
+        if (!record.customerPo) missingFields.push('customerPo');
+        if (!record.dueDate) missingFields.push('dueDate');
+
+        if (missingFields.length > 0) {
           skipped++;
+          const key = missingFields.join(',');
+          skippedMissingCounts[key] = (skippedMissingCounts[key] ?? 0) + 1;
+          if (skippedSamples.length < 20) {
+            skippedSamples.push({ sheet: sheetName, row: rowNumber, missing: missingFields });
+          }
           continue;
         }
 
@@ -299,7 +331,7 @@ export async function POST(request: Request) {
             where: { dedupeKey },
             create: {
               dedupeKey,
-              deliveryType: record.deliveryType,
+              deliveryType: record.deliveryType ?? '',
               myobNumber: record.myobNumber ?? '',
               customer: record.customer ?? '',
               countryOfOrigin: record.countryOfOrigin ?? '',
@@ -317,7 +349,7 @@ export async function POST(request: Request) {
               deliveredAt: deliveredAtDate,
             },
             update: {
-              deliveryType: record.deliveryType,
+              deliveryType: record.deliveryType ?? '',
               myobNumber: record.myobNumber ?? '',
               customer: record.customer ?? '',
               countryOfOrigin: record.countryOfOrigin ?? '',
@@ -350,6 +382,8 @@ export async function POST(request: Request) {
       parsedRows,
       upserted,
       skipped,
+      skippedMissingCounts,
+      skippedSamples,
       errorsCount: errors.length,
       errors: errors.slice(0, 50),
     });
