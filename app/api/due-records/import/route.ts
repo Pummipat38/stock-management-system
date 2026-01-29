@@ -197,6 +197,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
     }
 
+    const maxBytes = 4 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      return NextResponse.json(
+        {
+          error: 'File too large',
+          maxBytes,
+          size: file.size,
+        },
+        { status: 413 }
+      );
+    }
+
     try {
       const { missing } = await checkDueRecordsSchema();
       if (missing.length > 0) {

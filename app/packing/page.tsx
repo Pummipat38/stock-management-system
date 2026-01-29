@@ -563,6 +563,14 @@ function DueDeliveryPage() {
       return;
     }
 
+    const maxBytes = 4 * 1024 * 1024;
+    if (importFile.size > maxBytes) {
+      setImportMessage(
+        `Import ไม่สำเร็จ: ไฟล์ใหญ่เกินไป (${(importFile.size / (1024 * 1024)).toFixed(2)} MB). กรุณาแยกไฟล์ให้เล็กกว่า ${(maxBytes / (1024 * 1024)).toFixed(0)} MB แล้วลองใหม่`
+      );
+      return;
+    }
+
     setImportLoading(true);
     setImportMessage(null);
     try {
@@ -575,10 +583,11 @@ function DueDeliveryPage() {
         body: form,
       });
 
-      const payload = await response.json().catch(() => null);
+      const rawText = await response.text().catch(() => '');
+      const payload = rawText ? (JSON.parse(rawText) as any) : null;
       if (!response.ok) {
-        const details = payload?.details || payload?.error || 'Import failed';
-        throw new Error(details);
+        const details = payload?.details || payload?.error || rawText || 'Import failed';
+        throw new Error(`[${response.status}] ${String(details).slice(0, 800)}`);
       }
 
       const summary = `Import สำเร็จ: upserted=${payload?.upserted ?? 0}, skipped=${payload?.skipped ?? 0}, errors=${payload?.errorsCount ?? 0}`;
