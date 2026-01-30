@@ -1716,38 +1716,38 @@ function DueDeliveryPage() {
               <div
                 ref={dueTableXRef}
                 onScroll={() => syncDueHorizontalScroll('table')}
-                className="overflow-x-auto"
+                className="overflow-x-scroll pb-2"
               >
                 <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
                   <div
-                    className={`grid min-w-[3200px] ${
+                    className={`grid min-w-[3600px] ${
                       isSelectMode
-                        ? 'grid-cols-[60px_180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
-                        : 'grid-cols-[180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
-                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full whitespace-nowrap border border-white/20`}
+                        ? 'grid-cols-[60px_220px_180px_260px_160px_180px_320px_110px_140px_160px_180px_180px_140px_180px_140px_170px_150px_150px_160px_160px_130px_150px]'
+                        : 'grid-cols-[220px_180px_260px_160px_180px_320px_110px_140px_160px_180px_180px_140px_180px_140px_170px_150px_150px_160px_160px_130px_150px]'
+                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full border border-white/20`}
                   >
                     {isSelectMode && <span className="px-2 py-1 flex items-center justify-center">เลือก</span>}
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Customer</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Product Request No.</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Sample Produce Request Sheet</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Model</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Part No.</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Part Name</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DWG REV</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DWG NO.</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Event</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Supplier</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Q'TY supplier to RK</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Q'TY to Customer</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Due RK to Customer</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">MYOB</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">PR / PO</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">เลขที่ใบเบิก</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">PUCHASE</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Invoice In</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Invoice Out</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DATE OUT</span>
-                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Action</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Customer</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Product Request No.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Sample Produce Request Sheet</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Model</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part No.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part Name</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG REV</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG NO.</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Event</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Supplier</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY supplier to RK</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PR / PO</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">เลขที่ใบเบิก</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PUCHASE</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice In</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice Out</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DATE OUT</span>
+                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Action</span>
                   </div>
                 </div>
 
@@ -1766,10 +1766,10 @@ function DueDeliveryPage() {
                           className={index === 0 ? '' : 'border-t border-white/20'}
                         >
                           <div
-                            className={`grid min-w-[3200px] ${
+                            className={`grid min-w-[3600px] ${
                               isSelectMode
-                                ? 'grid-cols-[60px_180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
-                                : 'grid-cols-[180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
+                                ? 'grid-cols-[60px_220px_180px_260px_160px_180px_320px_110px_140px_160px_180px_180px_140px_180px_140px_170px_150px_150px_160px_160px_130px_150px]'
+                                : 'grid-cols-[220px_180px_260px_160px_180px_320px_110px_140px_160px_180px_180px_140px_180px_140px_170px_150px_150px_160px_160px_130px_150px]'
                             } items-stretch gap-0 text-white/90 text-xs leading-tight w-full border-l border-r border-white/20`}
                           >
                             {isSelectMode && (
@@ -1829,7 +1829,7 @@ function DueDeliveryPage() {
               <div
                 ref={dueBottomScrollRef}
                 onScroll={() => syncDueHorizontalScroll('bar')}
-                className="h-6 overflow-x-auto overflow-y-hidden rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm"
+                className="h-5 overflow-x-scroll overflow-y-hidden rounded-xl border border-white/40 bg-white/20 backdrop-blur-sm shadow-lg"
               >
                 <div style={{ width: Math.max(dueTableScrollWidth, 0), height: 1 }} />
               </div>
