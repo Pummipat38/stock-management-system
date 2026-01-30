@@ -1450,16 +1450,16 @@ function DueDeliveryPage() {
 
   if (view === 'menu') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-500 via-pink-400 to-rose-300 relative overflow-hidden">
+      <div className="min-h-screen bg-black relative overflow-hidden">
         <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
         <div className="absolute inset-0">
-          <div className="absolute top-12 left-16 w-80 h-80 bg-rose-400/40 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-24 w-96 h-96 bg-pink-300/55 rounded-full blur-3xl animate-pulse delay-700"></div>
+          <div className="absolute top-12 left-16 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse delay-700"></div>
         </div>
 
         <div className="container mx-auto px-8 py-8 relative z-10 max-w-[95%] min-h-screen flex flex-col">
           <div className="mb-8 relative w-full">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-rose-100 to-rose-200 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-extrabold text-white">
               🚚 DUE DELIVERY
               <div className="text-2xl font-normal text-white/70 mt-2">
                 (บันทึกกำหนดส่งงาน)
@@ -1611,16 +1611,16 @@ function DueDeliveryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-500 via-pink-400 to-rose-300 relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden">
       <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
       <div className="absolute inset-0">
-        <div className="absolute top-12 left-16 w-80 h-80 bg-rose-400/40 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-24 w-96 h-96 bg-pink-300/55 rounded-full blur-3xl animate-pulse delay-700"></div>
+        <div className="absolute top-12 left-16 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse delay-700"></div>
       </div>
 
       <div className="container mx-auto px-8 py-8 relative z-10 max-w-[95%]">
         <div className="mb-8 relative">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-rose-100 to-rose-200 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-extrabold text-white">
             🚚 DUE DELIVERY
             <div className="text-2xl font-normal text-white/70 mt-2">
               (บันทึกกำหนดส่งงาน)
@@ -1739,11 +1739,11 @@ function DueDeliveryPage() {
               >
                 <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
                   <div
-                    className={`grid min-w-[3200px] ${
+                    className={`grid min-w-[3000px] ${
                       isSelectMode
-                        ? 'grid-cols-[60px_320px_150px_220px_140px_160px_280px_90px_110px_140px_140px_160px_120px_150px_120px_150px_140px_120px_120px_120px_120px_140px]'
-                        : 'grid-cols-[320px_150px_220px_140px_160px_280px_90px_110px_140px_140px_160px_120px_150px_120px_150px_140px_120px_120px_120px_120px_140px]'
-                    } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full border border-white/20 min-h-[64px]`}
+                        ? 'grid-cols-[60px_280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                        : 'grid-cols-[280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                    } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full border border-white/20 min-h-[64px]`}
                   >
                     {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
                     <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Customer</span>
@@ -1785,11 +1785,11 @@ function DueDeliveryPage() {
                           className={index === 0 ? '' : 'border-t border-white/20'}
                         >
                           <div
-                            className={`grid min-w-[3200px] ${
+                            className={`grid min-w-[3000px] ${
                               isSelectMode
-                                ? 'grid-cols-[60px_320px_150px_220px_140px_160px_280px_90px_110px_140px_140px_160px_120px_150px_120px_150px_140px_120px_120px_120px_120px_140px]'
-                                : 'grid-cols-[320px_150px_220px_140px_160px_280px_90px_110px_140px_140px_160px_120px_150px_120px_150px_140px_120px_120px_120px_120px_140px]'
-                            } items-stretch gap-0 text-white/90 text-xs leading-tight w-full border-l border-r border-white/20`}
+                                ? 'grid-cols-[60px_280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                                : 'grid-cols-[280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                            } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full border-l border-r border-white/20`}
                           >
                             {isSelectMode && (
                               <div className="flex items-center justify-center">
@@ -1801,7 +1801,7 @@ function DueDeliveryPage() {
                                 />
                               </div>
                             )}
-                            <div className="px-2 py-0 flex items-center gap-2 border-l border-white/20 whitespace-normal break-words">
+                            <div className="px-2 py-0 flex items-center justify-center text-center gap-2 border-l border-white/20 whitespace-normal break-words">
                               {(() => {
                                 const flagCountry = record.countryOfOrigin || (record.deliveryType === 'domestic' ? 'Thailand' : '');
                                 const flagUrl = flagCountry ? getCountryFlagUrl(flagCountry) : '';
@@ -1820,26 +1820,26 @@ function DueDeliveryPage() {
                                 );
                               })()}
                             </div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.revisionLevel || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.revisionNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.quantity} PCS</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.prPo || record.customerPo || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
-                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionLevel || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.prPo || record.customerPo || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">
                               {listMode === 'pending' ? (
                                 <button
                                   onClick={() => openDeliverForm(record)}
@@ -1866,7 +1866,7 @@ function DueDeliveryPage() {
               <div
                 ref={dueBottomScrollRef}
                 onScroll={() => syncDueHorizontalScroll('bar')}
-                className="h-5 overflow-x-scroll overflow-y-hidden rounded-xl border border-white/40 bg-white/20 backdrop-blur-sm shadow-lg"
+                className="due-scrollbar h-6 overflow-x-scroll overflow-y-hidden rounded-xl border border-white/50 bg-white/10 backdrop-blur-sm shadow-lg"
               >
                 <div style={{ width: Math.max(dueTableScrollWidth, 0), height: 1 }} />
               </div>

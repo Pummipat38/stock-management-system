@@ -6,35 +6,44 @@ body {
   @apply bg-gray-50;
 }
 
-/* Hide all scrollbars completely */
-::-webkit-scrollbar {
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
-}
-
-::-webkit-scrollbar-thumb {
-  background: transparent !important;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
+/* Hide scrollbars by default (can be overridden per-element) */
 html {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 * {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  width: 0px !important;
-  height: 0px !important;
-  display: none !important;
+  width: 0px;
+  height: 0px;
+}
+
+/* Explicitly show a styled scrollbar for DUE bottom horizontal bar */
+.due-scrollbar {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+
+.due-scrollbar::-webkit-scrollbar {
+  height: 14px;
+}
+
+.due-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+}
+
+.due-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 9999px;
+}
+
+.due-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.55);
 }
 
 /* Enhanced Custom Animations */
