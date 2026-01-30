@@ -6,6 +6,7 @@ import { StockItem } from '@/types/stock';
 interface DueFormData {
   deliveryType: 'domestic' | 'international';
   myobNumber: string;
+  productRequestNo: string;
   customer: string;
   countryOfOrigin: string;
   sampleRequestSheet: string;
@@ -15,7 +16,15 @@ interface DueFormData {
   revisionLevel: '1' | '2' | '3' | '4';
   revisionNumber: string;
   event: string;
+  supplier: string;
   customerPo: string;
+  prPo: string;
+  withdrawalNumber: string;
+  purchase: string;
+  invoiceIn: string;
+  invoiceOut: string;
+  dueSupplierToRk: string;
+  deliveredAt?: string;
   quantity: number;
   dueDate: string;
 }
@@ -25,16 +34,7 @@ interface DueRecord extends DueFormData {
   createdAt: string;
   updatedAt: string;
   isDelivered?: boolean;
-  deliveredAt?: string;
-  productRequestNo?: string;
-  supplier?: string;
-  prPo?: string;
-  purchase?: string;
-  invoiceIn?: string;
-  invoiceOut?: string;
-  withdrawalNumber?: string;
   dueSupplierToCustomer?: string;
-  dueSupplierToRk?: string;
   dueRkToCustomer?: string;
 }
 
@@ -465,8 +465,9 @@ const COUNTRY_OPTIONS = [
 const createEmptyForm = (deliveryType: 'domestic' | 'international'): DueFormData => ({
   deliveryType,
   myobNumber: '',
+  productRequestNo: '',
   customer: '',
-  countryOfOrigin: '',
+  countryOfOrigin: deliveryType === 'domestic' ? 'Thailand' : '',
   sampleRequestSheet: '',
   model: '',
   partNumber: '',
@@ -474,7 +475,15 @@ const createEmptyForm = (deliveryType: 'domestic' | 'international'): DueFormDat
   revisionLevel: '1',
   revisionNumber: '',
   event: '',
+  supplier: '',
   customerPo: '',
+  prPo: '',
+  withdrawalNumber: '',
+  purchase: '',
+  invoiceIn: '',
+  invoiceOut: '',
+  dueSupplierToRk: '',
+  deliveredAt: '',
   quantity: 0,
   dueDate: '',
 });
@@ -592,7 +601,20 @@ function DueDeliveryPage() {
     }
     const data = await response.json();
     const normalized = Array.isArray(data) ? (data as DueRecord[]) : [];
-    setRecords(normalized.map(record => ({ ...record, isDelivered: record.isDelivered ?? false })));
+    setRecords(
+      normalized.map(record => ({
+        ...record,
+        isDelivered: record.isDelivered ?? false,
+        productRequestNo: record.productRequestNo ?? '',
+        supplier: record.supplier ?? '',
+        prPo: record.prPo ?? '',
+        withdrawalNumber: record.withdrawalNumber ?? '',
+        purchase: record.purchase ?? '',
+        invoiceIn: record.invoiceIn ?? '',
+        invoiceOut: record.invoiceOut ?? '',
+        dueSupplierToRk: record.dueSupplierToRk ?? '',
+      }))
+    );
   };
 
   const syncDueRecords = async (nextRecords: DueRecord[]) => {
@@ -1248,6 +1270,8 @@ function DueDeliveryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const now = new Date().toISOString();
+    const deliveredAtIso = formData.deliveredAt ? new Date(formData.deliveredAt).toISOString() : undefined;
+    const nextIsDelivered = Boolean(deliveredAtIso);
     let nextRecords: DueRecord[] = [];
     if (editingRecord) {
       const targetRow = partRows[0] || createEmptyPartRow();
@@ -1262,10 +1286,13 @@ function DueDeliveryPage() {
               revisionLevel: targetRow.revisionLevel,
               revisionNumber: targetRow.revisionNumber,
               quantity: Number(targetRow.quantity) || 0,
+              customerPo: formData.customerPo || formData.prPo,
+              dueRkToCustomer: formData.dueDate,
               id: record.id,
               createdAt: record.createdAt,
               updatedAt: now,
-              isDelivered: record.isDelivered ?? false,
+              isDelivered: nextIsDelivered,
+              deliveredAt: deliveredAtIso,
             }
           : record
       );
@@ -1279,10 +1306,13 @@ function DueDeliveryPage() {
         revisionLevel: row.revisionLevel,
         revisionNumber: row.revisionNumber,
         quantity: Number(row.quantity) || 0,
+        customerPo: formData.customerPo || formData.prPo,
+        dueRkToCustomer: formData.dueDate,
         id: `${Date.now()}-${index}`,
         createdAt: now,
         updatedAt: now,
-        isDelivered: false,
+        isDelivered: nextIsDelivered,
+        deliveredAt: deliveredAtIso,
       }));
       nextRecords = [...records, ...newRecords];
     }
@@ -1310,6 +1340,7 @@ function DueDeliveryPage() {
     setFormData({
       deliveryType: record.deliveryType,
       myobNumber: record.myobNumber,
+      productRequestNo: record.productRequestNo || '',
       customer: record.customer,
       countryOfOrigin: record.countryOfOrigin,
       sampleRequestSheet: record.sampleRequestSheet,
@@ -1319,7 +1350,15 @@ function DueDeliveryPage() {
       revisionLevel: record.revisionLevel,
       revisionNumber: record.revisionNumber,
       event: record.event,
-      customerPo: record.customerPo,
+      customerPo: record.customerPo || record.prPo || '',
+      supplier: record.supplier || '',
+      prPo: record.prPo || record.customerPo || '',
+      withdrawalNumber: record.withdrawalNumber || '',
+      purchase: record.purchase || '',
+      invoiceIn: record.invoiceIn || '',
+      invoiceOut: record.invoiceOut || '',
+      dueSupplierToRk: record.dueSupplierToRk || '',
+      deliveredAt: record.deliveredAt ? record.deliveredAt.split('T')[0] : '',
       quantity: record.quantity,
       dueDate: record.dueDate,
     });
@@ -1681,51 +1720,34 @@ function DueDeliveryPage() {
               >
                 <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
                   <div
-                    className={`grid min-w-[3400px] ${
+                    className={`grid min-w-[3200px] ${
                       isSelectMode
-                        ? selectedType === 'international'
-                          ? 'grid-cols-[60px_140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                          : 'grid-cols-[60px_140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                        : selectedType === 'international'
-                          ? 'grid-cols-[140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                          : 'grid-cols-[140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
+                        ? 'grid-cols-[60px_180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
+                        : 'grid-cols-[180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
                     } items-stretch gap-0 text-white/85 text-xs uppercase tracking-wide text-center w-full whitespace-nowrap border border-white/20`}
                   >
                     {isSelectMode && <span className="px-2 py-1 flex items-center justify-center">เลือก</span>}
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Product Request No.</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Sample Request Sheet</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Customer</span>
-                    {selectedType === 'international' && (
-                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Country of Origin</span>
-                    )}
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Model</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Part No.</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Part Name</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">DWG Rev.</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Event</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Supplier</span>
-                    {selectedType === 'international' ? (
-                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due Supplier to Customer</span>
-                    ) : (
-                      <>
-                        <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due Supplier to RK</span>
-                        <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Due RK to Customer</span>
-                      </>
-                    )}
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">QTY to Customer</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">MYOB</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">PR/PO</span>
-                    {selectedType === 'domestic' && (
-                      <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Withdrawal No.</span>
-                    )}
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">PUCHASE</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Invoice In</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Invoice Out</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Del</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Del At</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Created</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Updated</span>
-                    <span className="px-2 py-1 flex items-center justify-center border-l border-white/20">Action</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Customer</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Product Request No.</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Sample Produce Request Sheet</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Model</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Part No.</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Part Name</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DWG REV</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DWG NO.</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Event</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Supplier</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Q'TY supplier to RK</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Q'TY to Customer</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Due RK to Customer</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">MYOB</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">PR / PO</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">เลขที่ใบเบิก</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">PUCHASE</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Invoice In</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Invoice Out</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">DATE OUT</span>
+                    <span className="px-2 py-0 flex items-center justify-center border-l border-white/20 leading-tight">Action</span>
                   </div>
                 </div>
 
@@ -1744,15 +1766,11 @@ function DueDeliveryPage() {
                           className={index === 0 ? '' : 'border-t border-white/20'}
                         >
                           <div
-                            className={`grid min-w-[3400px] ${
+                            className={`grid min-w-[3200px] ${
                               isSelectMode
-                                ? selectedType === 'international'
-                                  ? 'grid-cols-[60px_140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                                  : 'grid-cols-[60px_140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                                : selectedType === 'international'
-                                  ? 'grid-cols-[140px_180px_180px_140px_120px_140px_260px_110px_140px_140px_180px_120px_100px_140px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                                  : 'grid-cols-[140px_180px_180px_120px_140px_260px_110px_140px_140px_180px_120px_180px_100px_140px_160px_120px_120px_120px_90px_120px_120px_120px_140px]'
-                            } items-stretch gap-0 text-white/90 text-sm w-full border-l border-r border-white/20`}
+                                ? 'grid-cols-[60px_180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
+                                : 'grid-cols-[180px_140px_200px_140px_140px_260px_90px_110px_140px_140px_160px_120px_160px_120px_140px_140px_120px_120px_120px_120px_140px]'
+                            } items-stretch gap-0 text-white/90 text-xs leading-tight w-full border-l border-r border-white/20`}
                           >
                             {isSelectMode && (
                               <div className="flex items-center justify-center">
@@ -1764,44 +1782,31 @@ function DueDeliveryPage() {
                                 />
                               </div>
                             )}
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.customer}</div>
-                            {selectedType === 'international' && (
-                              <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.countryOfOrigin || '-'}</div>
-                            )}
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.revisionNumber || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
-                            {selectedType === 'international' ? (
-                              <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToCustomer || record.dueDate)}</div>
-                            ) : (
-                              <>
-                                <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
-                                <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
-                              </>
-                            )}
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.quantity} PCS</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.customerPo || '-'}</div>
-                            {selectedType === 'domestic' && (
-                              <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
-                            )}
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
-                            <div className="px-2 py-1 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.isDelivered ? 'YES' : 'NO'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.createdAt ? record.createdAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">{record.updatedAt ? record.updatedAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center border-l border-white/20">
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.customer}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.revisionLevel || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.revisionNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.quantity} PCS</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.prPo || record.customerPo || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
+                            <div className="px-2 py-0 flex items-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center border-l border-white/20">
                               {listMode === 'pending' ? (
                                 <button
                                   onClick={() => openDeliverForm(record)}
-                                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 text-lg max-w-full"
+                                  className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-0 rounded-md flex items-center gap-2 text-xs leading-tight h-7 max-w-full"
                                 >
                                   📁 ส่งงาน
                                 </button>
@@ -2046,40 +2051,118 @@ function DueDeliveryPage() {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white/80 mb-2">EVENT *</label>
-                    <input
-                      name="event"
-                      value={formData.event}
-                      onChange={handleInputChange}
-                      className="w-full max-w-[260px] bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white/80 mb-2">Customer PO *</label>
-                    <input
-                      name="customerPo"
-                      value={formData.customerPo}
-                      onChange={handleInputChange}
-                      className="w-full max-w-[260px] bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-white/80 mb-2">Product request no.</label>
+                  <input
+                    name="productRequestNo"
+                    value={formData.productRequestNo}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
                 </div>
                 <div>
-                  <label className="block text-white/80 mb-2">Sample Produce Request Sheet *</label>
+                  <label className="block text-white/80 mb-2">Sample produce request sheet *</label>
                   <input
+                    type="text"
                     name="sampleRequestSheet"
                     value={formData.sampleRequestSheet}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 mb-2">Model / Part / DWG / MYOB / Q'TY (ใส่ด้านล่างใน Part Details)</label>
+                  <div className="rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white/70 text-sm">
+                    ใช้ส่วน Part Details เพื่อกรอก MODEL, PART NO., PART NAME, DWG REV, DWG NO., MYOB และ Q'TY to Customer
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">EVENT *</label>
+                  <input
+                    name="event"
+                    value={formData.event}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
+
                 <div>
-                  <label className="block text-white/80 mb-2">Due Date *</label>
+                  <label className="block text-white/80 mb-2">Supplier</label>
+                  <input
+                    name="supplier"
+                    value={formData.supplier}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">PR / PO *</label>
+                  <input
+                    name="prPo"
+                    value={formData.prPo}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">เลขที่ใบเบิก</label>
+                  <input
+                    name="withdrawalNumber"
+                    value={formData.withdrawalNumber}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">PUCHASE</label>
+                  <input
+                    name="purchase"
+                    value={formData.purchase}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">INVOICE IN</label>
+                  <input
+                    name="invoiceIn"
+                    value={formData.invoiceIn}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">INVOICE OUT</label>
+                  <input
+                    name="invoiceOut"
+                    value={formData.invoiceOut}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">Q'TY supplier to RK</label>
+                  <input
+                    type="text"
+                    name="dueSupplierToRk"
+                    value={formData.dueSupplierToRk}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">Due RK to Customer *</label>
                   <input
                     type="text"
                     name="dueDate"
@@ -2090,6 +2173,18 @@ function DueDeliveryPage() {
                     required
                   />
                 </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">DATE OUT</label>
+                  <input
+                    type="date"
+                    name="deliveredAt"
+                    value={formData.deliveredAt || ''}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="block text-white/80 mb-2">Country of Origin *</label>
                   <div className="flex items-center gap-3">
@@ -2163,7 +2258,7 @@ function DueDeliveryPage() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
                         <div>
-                          <label className="block text-white/80 mb-0.5">Model *</label>
+                          <label className="block text-white/80 mb-0.5">MODEL *</label>
                           <input
                             value={row.model}
                             onChange={e => handlePartRowChange(index, 'model', e.target.value)}
@@ -2172,7 +2267,7 @@ function DueDeliveryPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-white/80 mb-0.5">Part Number *</label>
+                          <label className="block text-white/80 mb-0.5">PART NO. *</label>
                           <input
                             value={row.partNumber}
                             onChange={e => handlePartRowChange(index, 'partNumber', e.target.value)}
@@ -2181,7 +2276,7 @@ function DueDeliveryPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-white/80 mb-0.5">Part Name *</label>
+                          <label className="block text-white/80 mb-0.5">PART NAME *</label>
                           <input
                             value={row.partName}
                             onChange={e => handlePartRowChange(index, 'partName', e.target.value)}
@@ -2201,7 +2296,7 @@ function DueDeliveryPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-white/80 mb-0.5">Revision Level *</label>
+                          <label className="block text-white/80 mb-0.5">DWG REV *</label>
                           <input
                             value={row.revisionLevel}
                             onChange={e => handlePartRowChange(index, 'revisionLevel', e.target.value)}
@@ -2210,7 +2305,7 @@ function DueDeliveryPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-white/80 mb-0.5">Revision Number *</label>
+                          <label className="block text-white/80 mb-0.5">DWG NO. *</label>
                           <input
                             value={row.revisionNumber}
                             onChange={e => handlePartRowChange(index, 'revisionNumber', e.target.value)}
@@ -2219,7 +2314,7 @@ function DueDeliveryPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-white/80 mb-0.5">Quantity *</label>
+                          <label className="block text-white/80 mb-0.5">Q'TY to Customer *</label>
                           <input
                             type="number"
                             value={row.quantity}

@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 type DueRecordInput = {
   deliveryType?: string;
   myobNumber?: string;
+  productRequestNo?: string;
   customer?: string;
   countryOfOrigin?: string;
   sampleRequestSheet?: string;
@@ -13,9 +14,18 @@ type DueRecordInput = {
   revisionLevel?: string;
   revisionNumber?: string;
   event?: string;
+  supplier?: string;
   customerPo?: string;
+  prPo?: string;
+  purchase?: string;
+  invoiceIn?: string;
+  invoiceOut?: string;
+  withdrawalNumber?: string;
   quantity?: number;
   dueDate?: string;
+  dueSupplierToCustomer?: string;
+  dueSupplierToRk?: string;
+  dueRkToCustomer?: string;
   isDelivered?: boolean;
   deliveredAt?: string | null;
   createdAt?: string;
@@ -96,47 +106,71 @@ export async function POST(request: Request) {
           ? null
           : new Date(item.deliveredAt);
 
+      const createData = {
+        dedupeKey,
+        deliveryType,
+        myobNumber: normalizeText(item.myobNumber),
+        productRequestNo: normalizeText(item.productRequestNo),
+        customer,
+        countryOfOrigin: normalizeText(item.countryOfOrigin),
+        sampleRequestSheet: normalizeText(item.sampleRequestSheet),
+        model,
+        partNumber,
+        partName,
+        revisionLevel,
+        revisionNumber,
+        event,
+        customerPo,
+        supplier: normalizeText(item.supplier),
+        prPo: normalizeText(item.prPo),
+        purchase: normalizeText(item.purchase),
+        invoiceIn: normalizeText(item.invoiceIn),
+        invoiceOut: normalizeText(item.invoiceOut),
+        withdrawalNumber: normalizeText(item.withdrawalNumber),
+        quantity,
+        dueDate,
+        dueSupplierToCustomer: normalizeText(item.dueSupplierToCustomer),
+        dueSupplierToRk: normalizeText(item.dueSupplierToRk),
+        dueRkToCustomer: normalizeText(item.dueRkToCustomer),
+        isDelivered: Boolean(item.isDelivered),
+        deliveredAt,
+        ...(createdAt ? { createdAt } : {}),
+        ...(updatedAt ? { updatedAt } : {}),
+      };
+
+      const updateData = {
+        deliveryType,
+        myobNumber: normalizeText(item.myobNumber),
+        productRequestNo: normalizeText(item.productRequestNo),
+        customer,
+        countryOfOrigin: normalizeText(item.countryOfOrigin),
+        sampleRequestSheet: normalizeText(item.sampleRequestSheet),
+        model,
+        partNumber,
+        partName,
+        revisionLevel,
+        revisionNumber,
+        event,
+        customerPo,
+        supplier: normalizeText(item.supplier),
+        prPo: normalizeText(item.prPo),
+        purchase: normalizeText(item.purchase),
+        invoiceIn: normalizeText(item.invoiceIn),
+        invoiceOut: normalizeText(item.invoiceOut),
+        withdrawalNumber: normalizeText(item.withdrawalNumber),
+        quantity,
+        dueDate,
+        dueSupplierToCustomer: normalizeText(item.dueSupplierToCustomer),
+        dueSupplierToRk: normalizeText(item.dueSupplierToRk),
+        dueRkToCustomer: normalizeText(item.dueRkToCustomer),
+        isDelivered: Boolean(item.isDelivered),
+        deliveredAt,
+      };
+
       await prisma.dueRecord.upsert({
         where: { dedupeKey },
-        create: {
-          dedupeKey,
-          deliveryType,
-          myobNumber: normalizeText(item.myobNumber),
-          customer,
-          countryOfOrigin: normalizeText(item.countryOfOrigin),
-          sampleRequestSheet: normalizeText(item.sampleRequestSheet),
-          model,
-          partNumber,
-          partName,
-          revisionLevel,
-          revisionNumber,
-          event,
-          customerPo,
-          quantity,
-          dueDate,
-          isDelivered: Boolean(item.isDelivered),
-          deliveredAt,
-          ...(createdAt ? { createdAt } : {}),
-          ...(updatedAt ? { updatedAt } : {}),
-        },
-        update: {
-          deliveryType,
-          myobNumber: normalizeText(item.myobNumber),
-          customer,
-          countryOfOrigin: normalizeText(item.countryOfOrigin),
-          sampleRequestSheet: normalizeText(item.sampleRequestSheet),
-          model,
-          partNumber,
-          partName,
-          revisionLevel,
-          revisionNumber,
-          event,
-          customerPo,
-          quantity,
-          dueDate,
-          isDelivered: Boolean(item.isDelivered),
-          deliveredAt,
-        },
+        create: createData as any,
+        update: updateData as any,
       });
 
       upserted++;
