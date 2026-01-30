@@ -69,8 +69,9 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Error fetching due records:', error);
+    const details = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to fetch due records' },
+      { error: 'Failed to fetch due records', details: details.slice(0, 800) },
       { status: 500 }
     );
   }
