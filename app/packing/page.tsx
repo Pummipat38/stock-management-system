@@ -1778,7 +1778,7 @@ function DueDeliveryPage() {
                   </div>
                 </div>
 
-                <div className="max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
+                <div className="max-h-[max(240px,calc(100vh-420px))] overflow-y-auto pr-1">
                   {filteredByType.length === 0 ? (
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
                       <div className="text-5xl mb-4">📄</div>
