@@ -1746,7 +1746,7 @@ function DueDeliveryPage() {
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
                 <div className="min-w-[3000px]">
-                  <div className="sticky top-0 z-30 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
+                  <div className="sticky top-0 z-30 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2 overflow-hidden">
                     <div
                       className={`grid min-w-[3000px] ${
                         isSelectMode
@@ -1786,7 +1786,7 @@ function DueDeliveryPage() {
                       <div className="text-white/60">Press “Add Record” to create a new entry</div>
                     </div>
                   ) : (
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 px-2 mt-2">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 px-2 mt-2 overflow-hidden">
                       {filteredByType.map((record, index) => (
                         <div
                           key={record.id}
