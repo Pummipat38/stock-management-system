@@ -1743,7 +1743,7 @@ function DueDeliveryPage() {
               <div
                 ref={dueTableXRef}
                 onScroll={() => syncDueHorizontalScroll('table')}
-                className="overflow-x-scroll pb-2"
+                className="overflow-x-auto pb-2"
               >
                 <div className="bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 px-2 py-2">
                   <div
@@ -1786,7 +1786,7 @@ function DueDeliveryPage() {
                       <div className="text-white/60">Press “Add Record” to create a new entry</div>
                     </div>
                   ) : (
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden px-2">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 px-2 min-w-[3000px]">
                       {filteredByType.map((record, index) => (
                         <div
                           key={record.id}
