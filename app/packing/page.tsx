@@ -1789,7 +1789,7 @@ function DueDeliveryPage() {
                               isSelectMode
                                 ? 'grid-cols-[60px_280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
                                 : 'grid-cols-[280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
-                            } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full border-l border-r border-white/20`}
+                            } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full border-l border-r border-white/20 min-h-[34px]`}
                           >
                             {isSelectMode && (
                               <div className="flex items-center justify-center">
@@ -1801,10 +1801,11 @@ function DueDeliveryPage() {
                                 />
                               </div>
                             )}
-                            <div className="px-2 py-0 flex items-center justify-center text-center gap-2 border-l border-white/20 whitespace-normal break-words">
+                            <div className="px-2 py-0 flex items-center justify-center text-center gap-2 border-l border-white/20 whitespace-nowrap overflow-hidden">
                               {(() => {
                                 const flagCountry = record.countryOfOrigin || (record.deliveryType === 'domestic' ? 'Thailand' : '');
                                 const flagUrl = flagCountry ? getCountryFlagUrl(flagCountry) : '';
+                                const customerName = resolveCustomerDisplayName(record.customer);
                                 return (
                                   <>
                                     {flagUrl ? (
@@ -1815,29 +1816,57 @@ function DueDeliveryPage() {
                                         loading="lazy"
                                       />
                                     ) : null}
-                                    <span>{resolveCustomerDisplayName(record.customer)}</span>
+                                    <span className="min-w-0 truncate" title={customerName}>
+                                      {customerName}
+                                    </span>
                                   </>
                                 );
                               })()}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.productRequestNo || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.sampleRequestSheet || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.model}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.partNumber}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.partName}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.productRequestNo || ''}>
+                              {record.productRequestNo || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.sampleRequestSheet || ''}>
+                              {record.sampleRequestSheet || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.model}>
+                              {record.model}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.partNumber}>
+                              {record.partNumber}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.partName}>
+                              {record.partName}
+                            </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionLevel || '-'}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.event || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.supplier || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.event || ''}>
+                              {record.event || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.supplier || ''}>
+                              {record.supplier || '-'}
+                            </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.myobNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.prPo || record.customerPo || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.withdrawalNumber || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.purchase || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.invoiceIn || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-normal break-words">{record.invoiceOut || '-'}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
+                              {record.myobNumber || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.prPo || record.customerPo || ''}>
+                              {record.prPo || record.customerPo || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
+                              {record.withdrawalNumber || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.purchase || ''}>
+                              {record.purchase || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceIn || ''}>
+                              {record.invoiceIn || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceOut || ''}>
+                              {record.invoiceOut || '-'}
+                            </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">
                               {listMode === 'pending' ? (
