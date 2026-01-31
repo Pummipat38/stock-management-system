@@ -575,13 +575,21 @@ function DueDeliveryPage() {
     const bar = dueBottomScrollRef.current;
     if (!table || !bar) return;
 
+    const tableMax = Math.max(0, table.scrollWidth - table.clientWidth);
+    const barMax = Math.max(0, bar.scrollWidth - bar.clientWidth);
+
     dueXSyncingRef.current = true;
-    const next = source === 'table' ? table.scrollLeft : bar.scrollLeft;
+
     if (source === 'table') {
-      bar.scrollLeft = next;
+      const tablePos = table.scrollLeft;
+      const ratio = tableMax > 0 ? tablePos / tableMax : 0;
+      bar.scrollLeft = ratio * barMax;
     } else {
-      table.scrollLeft = next;
+      const barPos = bar.scrollLeft;
+      const ratio = barMax > 0 ? barPos / barMax : 0;
+      table.scrollLeft = ratio * tableMax;
     }
+
     window.setTimeout(() => {
       dueXSyncingRef.current = false;
     }, 0);
@@ -1891,13 +1899,15 @@ function DueDeliveryPage() {
               </div>
             </div>
 
-            <div className="fixed left-0 right-0 bottom-0 z-40 px-8 pb-6">
-              <div
-                ref={dueBottomScrollRef}
-                onScroll={() => syncDueHorizontalScroll('bar')}
-                className="due-scrollbar h-6 overflow-x-scroll overflow-y-hidden rounded-xl border border-white/50 bg-white/10 backdrop-blur-sm shadow-lg"
-              >
-                <div style={{ width: Math.max(dueTableScrollWidth, 0), height: 1 }} />
+            <div className="fixed left-0 right-0 bottom-0 z-40 pb-6">
+              <div className="container mx-auto px-8 max-w-[95%]">
+                <div
+                  ref={dueBottomScrollRef}
+                  onScroll={() => syncDueHorizontalScroll('bar')}
+                  className="due-scrollbar h-6 overflow-x-scroll overflow-y-hidden rounded-xl border border-white/50 bg-white/10 backdrop-blur-sm shadow-lg"
+                >
+                  <div style={{ width: Math.max(dueTableScrollWidth, 0), height: 1 }} />
+                </div>
               </div>
             </div>
 
