@@ -855,7 +855,27 @@ function DueDeliveryPage() {
           const dueSupplierToCustomer = normalizeDueDate(
             pick(row, ['due supplier to customer', 'Due Supplier to Customer', 'DUE SUPPLIER TO CUSTOMER', 'duesuppliertocustomer'])
           );
-          const dueSupplierToRk = normalizeDueDate(pick(row, ['due supplier to rk', 'Due Supplier to RK', 'DUE SUPPLIER TO RK', 'duesuppliertork']));
+          const dueSupplierToRk = normalizeText(
+            pick(row, [
+              "q'ty supplier to rk",
+              'qty supplier to rk',
+              'qty supplier to r.k.',
+              'qty supplier to rk ',
+              'q\'ty supplier to rk',
+              'Q\'TY supplier to RK',
+              'Q\'TY SUPPLIER TO RK',
+              'QTY supplier to RK',
+              'QTY SUPPLIER TO RK',
+              'qtysupplier to rk',
+              'qtysupplier to rk ',
+              'qty_supplier_to_rk',
+              // fallback for legacy sheets that used "Due Supplier to RK" for this quantity column
+              'due supplier to rk',
+              'Due Supplier to RK',
+              'DUE SUPPLIER TO RK',
+              'duesuppliertork',
+            ])
+          );
           const dueRkToCustomer = normalizeDueDate(pick(row, ['due rk to customer', 'Due RK to Customer', 'DUE RK TO CUSTOMER', 'duerktocustomer']));
 
           const quantityRaw = pick(row, ['qty to customer', 'QTY to Customer', 'QTY TO CUSTOMER', 'quantity', 'QTY', 'qty', 'Quantity', 'จำนวน']);
@@ -876,7 +896,7 @@ function DueDeliveryPage() {
             if (inferredType === 'international') {
               dueDate = normalizeDueDate(dueSupplierToCustomer);
             } else {
-              dueDate = normalizeDueDate(dueRkToCustomer || dueSupplierToRk || dueSupplierToCustomer);
+              dueDate = normalizeDueDate(dueRkToCustomer || dueSupplierToCustomer);
             }
           }
 
@@ -1887,7 +1907,9 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.supplier || ''}>
                               {record.supplier || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueSupplierToRk || '')}</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.dueSupplierToRk || ''}>
+                              {record.dueSupplierToRk || '-'}
+                            </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
