@@ -1751,14 +1751,24 @@ function DueDeliveryPage() {
                       <div
                         className={`grid min-w-[3000px] ${
                           isSelectMode
-                            ? 'grid-cols-[60px_280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
-                            : 'grid-cols-[280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Customer</span>
+                        <span
+                          className={`px-2 py-2 flex items-center justify-center leading-tight whitespace-normal break-words ${
+                            isSelectMode ? 'border-l border-white/20' : ''
+                          }`}
+                        >
+                          Customer
+                        </span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Product Request No.</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Sample Produce Request Sheet</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">
+                          Sample Produce
+                          <br />
+                          Request Sheet
+                        </span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Model</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part No.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part Name</span>
@@ -1796,8 +1806,8 @@ function DueDeliveryPage() {
                             <div
                               className={`grid min-w-[3000px] ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
-                                  : 'grid-cols-[280px_140px_200px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
                               } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full min-h-[34px]`}
                             >
                               {isSelectMode && (
@@ -1810,7 +1820,11 @@ function DueDeliveryPage() {
                                 />
                               </div>
                             )}
-                            <div className="px-2 py-0 flex items-center justify-center text-center gap-2 border-l border-white/20 whitespace-nowrap overflow-hidden">
+                            <div
+                              className={`px-2 py-0 flex items-center justify-start text-left gap-2 whitespace-nowrap overflow-hidden ${
+                                isSelectMode ? 'border-l border-white/20' : ''
+                              }`}
+                            >
                               {(() => {
                                 const flagCountry = record.countryOfOrigin || (record.deliveryType === 'domestic' ? 'Thailand' : '');
                                 const flagUrl = flagCountry ? getCountryFlagUrl(flagCountry) : '';
