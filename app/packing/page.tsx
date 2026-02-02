@@ -659,6 +659,22 @@ function DueDeliveryPage() {
     return response.json().catch(() => null);
   };
 
+  const upsertDueRecord = async (record: DueRecord) => {
+    const response = await fetch('/api/due-records', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(record),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(text || 'Failed to upsert due record');
+    }
+    return response.json().catch(() => null);
+  };
+
   const handleImportExcel = async () => {
     if (!importFile) {
       alert('กรุณาเลือกไฟล์ Excel');
@@ -1148,14 +1164,15 @@ function DueDeliveryPage() {
     setIsDeliverTypeOpen(false);
     if (type === 'mass') {
       const now = new Date().toISOString();
+      const updatedRecord: DueRecord = { ...deliverRecord, isDelivered: true, deliveredAt: now, updatedAt: now };
       const nextRecords = records.map(item =>
         item.id === deliverRecord.id
-          ? { ...item, isDelivered: true, deliveredAt: now, updatedAt: now }
+          ? updatedRecord
           : item
       );
       setRecords(nextRecords);
       try {
-        await syncDueRecords(nextRecords);
+        await upsertDueRecord(updatedRecord);
         await loadDueRecords(undefined, true);
       } catch (error) {
         console.error('Error syncing due records:', error);
@@ -1223,7 +1240,6 @@ function DueDeliveryPage() {
         .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
 
       let remainingQtyToIssue = deliverRecord.quantity;
-      const updatePromises: Promise<Response>[] = [];
 
       for (const item of sameItemGroup) {
         if (remainingQtyToIssue <= 0) break;
@@ -1251,35 +1267,33 @@ function DueDeliveryPage() {
             remarks: deliverFormData.remarks || '',
           };
 
-          updatePromises.push(
-            fetch('/api/stock', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(issueRecord),
-            })
-          );
+          const response = await fetch('/api/stock', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(issueRecord),
+          });
+
+          if (!response.ok) {
+            alert('เกิดข้อผิดพลาดในการบันทึกบางรายการ');
+            return;
+          }
+
           remainingQtyToIssue -= qtyToIssueFromThisItem;
         }
       }
 
-      const responses = await Promise.all(updatePromises);
-      const allSuccess = responses.every(response => response.ok);
-      if (!allSuccess) {
-        alert('เกิดข้อผิดพลาดในการบันทึกบางรายการ');
-        return;
-      }
-
       const now = new Date().toISOString();
+      const updatedRecord: DueRecord = { ...deliverRecord, isDelivered: true, deliveredAt: now, updatedAt: now };
       const nextRecords = records.map(item =>
         item.id === deliverRecord.id
-          ? { ...item, isDelivered: true, deliveredAt: now, updatedAt: now }
+          ? updatedRecord
           : item
       );
       setRecords(nextRecords);
       try {
-        await syncDueRecords(nextRecords);
+        await upsertDueRecord(updatedRecord);
         await loadDueRecords(undefined, true);
       } catch (error) {
         console.error('Error syncing due records:', error);
@@ -1300,6 +1314,7 @@ function DueDeliveryPage() {
     const deliveredAtIso = formData.deliveredAt ? new Date(formData.deliveredAt).toISOString() : undefined;
     const nextIsDelivered = Boolean(deliveredAtIso);
     let nextRecords: DueRecord[] = [];
+    let recordsToUpsert: DueRecord[] = [];
     if (editingRecord) {
       const targetRow = partRows[0] || createEmptyPartRow();
       nextRecords = records.map(record =>
@@ -1323,6 +1338,8 @@ function DueDeliveryPage() {
             }
           : record
       );
+      const updated = nextRecords.find(record => record.id === editingRecord.id);
+      if (updated) recordsToUpsert = [updated];
     } else {
       const newRecords = partRows.map((row, index) => ({
         ...formData,
@@ -1342,13 +1359,13 @@ function DueDeliveryPage() {
         deliveredAt: deliveredAtIso,
       }));
       nextRecords = [...records, ...newRecords];
+      recordsToUpsert = newRecords;
     }
 
     setRecords(nextRecords);
     try {
-      const result = await syncDueRecords(nextRecords);
-      if (result && typeof result.upserted === 'number' && result.upserted === 0) {
-        throw new Error('upserted=0');
+      for (const record of recordsToUpsert) {
+        await upsertDueRecord(record);
       }
       await loadDueRecords(undefined, true);
     } catch (error) {
@@ -1437,7 +1454,8 @@ function DueDeliveryPage() {
     );
     setRecords(nextRecords);
     try {
-      await syncDueRecords(nextRecords);
+      const changed = nextRecords.filter(record => selectedIds.includes(record.id));
+      await syncDueRecords(changed);
       await loadDueRecords(undefined, true);
     } catch (error) {
       console.error('Error syncing due records:', error);
