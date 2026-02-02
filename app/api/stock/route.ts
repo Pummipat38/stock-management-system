@@ -1,6 +1,37 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+const normalizeNullableText = (value: unknown) => {
+  const text = String(value ?? '').trim();
+  return text ? text : null;
+};
+
+const buildDateOrUndefined = (value: unknown) => {
+  if (!value) return undefined;
+  const d = new Date(String(value));
+  return Number.isNaN(d.getTime()) ? undefined : d;
+};
+
+const buildDedupeKey = (item: any) => {
+  const issueDate = item.issueDate ? new Date(item.issueDate).toISOString() : '';
+  const receivedDate = item.receivedDate ? new Date(item.receivedDate).toISOString() : '';
+  return [
+    String(item.myobNumber ?? ''),
+    String(item.model ?? ''),
+    String(item.partNumber ?? ''),
+    String(item.poNumber ?? ''),
+    String(item.receivedQty ?? 0),
+    String(item.issuedQty ?? 0),
+    String(item.invoiceNumber ?? ''),
+    issueDate,
+    receivedDate,
+    String(item.customer ?? ''),
+    String(item.supplier ?? ''),
+    String(item.event ?? ''),
+    String(item.withdrawalNumber ?? ''),
+  ].join('||');
+};
+
 // GET /api/stock
 export async function GET() {
   try {
@@ -9,7 +40,31 @@ export async function GET() {
     });
     
     // ตรวจสอบและส่งข้อมูลเป็น array เสมอ
-    const result = Array.isArray(stockItems) ? stockItems : [];
+    const raw = Array.isArray(stockItems) ? stockItems : [];
+
+    const dedupeWindowMs = 10 * 60 * 1000;
+    const keptByKey = new Map<string, any>();
+    const result: any[] = [];
+
+    const sorted = raw
+      .slice()
+      .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    for (const item of sorted) {
+      const key = buildDedupeKey(item);
+      const prev = keptByKey.get(key);
+      if (prev) {
+        const prevTs = new Date(prev.createdAt).getTime();
+        const curTs = new Date(item.createdAt).getTime();
+        if (!Number.isNaN(prevTs) && !Number.isNaN(curTs) && curTs - prevTs <= dedupeWindowMs) {
+          continue;
+        }
+      }
+      keptByKey.set(key, item);
+      result.push(item);
+    }
+
+    result.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return NextResponse.json(result, {
       headers: {
@@ -46,25 +101,84 @@ export async function POST(request: Request) {
     // Ensure database connection
     await prisma.$connect();
 
+    const receivedDate = buildDateOrUndefined(data.receivedDate) || new Date();
+
+    const normalized = {
+      myobNumber: String(data.myobNumber),
+      model: String(data.model),
+      partName: String(data.partName),
+      partNumber: String(data.partNumber),
+      revision: String(data.revision || ''),
+      poNumber: String(data.poNumber),
+      receivedQty: Number(data.receivedQty) || 0,
+      receivedDate,
+      supplier: normalizeNullableText(data.supplier),
+      customer: normalizeNullableText(data.customer),
+      issuedQty: data.issuedQty ? Number(data.issuedQty) : null,
+      invoiceNumber: normalizeNullableText(data.invoiceNumber),
+      issueDate: buildDateOrUndefined(data.issueDate),
+      dueDate: buildDateOrUndefined(data.dueDate),
+      event: normalizeNullableText(data.event),
+      withdrawalNumber: normalizeNullableText(data.withdrawalNumber),
+      remarks: normalizeNullableText(data.remarks),
+    };
+
+    const createdAfter = new Date(Date.now() - 2 * 60 * 1000);
+
+    const where: any = {
+      myobNumber: normalized.myobNumber,
+      model: normalized.model,
+      partName: normalized.partName,
+      partNumber: normalized.partNumber,
+      revision: normalized.revision,
+      poNumber: normalized.poNumber,
+      receivedQty: normalized.receivedQty,
+      issuedQty: normalized.issuedQty,
+      invoiceNumber: normalized.invoiceNumber,
+      receivedDate: normalized.receivedDate,
+      supplier: normalized.supplier,
+      customer: normalized.customer,
+      event: normalized.event,
+      withdrawalNumber: normalized.withdrawalNumber,
+      remarks: normalized.remarks,
+      createdAt: {
+        gte: createdAfter,
+      },
+    };
+
+    if (normalized.issueDate) where.issueDate = normalized.issueDate;
+    if (normalized.dueDate) where.dueDate = normalized.dueDate;
+
+    const existing = await prisma.stockItem.findFirst({
+      where,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (existing) {
+      return NextResponse.json(existing, { status: 200 });
+    }
+
     const stockItem = await prisma.stockItem.create({
       data: {
-        myobNumber: String(data.myobNumber),
-        model: String(data.model),
-        partName: String(data.partName),
-        partNumber: String(data.partNumber),
-        revision: String(data.revision || ''),
-        poNumber: String(data.poNumber),
-        receivedQty: Number(data.receivedQty) || 0,
-        receivedDate: new Date(data.receivedDate),
-        supplier: data.supplier ? String(data.supplier) : null,
-        customer: data.customer || null,
-        issuedQty: data.issuedQty ? Number(data.issuedQty) : null,
-        invoiceNumber: data.invoiceNumber ? String(data.invoiceNumber) : null,
-        issueDate: data.issueDate ? new Date(data.issueDate) : null,
-        dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        event: data.event ? String(data.event) : null,
-        withdrawalNumber: data.withdrawalNumber ? String(data.withdrawalNumber) : null,
-        remarks: data.remarks ? String(data.remarks) : null,
+        myobNumber: normalized.myobNumber,
+        model: normalized.model,
+        partName: normalized.partName,
+        partNumber: normalized.partNumber,
+        revision: normalized.revision,
+        poNumber: normalized.poNumber,
+        receivedQty: normalized.receivedQty,
+        receivedDate: normalized.receivedDate,
+        supplier: normalized.supplier,
+        customer: normalized.customer,
+        issuedQty: normalized.issuedQty,
+        invoiceNumber: normalized.invoiceNumber,
+        issueDate: normalized.issueDate ?? null,
+        dueDate: normalized.dueDate ?? null,
+        event: normalized.event,
+        withdrawalNumber: normalized.withdrawalNumber,
+        remarks: normalized.remarks,
       },
     });
     
