@@ -1747,7 +1747,7 @@ function DueDeliveryPage() {
               >
                 <div className="min-w-[3000px]">
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                    <div className="sticky top-0 z-30 bg-white/15 backdrop-blur-sm px-2 py-2 border-b border-white/20">
+                    <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
                         className={`grid min-w-[3000px] ${
                           isSelectMode
