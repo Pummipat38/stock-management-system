@@ -1746,7 +1746,7 @@ function DueDeliveryPage() {
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
                 <div className="min-w-[3000px]">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-30 bg-white/15 backdrop-blur-sm px-2 py-2 border-b border-white/20">
                       <div
                         className={`grid min-w-[3000px] ${
