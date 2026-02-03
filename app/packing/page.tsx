@@ -2092,26 +2092,27 @@ function DueDeliveryPage() {
             )}
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-white">{editingRecord ? 'Edit DUE Record' : 'New DUE Record'}</h2>
-                <p className="text-white/60">Fill in the details to save the delivery due</p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">{editingRecord ? 'Edit DUE Record' : 'New DUE Record'}</h2>
+                  <p className="text-white/60">Fill in the details to save the delivery due</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingRecord(null);
+                    setFormData(createEmptyForm(formData.deliveryType));
+                    setView('list');
+                  }}
+                  className="text-white/70 hover:text-white"
+                >
+                  ✕ Close
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingRecord(null);
-                  setFormData(createEmptyForm(formData.deliveryType));
-                  setView('list');
-                }}
-                className="text-white/70 hover:text-white"
-              >
-                ✕ Close
-              </button>
-            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-white/80 mb-2">Customer *</label>
@@ -2386,26 +2387,27 @@ function DueDeliveryPage() {
               </div>
 
 
-              <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingRecord(null);
-                    setFormData(createEmptyForm(formData.deliveryType));
-                    setView('list');
-                  }}
-                  className="px-6 py-3 rounded-xl bg-white/10 text-white/80 hover:bg-white/20"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600"
-                >
-                  {editingRecord ? 'Update' : 'Save'}
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingRecord(null);
+                      setFormData(createEmptyForm(formData.deliveryType));
+                      setView('list');
+                    }}
+                    className="px-6 py-3 rounded-xl bg-white/10 text-white/80 hover:bg-white/20"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600"
+                  >
+                    {editingRecord ? 'Update' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
