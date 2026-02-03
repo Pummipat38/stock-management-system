@@ -2119,7 +2119,7 @@ function DueDeliveryPage() {
                     name="customer"
                     value={formData.customer}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2129,7 +2129,7 @@ function DueDeliveryPage() {
                     name="productRequestNo"
                     value={formData.productRequestNo}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
                 <div>
@@ -2139,7 +2139,7 @@ function DueDeliveryPage() {
                     name="sampleRequestSheet"
                     value={formData.sampleRequestSheet}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2150,7 +2150,7 @@ function DueDeliveryPage() {
                     name="model"
                     value={formData.model}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2161,18 +2161,18 @@ function DueDeliveryPage() {
                     name="partNumber"
                     value={formData.partNumber}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
 
-                <div className="lg:col-span-2">
+                <div>
                   <label className="block text-white/80 mb-2">PART NAME *</label>
                   <input
                     name="partName"
                     value={formData.partName}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2183,7 +2183,7 @@ function DueDeliveryPage() {
                     name="revisionLevel"
                     value={formData.revisionLevel}
                     onChange={handleInputChange}
-                    className="w-full appearance-none bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   >
                     <option value="1">1</option>
@@ -2199,7 +2199,7 @@ function DueDeliveryPage() {
                     name="revisionNumber"
                     value={formData.revisionNumber}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2210,7 +2210,7 @@ function DueDeliveryPage() {
                     name="myobNumber"
                     value={formData.myobNumber}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2223,7 +2223,7 @@ function DueDeliveryPage() {
                     value={formData.quantity}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2234,7 +2234,7 @@ function DueDeliveryPage() {
                     name="event"
                     value={formData.event}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2245,7 +2245,7 @@ function DueDeliveryPage() {
                     name="supplier"
                     value={formData.supplier}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2255,7 +2255,7 @@ function DueDeliveryPage() {
                     name="prPo"
                     value={formData.prPo}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2266,7 +2266,7 @@ function DueDeliveryPage() {
                     name="withdrawalNumber"
                     value={formData.withdrawalNumber}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2276,7 +2276,7 @@ function DueDeliveryPage() {
                     name="purchase"
                     value={formData.purchase}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2286,7 +2286,7 @@ function DueDeliveryPage() {
                     name="invoiceIn"
                     value={formData.invoiceIn}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2296,7 +2296,7 @@ function DueDeliveryPage() {
                     name="invoiceOut"
                     value={formData.invoiceOut}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2307,7 +2307,7 @@ function DueDeliveryPage() {
                     name="dueSupplierToRk"
                     value={formData.dueSupplierToRk}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2319,7 +2319,7 @@ function DueDeliveryPage() {
                     value={formData.dueDate}
                     onChange={handleInputChange}
                     placeholder="dd/mm/yyyy or urgent/asap"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
                   />
                 </div>
@@ -2331,7 +2331,7 @@ function DueDeliveryPage() {
                     name="deliveredAt"
                     value={formData.deliveredAt || ''}
                     onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 
@@ -2343,7 +2343,7 @@ function DueDeliveryPage() {
                         name="countryOfOrigin"
                         value={formData.countryOfOrigin}
                         onChange={handleInputChange}
-                        className="w-full appearance-none bg-white/90 border border-white/20 rounded-xl px-4 pr-12 py-3 text-black focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        className="w-full appearance-none bg-white/90 border border-white/20 rounded-xl px-3 pr-10 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-emerald-300"
                         required
                       >
                         <option value="">เลือกประเทศ</option>
@@ -2366,7 +2366,7 @@ function DueDeliveryPage() {
                         />
                       </svg>
                     </div>
-                    <div className="flex h-[44px] w-[60px] items-center justify-center rounded-xl border border-white/20 bg-white/90">
+                    <div className="flex h-[38px] w-[60px] items-center justify-center rounded-xl border border-white/20 bg-white/90">
                       {formData.countryOfOrigin ? (
                         <img
                           src={getCountryFlagUrl(formData.countryOfOrigin)}
