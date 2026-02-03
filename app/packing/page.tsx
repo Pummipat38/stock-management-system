@@ -38,16 +38,6 @@ interface DueRecord extends DueFormData {
   dueRkToCustomer?: string;
 }
 
-interface DuePartRow {
-  myobNumber: string;
-  model: string;
-  partNumber: string;
-  partName: string;
-  revisionLevel: '1' | '2' | '3' | '4';
-  revisionNumber: string;
-  quantity: number;
-}
-
 interface DeliverFormData {
   event: string;
   supplier: string;
@@ -507,16 +497,6 @@ const createEmptyForm = (deliveryType: 'domestic' | 'international'): DueFormDat
   dueDate: '',
 });
 
-const createEmptyPartRow = (): DuePartRow => ({
-  myobNumber: '',
-  model: '',
-  partNumber: '',
-  partName: '',
-  revisionLevel: '1',
-  revisionNumber: '',
-  quantity: 0,
-});
-
 const formatDueDate = (value?: string) => {
   if (!value) return '-';
   const date = new Date(value);
@@ -547,7 +527,6 @@ function DueDeliveryPage() {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
-  const [partRows, setPartRows] = useState<DuePartRow[]>([createEmptyPartRow()]);
   const [deliverRecord, setDeliverRecord] = useState<DueRecord | null>(null);
   const [isDeliverTypeOpen, setIsDeliverTypeOpen] = useState(false);
   const [deliverFormData, setDeliverFormData] = useState<DeliverFormData>({
@@ -1139,23 +1118,10 @@ function DueDeliveryPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handlePartRowChange = (index: number, field: keyof DuePartRow, value: string | number) => {
-    setPartRows(prev =>
-      prev.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, [field]: value } : row
-      )
-    );
-  };
-
-  const addPartRow = () => {
-    setPartRows(prev => [...prev, createEmptyPartRow()]);
-  };
-
-  const removePartRow = (index: number) => {
-    setPartRows(prev => (prev.length > 1 ? prev.filter((_, rowIndex) => rowIndex !== index) : prev));
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'quantity' ? Number(value) : value,
+    }));
   };
 
   const handleDeliverInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1166,8 +1132,7 @@ function DueDeliveryPage() {
   const getRecordBalance = (record: DueRecord) => {
     const sameGroup = stockItems.filter(item =>
       item.myobNumber === record.myobNumber &&
-      item.partNumber === record.partNumber &&
-      item.model === record.model
+      item.partNumber === record.partNumber
     );
     const totalReceived = sameGroup.reduce((sum, item) => sum + (item.receivedQty || 0), 0);
     const totalIssued = sameGroup.reduce((sum, item) => sum + (item.issuedQty || 0), 0);
@@ -1254,7 +1219,6 @@ function DueDeliveryPage() {
         .filter(item =>
           item.myobNumber === deliverRecord.myobNumber &&
           item.partNumber === deliverRecord.partNumber &&
-          item.model === deliverRecord.model &&
           (item.receivedQty - (item.issuedQty || 0)) > 0
         )
         .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
@@ -1335,19 +1299,13 @@ function DueDeliveryPage() {
     const nextIsDelivered = Boolean(deliveredAtIso);
     let nextRecords: DueRecord[] = [];
     let recordsToUpsert: DueRecord[] = [];
+
     if (editingRecord) {
-      const targetRow = partRows[0] || createEmptyPartRow();
       nextRecords = records.map(record =>
         record.id === editingRecord.id
           ? {
               ...formData,
-              myobNumber: targetRow.myobNumber || formData.myobNumber,
-              model: targetRow.model || formData.model,
-              partNumber: targetRow.partNumber,
-              partName: targetRow.partName,
-              revisionLevel: targetRow.revisionLevel,
-              revisionNumber: targetRow.revisionNumber,
-              quantity: Number(targetRow.quantity) || 0,
+              quantity: Number(formData.quantity) || 0,
               customerPo: formData.customerPo || formData.prPo,
               dueRkToCustomer: formData.dueDate,
               id: record.id,
@@ -1361,25 +1319,19 @@ function DueDeliveryPage() {
       const updated = nextRecords.find(record => record.id === editingRecord.id);
       if (updated) recordsToUpsert = [updated];
     } else {
-      const newRecords = partRows.map((row, index) => ({
+      const newRecord: DueRecord = {
         ...formData,
-        myobNumber: row.myobNumber || formData.myobNumber,
-        model: row.model || formData.model,
-        partNumber: row.partNumber,
-        partName: row.partName,
-        revisionLevel: row.revisionLevel,
-        revisionNumber: row.revisionNumber,
-        quantity: Number(row.quantity) || 0,
+        quantity: Number(formData.quantity) || 0,
         customerPo: formData.customerPo || formData.prPo,
         dueRkToCustomer: formData.dueDate,
-        id: `${Date.now()}-${index}`,
+        id: `${Date.now()}`,
         createdAt: now,
         updatedAt: now,
         isDelivered: nextIsDelivered,
         deliveredAt: deliveredAtIso,
-      }));
-      nextRecords = [...records, ...newRecords];
-      recordsToUpsert = newRecords;
+      };
+      nextRecords = [...records, newRecord];
+      recordsToUpsert = [newRecord];
     }
 
     setRecords(nextRecords);
@@ -1394,7 +1346,6 @@ function DueDeliveryPage() {
     }
     setEditingRecord(null);
     setFormData(createEmptyForm(formData.deliveryType));
-    setPartRows([createEmptyPartRow()]);
     setView('list');
   };
 
@@ -1426,17 +1377,6 @@ function DueDeliveryPage() {
       quantity: record.quantity,
       dueDate: record.dueDate,
     });
-    setPartRows([
-      {
-        myobNumber: record.myobNumber,
-        model: record.model,
-        partNumber: record.partNumber,
-        partName: record.partName,
-        revisionLevel: record.revisionLevel,
-        revisionNumber: record.revisionNumber,
-        quantity: record.quantity,
-      },
-    ]);
     setView('form');
   };
 
@@ -1789,8 +1729,8 @@ function DueDeliveryPage() {
                       <div
                         className={`grid min-w-[3000px] ${
                           isSelectMode
-                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
-                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
+                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
@@ -1844,8 +1784,8 @@ function DueDeliveryPage() {
                             <div
                               className={`grid min-w-[3000px] ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
-                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_80px_90px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_120px]'
+                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
+                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
                               } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full min-h-[34px]`}
                             >
                               {isSelectMode && (
@@ -1935,7 +1875,7 @@ function DueDeliveryPage() {
                               {listMode === 'pending' ? (
                                 <button
                                   onClick={() => openDeliverForm(record)}
-                                  className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-0 rounded-md flex items-center gap-2 text-xs leading-tight h-7 max-w-full"
+                                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-9 w-full"
                                 >
                                   📁 ส่งงาน
                                 </button>
@@ -2203,11 +2143,89 @@ function DueDeliveryPage() {
                     required
                   />
                 </div>
+
                 <div>
-                  <label className="block text-white/80 mb-2">Model / Part / DWG / MYOB / Q'TY (ใส่ด้านล่างใน Part Details)</label>
-                  <div className="rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white/70 text-sm">
-                    ใช้ส่วน Part Details เพื่อกรอก MODEL, PART NO., PART NAME, DWG REV, DWG NO., MYOB และ Q'TY to Customer
-                  </div>
+                  <label className="block text-white/80 mb-2">MODEL *</label>
+                  <input
+                    name="model"
+                    value={formData.model}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">PART NO. *</label>
+                  <input
+                    name="partNumber"
+                    value={formData.partNumber}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div className="lg:col-span-2">
+                  <label className="block text-white/80 mb-2">PART NAME *</label>
+                  <input
+                    name="partName"
+                    value={formData.partName}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">DWG REV *</label>
+                  <select
+                    name="revisionLevel"
+                    value={formData.revisionLevel}
+                    onChange={handleInputChange}
+                    className="w-full appearance-none bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  >
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">DWG NO. *</label>
+                  <input
+                    name="revisionNumber"
+                    value={formData.revisionNumber}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">MYOB *</label>
+                  <input
+                    name="myobNumber"
+                    value={formData.myobNumber}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">Q'TY to Customer *</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  />
                 </div>
 
                 <div>
@@ -2364,102 +2382,7 @@ function DueDeliveryPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-white">Part Details</h3>
-                  <button
-                    type="button"
-                    onClick={addPartRow}
-                    className="px-4 py-2 rounded-xl bg-white/20 text-white hover:bg-white/30"
-                  >
-                    ➕ เพิ่มแถว Part
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {partRows.map((row, index) => (
-                    <div key={`${row.partNumber}-${index}`} className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-white/80 font-semibold">Part #{index + 1}</div>
-                        <button
-                          type="button"
-                          onClick={() => removePartRow(index)}
-                          className="text-sm text-white/70 hover:text-white"
-                        >
-                          ✕ ลบ
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
-                        <div>
-                          <label className="block text-white/80 mb-0.5">MODEL *</label>
-                          <input
-                            value={row.model}
-                            onChange={e => handlePartRowChange(index, 'model', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-white/80 mb-0.5">PART NO. *</label>
-                          <input
-                            value={row.partNumber}
-                            onChange={e => handlePartRowChange(index, 'partNumber', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-white/80 mb-0.5">PART NAME *</label>
-                          <input
-                            value={row.partName}
-                            onChange={e => handlePartRowChange(index, 'partName', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 mt-2">
-                        <div>
-                          <label className="block text-white/80 mb-0.5">MYOB *</label>
-                          <input
-                            value={row.myobNumber}
-                            onChange={e => handlePartRowChange(index, 'myobNumber', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-white/80 mb-0.5">DWG REV *</label>
-                          <input
-                            value={row.revisionLevel}
-                            onChange={e => handlePartRowChange(index, 'revisionLevel', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-white/80 mb-0.5">DWG NO. *</label>
-                          <input
-                            value={row.revisionNumber}
-                            onChange={e => handlePartRowChange(index, 'revisionNumber', e.target.value)}
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-white/80 mb-0.5">Q'TY to Customer *</label>
-                          <input
-                            type="number"
-                            value={row.quantity}
-                            onChange={e => handlePartRowChange(index, 'quantity', Number(e.target.value))}
-                            min="0"
-                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div />
               </div>
 
 
