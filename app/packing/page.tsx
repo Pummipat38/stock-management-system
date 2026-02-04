@@ -13,7 +13,7 @@ interface DueFormData {
   model: string;
   partNumber: string;
   partName: string;
-  revisionLevel: '1' | '2' | '3' | '4';
+  revisionLevel: string;
   revisionNumber: string;
   event: string;
   supplier: string;
@@ -2180,18 +2180,13 @@ function DueDeliveryPage() {
 
                 <div>
                   <label className="block text-white/80 mb-2">DWG REV *</label>
-                  <select
+                  <input
                     name="revisionLevel"
                     value={formData.revisionLevel}
                     onChange={handleInputChange}
-                    className="w-full appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     required
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
