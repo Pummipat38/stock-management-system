@@ -1760,8 +1760,8 @@ function DueDeliveryPage() {
                       <div
                         className={`grid min-w-[3000px] ${
                           isSelectMode
-                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
-                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
+                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
@@ -1785,7 +1785,6 @@ function DueDeliveryPage() {
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG NO.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Event</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Supplier</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY supplier to RK</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
@@ -1815,9 +1814,9 @@ function DueDeliveryPage() {
                             <div
                               className={`grid min-w-[3000px] ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
-                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_110px_150px_120px_150px_130px_110px_110px_110px_110px_160px]'
-                              } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full min-h-[34px]`}
+                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                              } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full min-h-[44px]`}
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
@@ -1878,14 +1877,6 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.supplier || ''}>
                               {record.supplier || '-'}
                             </div>
-                            <div
-                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
-                              title={record.dueSupplierToRk == null ? '' : String(record.dueSupplierToRk)}
-                            >
-                              {record.dueSupplierToRk == null || String(record.dueSupplierToRk).trim() === ''
-                                ? '-'
-                                : String(record.dueSupplierToRk)}
-                            </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
@@ -1907,11 +1898,11 @@ function DueDeliveryPage() {
                               {record.invoiceOut || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">
+                            <div className="px-2 py-1 flex items-center justify-center text-center border-l border-white/20 overflow-hidden">
                               {listMode === 'pending' ? (
                                 <button
                                   onClick={() => openDeliverForm(record)}
-                                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-9 w-full"
+                                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-8 w-full whitespace-nowrap"
                                 >
                                   📁 ส่งงาน
                                 </button>
