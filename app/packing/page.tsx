@@ -1338,6 +1338,7 @@ function DueDeliveryPage() {
               ...formData,
               quantity: Number(formData.quantity) || 0,
               customerPo: formData.customerPo || formData.prPo,
+              prPo: formData.prPo || formData.customerPo,
               dueRkToCustomer: formData.dueDate,
               id: record.id,
               createdAt: record.createdAt,
@@ -1354,6 +1355,7 @@ function DueDeliveryPage() {
         ...formData,
         quantity: Number(formData.quantity) || 0,
         customerPo: formData.customerPo || formData.prPo,
+        prPo: formData.prPo || formData.customerPo,
         dueRkToCustomer: formData.dueDate,
         id: `${Date.now()}`,
         createdAt: now,
@@ -2296,6 +2298,17 @@ function DueDeliveryPage() {
                     value={formData.supplier}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">PR / PO *</label>
+                  <input
+                    name="customerPo"
+                    value={formData.customerPo}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
                   />
                 </div>
 

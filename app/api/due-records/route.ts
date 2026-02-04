@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     const revisionLevel = normalizeText(data.revisionLevel);
     const revisionNumber = normalizeText(data.revisionNumber);
     const event = normalizeText(data.event);
-    const customerPo = normalizeText(data.customerPo);
+    const customerPo = normalizeText(data.customerPo || data.prPo);
     const dueDate = normalizeText(data.dueDate);
 
     const quantity = Number(data.quantity) || 0;
