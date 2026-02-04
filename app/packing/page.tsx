@@ -43,10 +43,13 @@ interface DeliverFormData {
   supplier: string;
   customer: string;
   customerPo: string;
+  purchase: string;
+  invoiceIn: string;
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
   withdrawalNumber: string;
+  dueSupplierToRk: string;
   remarks: string;
 }
 
@@ -534,10 +537,13 @@ function DueDeliveryPage() {
     supplier: '',
     customer: '',
     customerPo: '',
+    purchase: '',
+    invoiceIn: '',
     invoiceNumber: '',
     issueDate: buildToday(),
     dueDate: '',
     withdrawalNumber: '',
+    dueSupplierToRk: '',
     remarks: '',
   });
   const [isDeliverFormOpen, setIsDeliverFormOpen] = useState(false);
@@ -1172,13 +1178,16 @@ function DueDeliveryPage() {
     setIsStockInsufficient(insufficient);
     setDeliverFormData({
       event: deliverRecord.event || '',
-      supplier: '',
+      supplier: deliverRecord.supplier || '',
       customer: deliverRecord.customer || '',
       customerPo: deliverRecord.customerPo || '',
+      purchase: deliverRecord.purchase || '',
+      invoiceIn: deliverRecord.invoiceIn || '',
       invoiceNumber: '',
       issueDate: buildToday(),
       dueDate: deliverRecord.dueDate || '',
       withdrawalNumber: '',
+      dueSupplierToRk: deliverRecord.dueSupplierToRk || '',
       remarks: '',
     });
     setIsDeliverFormOpen(true);
@@ -1196,10 +1205,13 @@ function DueDeliveryPage() {
       supplier: '',
       customer: '',
       customerPo: '',
+      purchase: '',
+      invoiceIn: '',
       invoiceNumber: '',
       issueDate: buildToday(),
       dueDate: '',
       withdrawalNumber: '',
+      dueSupplierToRk: '',
       remarks: '',
     });
   };
@@ -1269,7 +1281,18 @@ function DueDeliveryPage() {
       }
 
       const now = new Date().toISOString();
-      const updatedRecord: DueRecord = { ...deliverRecord, isDelivered: true, deliveredAt: now, updatedAt: now };
+      const updatedRecord: DueRecord = {
+        ...deliverRecord,
+        supplier: deliverFormData.supplier || deliverRecord.supplier,
+        purchase: deliverFormData.purchase || deliverRecord.purchase,
+        invoiceIn: deliverFormData.invoiceIn || deliverRecord.invoiceIn,
+        invoiceOut: deliverFormData.invoiceNumber || deliverRecord.invoiceOut,
+        withdrawalNumber: deliverFormData.withdrawalNumber || deliverRecord.withdrawalNumber,
+        dueSupplierToRk: deliverFormData.dueSupplierToRk || deliverRecord.dueSupplierToRk,
+        isDelivered: true,
+        deliveredAt: now,
+        updatedAt: now,
+      };
       const nextRecords = records.map(item =>
         item.id === deliverRecord.id
           ? updatedRecord
@@ -2024,6 +2047,15 @@ function DueDeliveryPage() {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm mb-1">PUCHASE</label>
+                      <input
+                        name="purchase"
+                        value={deliverFormData.purchase}
+                        onChange={handleDeliverInputChange}
+                        className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-sm mb-1">Customer</label>
                       <input
                         name="customer"
@@ -2042,6 +2074,15 @@ function DueDeliveryPage() {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm mb-1">INVOICE IN</label>
+                      <input
+                        name="invoiceIn"
+                        value={deliverFormData.invoiceIn}
+                        onChange={handleDeliverInputChange}
+                        className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-sm mb-1">invoice out</label>
                       <input
                         name="invoiceNumber"
@@ -2055,6 +2096,15 @@ function DueDeliveryPage() {
                       <input
                         name="withdrawalNumber"
                         value={deliverFormData.withdrawalNumber}
+                        onChange={handleDeliverInputChange}
+                        className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Q'TY supplier to RK</label>
+                      <input
+                        name="dueSupplierToRk"
+                        value={deliverFormData.dueSupplierToRk}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
                       />
@@ -2242,68 +2292,6 @@ function DueDeliveryPage() {
                     value={formData.supplier}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">PR / PO *</label>
-                  <input
-                    name="prPo"
-                    value={formData.prPo}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">เลขที่ใบเบิก</label>
-                  <input
-                    name="withdrawalNumber"
-                    value={formData.withdrawalNumber}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">PUCHASE</label>
-                  <input
-                    name="purchase"
-                    value={formData.purchase}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">INVOICE IN</label>
-                  <input
-                    name="invoiceIn"
-                    value={formData.invoiceIn}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">INVOICE OUT</label>
-                  <input
-                    name="invoiceOut"
-                    value={formData.invoiceOut}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white/80 mb-2">Q'TY supplier to RK</label>
-                  <input
-                    type="text"
-                    name="dueSupplierToRk"
-                    value={formData.dueSupplierToRk}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
 

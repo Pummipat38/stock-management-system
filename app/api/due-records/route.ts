@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 type DueRecordInput = {
   deliveryType?: string;
   myobNumber?: string;
+  productRequestNo?: string;
   customer?: string;
   countryOfOrigin?: string;
   sampleRequestSheet?: string;
@@ -13,9 +14,18 @@ type DueRecordInput = {
   revisionLevel?: string;
   revisionNumber?: string;
   event?: string;
+  supplier?: string;
   customerPo?: string;
+  prPo?: string;
+  purchase?: string;
+  invoiceIn?: string;
+  invoiceOut?: string;
+  withdrawalNumber?: string;
   quantity?: number;
   dueDate?: string;
+  dueSupplierToCustomer?: string;
+  dueSupplierToRk?: string;
+  dueRkToCustomer?: string;
   isDelivered?: boolean;
   deliveredAt?: string | null;
   createdAt?: string;
@@ -129,6 +139,7 @@ export async function POST(request: Request) {
         dedupeKey,
         deliveryType,
         myobNumber: normalizeText(data.myobNumber),
+        productRequestNo: normalizeText(data.productRequestNo),
         customer,
         countryOfOrigin: normalizeText(data.countryOfOrigin),
         sampleRequestSheet: normalizeText(data.sampleRequestSheet),
@@ -139,8 +150,17 @@ export async function POST(request: Request) {
         revisionNumber,
         event,
         customerPo,
+        supplier: normalizeText(data.supplier),
+        prPo: normalizeText(data.prPo),
+        purchase: normalizeText(data.purchase),
+        invoiceIn: normalizeText(data.invoiceIn),
+        invoiceOut: normalizeText(data.invoiceOut),
+        withdrawalNumber: normalizeText(data.withdrawalNumber),
         quantity,
         dueDate,
+        dueSupplierToCustomer: normalizeText(data.dueSupplierToCustomer),
+        dueSupplierToRk: normalizeText(data.dueSupplierToRk),
+        dueRkToCustomer: normalizeText(data.dueRkToCustomer),
         isDelivered: Boolean(data.isDelivered),
         deliveredAt,
         ...(createdAt ? { createdAt } : {}),
@@ -149,6 +169,7 @@ export async function POST(request: Request) {
       update: {
         deliveryType,
         myobNumber: normalizeText(data.myobNumber),
+        productRequestNo: normalizeText(data.productRequestNo),
         customer,
         countryOfOrigin: normalizeText(data.countryOfOrigin),
         sampleRequestSheet: normalizeText(data.sampleRequestSheet),
@@ -159,8 +180,17 @@ export async function POST(request: Request) {
         revisionNumber,
         event,
         customerPo,
+        supplier: normalizeText(data.supplier),
+        prPo: normalizeText(data.prPo),
+        purchase: normalizeText(data.purchase),
+        invoiceIn: normalizeText(data.invoiceIn),
+        invoiceOut: normalizeText(data.invoiceOut),
+        withdrawalNumber: normalizeText(data.withdrawalNumber),
         quantity,
         dueDate,
+        dueSupplierToCustomer: normalizeText(data.dueSupplierToCustomer),
+        dueSupplierToRk: normalizeText(data.dueSupplierToRk),
+        dueRkToCustomer: normalizeText(data.dueRkToCustomer),
         isDelivered: Boolean(data.isDelivered),
         deliveredAt,
       },
