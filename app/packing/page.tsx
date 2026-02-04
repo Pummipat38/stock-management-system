@@ -532,6 +532,7 @@ function DueDeliveryPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [deliverRecord, setDeliverRecord] = useState<DueRecord | null>(null);
   const [isDeliverTypeOpen, setIsDeliverTypeOpen] = useState(false);
+  const [deliverJobMode, setDeliverJobMode] = useState<'new' | 'mass'>('new');
   const [deliverFormData, setDeliverFormData] = useState<DeliverFormData>({
     event: '',
     supplier: '',
@@ -1153,24 +1154,24 @@ function DueDeliveryPage() {
   const handleSelectDeliverType = async (type: 'new' | 'mass') => {
     if (!deliverRecord) return;
     setIsDeliverTypeOpen(false);
+    setDeliverJobMode(type);
     if (type === 'mass') {
-      const now = new Date().toISOString();
-      const updatedRecord: DueRecord = { ...deliverRecord, isDelivered: true, deliveredAt: now, updatedAt: now };
-      const nextRecords = records.map(item =>
-        item.id === deliverRecord.id
-          ? updatedRecord
-          : item
-      );
-      setRecords(nextRecords);
-      try {
-        await upsertDueRecord(updatedRecord);
-        await loadDueRecords(undefined, true);
-      } catch (error) {
-        console.error('Error syncing due records:', error);
-        alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
-      }
-      setDeliverRecord(null);
-      alert('บันทึกงาน MASS สำเร็จ (ไม่ตัดสต๊อก)');
+      setIsStockInsufficient(false);
+      setDeliverFormData({
+        event: deliverRecord.event || '',
+        supplier: deliverRecord.supplier || '',
+        customer: deliverRecord.customer || '',
+        customerPo: deliverRecord.customerPo || '',
+        purchase: deliverRecord.purchase || '',
+        invoiceIn: deliverRecord.invoiceIn || '',
+        invoiceNumber: '',
+        issueDate: buildToday(),
+        dueDate: deliverRecord.dueDate || '',
+        withdrawalNumber: '',
+        dueSupplierToRk: deliverRecord.dueSupplierToRk || '',
+        remarks: '',
+      });
+      setIsDeliverFormOpen(true);
       return;
     }
     const balance = getRecordBalance(deliverRecord);
@@ -1218,65 +1219,69 @@ function DueDeliveryPage() {
 
   const handleDeliverConfirm = async () => {
     if (!deliverRecord) return;
-    const balance = getRecordBalance(deliverRecord);
-    const totalAvailableQty = balance;
-    if (deliverRecord.quantity > totalAvailableQty) {
-      setIsStockInsufficient(true);
-      alert('งานคงเหลือไม่พอ');
-      return;
+    if (deliverJobMode === 'new') {
+      const balance = getRecordBalance(deliverRecord);
+      const totalAvailableQty = balance;
+      if (deliverRecord.quantity > totalAvailableQty) {
+        setIsStockInsufficient(true);
+        alert('งานคงเหลือไม่พอ');
+        return;
+      }
     }
 
     try {
-      const sameItemGroup = stockItems
-        .filter(item =>
-          item.myobNumber === deliverRecord.myobNumber &&
-          item.partNumber === deliverRecord.partNumber &&
-          (item.receivedQty - (item.issuedQty || 0)) > 0
-        )
-        .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
+      if (deliverJobMode === 'new') {
+        const sameItemGroup = stockItems
+          .filter(item =>
+            item.myobNumber === deliverRecord.myobNumber &&
+            item.partNumber === deliverRecord.partNumber &&
+            (item.receivedQty - (item.issuedQty || 0)) > 0
+          )
+          .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
 
-      let remainingQtyToIssue = deliverRecord.quantity;
+        let remainingQtyToIssue = deliverRecord.quantity;
 
-      for (const item of sameItemGroup) {
-        if (remainingQtyToIssue <= 0) break;
-        const availableInThisItem = item.receivedQty - (item.issuedQty || 0);
-        const qtyToIssueFromThisItem = Math.min(remainingQtyToIssue, availableInThisItem);
+        for (const item of sameItemGroup) {
+          if (remainingQtyToIssue <= 0) break;
+          const availableInThisItem = item.receivedQty - (item.issuedQty || 0);
+          const qtyToIssueFromThisItem = Math.min(remainingQtyToIssue, availableInThisItem);
 
-        if (qtyToIssueFromThisItem > 0) {
-          const issueRecord = {
-            myobNumber: item.myobNumber,
-            model: item.model,
-            partName: item.partName,
-            partNumber: item.partNumber,
-            revision: item.revision,
-            poNumber: item.poNumber,
-            receivedQty: 0,
-            receivedDate: item.receivedDate,
-            supplier: deliverFormData.supplier || item.supplier,
-            issuedQty: qtyToIssueFromThisItem,
-            invoiceNumber: deliverFormData.invoiceNumber || deliverFormData.customerPo || deliverRecord.customerPo || '',
-            issueDate: deliverFormData.issueDate,
-            dueDate: deliverFormData.dueDate || deliverRecord.dueDate || undefined,
-            customer: deliverFormData.customer || deliverRecord.customer,
-            event: deliverFormData.event || deliverRecord.event,
-            withdrawalNumber: deliverFormData.withdrawalNumber || '',
-            remarks: deliverFormData.remarks || '',
-          };
+          if (qtyToIssueFromThisItem > 0) {
+            const issueRecord = {
+              myobNumber: item.myobNumber,
+              model: item.model,
+              partName: item.partName,
+              partNumber: item.partNumber,
+              revision: item.revision,
+              poNumber: item.poNumber,
+              receivedQty: 0,
+              receivedDate: item.receivedDate,
+              supplier: deliverFormData.supplier || item.supplier,
+              issuedQty: qtyToIssueFromThisItem,
+              invoiceNumber: deliverFormData.invoiceNumber || deliverFormData.customerPo || deliverRecord.customerPo || '',
+              issueDate: deliverFormData.issueDate,
+              dueDate: deliverFormData.dueDate || deliverRecord.dueDate || undefined,
+              customer: deliverFormData.customer || deliverRecord.customer,
+              event: deliverFormData.event || deliverRecord.event,
+              withdrawalNumber: deliverFormData.withdrawalNumber || '',
+              remarks: deliverFormData.remarks || '',
+            };
 
-          const response = await fetch('/api/stock', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(issueRecord),
-          });
+            const response = await fetch('/api/stock', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(issueRecord),
+            });
 
-          if (!response.ok) {
-            alert('เกิดข้อผิดพลาดในการบันทึกบางรายการ');
-            return;
+            if (!response.ok) {
+              alert('เกิดข้อผิดพลาดในการบันทึกบางรายการ');
+              return;
+            }
+
+            remainingQtyToIssue -= qtyToIssueFromThisItem;
           }
-
-          remainingQtyToIssue -= qtyToIssueFromThisItem;
         }
       }
 
@@ -1311,10 +1316,10 @@ function DueDeliveryPage() {
       }
       setStockItems(prev => [...prev]);
       closeDeliverForm();
-      alert('ตัดสต็อกและบันทึกการจ่ายออกสำเร็จ!');
+      alert(deliverJobMode === 'mass' ? 'บันทึกงาน MASS สำเร็จ (ไม่ตัดสต๊อก)' : 'บันทึกและตัดสต๊อกสำเร็จ');
     } catch (error) {
-      console.error('Error saving issuing data:', error);
-      alert('เกิดข้อผิดพลาดในการบันทึก: ' + error);
+      console.error('Error issuing:', error);
+      alert('เกิดข้อผิดพลาด: ' + error);
     }
   };
 
