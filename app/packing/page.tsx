@@ -624,7 +624,7 @@ function DueDeliveryPage() {
         purchase: record.purchase ?? '',
         invoiceIn: record.invoiceIn ?? '',
         invoiceOut: record.invoiceOut ?? '',
-        dueSupplierToRk: record.dueSupplierToRk ?? '',
+        dueSupplierToRk: String((record as any).dueSupplierToRk ?? ''),
       }))
     );
   };
@@ -1281,6 +1281,9 @@ function DueDeliveryPage() {
       }
 
       const now = new Date().toISOString();
+      const deliveredAtValue = deliverFormData.issueDate
+        ? new Date(deliverFormData.issueDate).toISOString()
+        : now;
       const updatedRecord: DueRecord = {
         ...deliverRecord,
         supplier: deliverFormData.supplier || deliverRecord.supplier,
@@ -1290,7 +1293,7 @@ function DueDeliveryPage() {
         withdrawalNumber: deliverFormData.withdrawalNumber || deliverRecord.withdrawalNumber,
         dueSupplierToRk: deliverFormData.dueSupplierToRk || deliverRecord.dueSupplierToRk,
         isDelivered: true,
-        deliveredAt: now,
+        deliveredAt: deliveredAtValue,
         updatedAt: now,
       };
       const nextRecords = records.map(item =>
@@ -1870,16 +1873,21 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.supplier || ''}>
                               {record.supplier || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.dueSupplierToRk || ''}>
-                              {record.dueSupplierToRk || '-'}
+                            <div
+                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
+                              title={record.dueSupplierToRk == null ? '' : String(record.dueSupplierToRk)}
+                            >
+                              {record.dueSupplierToRk == null || String(record.dueSupplierToRk).trim() === ''
+                                ? '-'
+                                : String(record.dueSupplierToRk)}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.prPo || record.customerPo || ''}>
-                              {record.prPo || record.customerPo || '-'}
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.prPo || ''}>
+                              {record.prPo || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
                               {record.withdrawalNumber || '-'}
@@ -2309,17 +2317,6 @@ function DueDeliveryPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white/80 mb-2">DATE OUT</label>
-                  <input
-                    type="date"
-                    name="deliveredAt"
-                    value={formData.deliveredAt || ''}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
                   <label className="block text-white/80 mb-2">Country of Origin *</label>
                   <div className="flex items-center gap-3">
                     <div className="relative w-full max-w-[520px]">
