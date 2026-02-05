@@ -135,41 +135,48 @@ export async function POST(request: Request) {
         : new Date(data.deliveredAt);
 
     if (data.id) {
-      const record = await prisma.dueRecord.update({
+      const existing = await prisma.dueRecord.findUnique({
         where: { id: data.id },
-        data: {
-          dedupeKey,
-          deliveryType,
-          myobNumber: normalizeText(data.myobNumber),
-          productRequestNo: normalizeText(data.productRequestNo),
-          customer,
-          countryOfOrigin: normalizeText(data.countryOfOrigin),
-          sampleRequestSheet: normalizeText(data.sampleRequestSheet),
-          model,
-          partNumber,
-          partName,
-          revisionLevel,
-          revisionNumber,
-          event,
-          customerPo,
-          supplier: normalizeText(data.supplier),
-          prPo: normalizeText(data.prPo || customerPo),
-          purchase: normalizeText(data.purchase),
-          invoiceIn: normalizeText(data.invoiceIn),
-          invoiceOut: normalizeText(data.invoiceOut),
-          withdrawalNumber: normalizeText(data.withdrawalNumber),
-          quantity,
-          dueDate,
-          dueSupplierToCustomer: normalizeText(data.dueSupplierToCustomer),
-          dueSupplierToRk: normalizeText(data.dueSupplierToRk),
-          dueRkToCustomer: normalizeText(data.dueRkToCustomer),
-          isDelivered: Boolean(data.isDelivered),
-          deliveredAt,
-          ...(updatedAt ? { updatedAt } : {}),
-        },
+        select: { id: true },
       });
 
-      return NextResponse.json(record, { status: 201 });
+      if (existing) {
+        const record = await prisma.dueRecord.update({
+          where: { id: data.id },
+          data: {
+            dedupeKey,
+            deliveryType,
+            myobNumber: normalizeText(data.myobNumber),
+            productRequestNo: normalizeText(data.productRequestNo),
+            customer,
+            countryOfOrigin: normalizeText(data.countryOfOrigin),
+            sampleRequestSheet: normalizeText(data.sampleRequestSheet),
+            model,
+            partNumber,
+            partName,
+            revisionLevel,
+            revisionNumber,
+            event,
+            customerPo,
+            supplier: normalizeText(data.supplier),
+            prPo: normalizeText(data.prPo || customerPo),
+            purchase: normalizeText(data.purchase),
+            invoiceIn: normalizeText(data.invoiceIn),
+            invoiceOut: normalizeText(data.invoiceOut),
+            withdrawalNumber: normalizeText(data.withdrawalNumber),
+            quantity,
+            dueDate,
+            dueSupplierToCustomer: normalizeText(data.dueSupplierToCustomer),
+            dueSupplierToRk: normalizeText(data.dueSupplierToRk),
+            dueRkToCustomer: normalizeText(data.dueRkToCustomer),
+            isDelivered: Boolean(data.isDelivered),
+            deliveredAt,
+            ...(updatedAt ? { updatedAt } : {}),
+          },
+        });
+
+        return NextResponse.json(record, { status: 201 });
+      }
     }
 
     const record = await prisma.dueRecord.upsert({
@@ -238,8 +245,9 @@ export async function POST(request: Request) {
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
     console.error('Error creating due record:', error);
+    const details = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to create due record' },
+      { error: 'Failed to create due record', details: details.slice(0, 800) },
       { status: 500 }
     );
   }

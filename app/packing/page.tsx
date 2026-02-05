@@ -38,6 +38,8 @@ interface DueRecord extends DueFormData {
   dueRkToCustomer?: string;
 }
 
+type DueRecordUpsertInput = Omit<DueRecord, 'id'> & { id?: string };
+
 interface DeliverFormData {
   event: string;
   supplier: string;
@@ -672,7 +674,7 @@ function DueDeliveryPage() {
     return response.json().catch(() => null);
   };
 
-  const upsertDueRecord = async (record: DueRecord) => {
+  const upsertDueRecord = async (record: DueRecordUpsertInput) => {
     const response = await fetch('/api/due-records', {
       method: 'POST',
       headers: {
@@ -683,7 +685,13 @@ function DueDeliveryPage() {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '');
-      throw new Error(text || 'Failed to upsert due record');
+      try {
+        const parsed = JSON.parse(text) as { error?: string; details?: string };
+        const message = parsed?.details ? `${parsed.error || 'Error'}: ${parsed.details}` : parsed?.error;
+        throw new Error(message || text || 'Failed to upsert due record');
+      } catch {
+        throw new Error(text || 'Failed to upsert due record');
+      }
     }
     return response.json().catch(() => null);
   };
@@ -1389,6 +1397,8 @@ function DueDeliveryPage() {
     const nextIsDelivered = Boolean(deliveredAtIso);
     let nextRecords: DueRecord[] = [];
     let recordsToUpsert: DueRecord[] = [];
+    const snapshot = records;
+    let saved = false;
 
     if (editingRecord) {
       nextRecords = records.map(record =>
@@ -1410,13 +1420,14 @@ function DueDeliveryPage() {
       const updated = nextRecords.find(record => record.id === editingRecord.id);
       if (updated) recordsToUpsert = [updated];
     } else {
+      const tempId = `temp-${Date.now()}`;
       const newRecord: DueRecord = {
         ...formData,
         quantity: Number(formData.quantity) || 0,
         customerPo: formData.customerPo || formData.prPo,
         prPo: formData.prPo || formData.customerPo,
         dueRkToCustomer: formData.dueDate,
-        id: `${Date.now()}`,
+        id: tempId,
         createdAt: now,
         updatedAt: now,
         isDelivered: nextIsDelivered,
@@ -1429,16 +1440,25 @@ function DueDeliveryPage() {
     setRecords(nextRecords);
     try {
       for (const record of recordsToUpsert) {
-        await upsertDueRecord(record);
+        if (editingRecord) {
+          await upsertDueRecord(record);
+        } else {
+          const { id: _ignoreId, ...payload } = record;
+          await upsertDueRecord(payload);
+        }
       }
       await loadDueRecords(undefined, true);
+      saved = true;
     } catch (error) {
       console.error('Error syncing due records:', error);
       alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
+      setRecords(snapshot);
     }
-    setEditingRecord(null);
-    setFormData(createEmptyForm(formData.deliveryType));
-    setView('list');
+    if (saved) {
+      setEditingRecord(null);
+      setFormData(createEmptyForm(formData.deliveryType));
+      setView('list');
+    }
   };
 
   const handleEditRecord = (record: DueRecord) => {
