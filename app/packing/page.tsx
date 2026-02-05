@@ -616,12 +616,22 @@ function DueDeliveryPage() {
     const normalized = Array.isArray(data) ? (data as DueRecord[]) : [];
     setRecords(
       normalized.map(record => ({
+        ...(() => {
+          const normalizePo = (value: unknown) => {
+            const text = String(value ?? '').trim();
+            return text === '-' ? '' : text;
+          };
+          const nextCustomerPo = normalizePo((record as any).customerPo);
+          const nextPrPo = normalizePo((record as any).prPo);
+          return {
+            customerPo: nextCustomerPo || nextPrPo || '',
+            prPo: nextPrPo || nextCustomerPo || '',
+          };
+        })(),
         ...record,
         isDelivered: record.isDelivered ?? false,
         productRequestNo: record.productRequestNo ?? '',
         supplier: record.supplier ?? '',
-        customerPo: (record as any).customerPo ?? '',
-        prPo: record.prPo ?? '',
         withdrawalNumber: record.withdrawalNumber ?? '',
         purchase: record.purchase ?? '',
         invoiceIn: record.invoiceIn ?? '',
@@ -1887,9 +1897,9 @@ function DueDeliveryPage() {
                             </div>
                             <div
                               className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
-                              title={record.prPo || (record as any).customerPo || ''}
+                              title={record.customerPo || record.prPo || ''}
                             >
-                              {record.prPo || (record as any).customerPo || '-'}
+                              {record.customerPo || record.prPo || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
                               {record.withdrawalNumber || '-'}
