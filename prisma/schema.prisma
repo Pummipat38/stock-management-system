@@ -87,6 +87,7 @@ model DueRecord {
   revisionNumber     String   @map("revision_number")
   event              String
   supplier           String   @default("")
+  issuePrDate        String   @default("") @map("issue_pr_date")
   customerPo         String   @map("customer_po")
   prPo               String   @default("") @map("pr_po")
   purchase           String   @default("")

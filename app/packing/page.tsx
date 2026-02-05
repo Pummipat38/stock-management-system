@@ -17,6 +17,7 @@ interface DueFormData {
   revisionNumber: string;
   event: string;
   supplier: string;
+  issuePrDate: string;
   customerPo: string;
   prPo: string;
   withdrawalNumber: string;
@@ -490,6 +491,7 @@ const createEmptyForm = (deliveryType: 'domestic' | 'international'): DueFormDat
   revisionNumber: '',
   event: '',
   supplier: '',
+  issuePrDate: '',
   customerPo: '',
   prPo: '',
   withdrawalNumber: '',
@@ -650,6 +652,7 @@ function DueDeliveryPage() {
         isDelivered: record.isDelivered ?? false,
         productRequestNo: record.productRequestNo ?? '',
         supplier: record.supplier ?? '',
+        issuePrDate: record.issuePrDate ?? '',
         withdrawalNumber: record.withdrawalNumber ?? '',
         purchase: record.purchase ?? '',
         invoiceIn: record.invoiceIn ?? '',
@@ -830,6 +833,7 @@ function DueDeliveryPage() {
         revisionNumber?: string;
         event?: string;
         supplier?: string;
+        issuePrDate?: string;
         customerPo?: string;
         prPo?: string;
         purchase?: string;
@@ -1007,6 +1011,7 @@ function DueDeliveryPage() {
             revisionNumber,
             event,
             supplier,
+            issuePrDate: '',
             customerPo: finalCustomerPo,
             prPo,
             purchase,
@@ -1479,6 +1484,7 @@ function DueDeliveryPage() {
       event: record.event,
       customerPo: record.customerPo || record.prPo || '',
       supplier: record.supplier || '',
+      issuePrDate: record.issuePrDate || '',
       prPo: record.prPo || record.customerPo || '',
       withdrawalNumber: record.withdrawalNumber || '',
       purchase: record.purchase || '',
@@ -1890,14 +1896,14 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
-                <div className={isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'}>
+                <div className={isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'}>
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid ${isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'} ${
+                        className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                           isSelectMode
-                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_140px]'
-                            : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                            : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-fit min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
@@ -1924,6 +1930,7 @@ function DueDeliveryPage() {
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">ISSUE PR Date</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PR / PO</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">เลขที่ใบเบิก</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PUCHASE</span>
@@ -1948,10 +1955,10 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid ${isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'} ${
+                              className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_140px]'
-                                  : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                                  : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                               } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-fit min-h-[52px]`}
                             >
                               {isSelectMode && (
@@ -2022,6 +2029,12 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
+                            </div>
+                            <div
+                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
+                              title={record.issuePrDate || ''}
+                            >
+                              {record.issuePrDate || '-'}
                             </div>
                             <div
                               className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
@@ -2450,6 +2463,17 @@ function DueDeliveryPage() {
                   <input
                     name="supplier"
                     value={formData.supplier}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 mb-2">ISSUE PR Date</label>
+                  <input
+                    type="date"
+                    name="issuePrDate"
+                    value={formData.issuePrDate}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />

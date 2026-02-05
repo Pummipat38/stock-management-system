@@ -22,6 +22,7 @@ type DueRecordInput = {
   revisionNumber?: string;
   event?: string;
   supplier?: string;
+  issuePrDate?: string;
   customerPo?: string;
   prPo?: string;
   purchase?: string;
@@ -91,6 +92,7 @@ type PreparedDueRecord = {
   revisionNumber: string;
   event: string;
   supplier: string;
+  issuePrDate: string;
   customerPo: string;
   prPo: string;
   purchase: string;
@@ -146,6 +148,7 @@ export async function POST(request: Request) {
       const revisionNumber = normalizeText(item.revisionNumber);
       const event = normalizeText(item.event);
       const supplier = normalizeText(item.supplier);
+      const issuePrDate = normalizeText(item.issuePrDate);
       const customerPo = normalizeText(item.customerPo);
       const prPo = normalizeText(item.prPo);
       const purchase = normalizeText(item.purchase);
@@ -208,6 +211,7 @@ export async function POST(request: Request) {
         revisionNumber,
         event,
         supplier,
+        issuePrDate,
         customerPo,
         prPo,
         purchase,
@@ -258,6 +262,7 @@ export async function POST(request: Request) {
             ${r.revisionNumber},
             ${r.event},
             ${r.supplier},
+            ${r.issuePrDate},
             ${r.customerPo},
             ${r.prPo},
             ${r.purchase},
@@ -291,6 +296,7 @@ export async function POST(request: Request) {
             revision_number,
             event,
             supplier,
+            issue_pr_date,
             customer_po,
             pr_po,
             purchase,
@@ -320,6 +326,7 @@ export async function POST(request: Request) {
             revision_number = excluded.revision_number,
             event = excluded.event,
             supplier = excluded.supplier,
+            issue_pr_date = excluded.issue_pr_date,
             customer_po = excluded.customer_po,
             pr_po = excluded.pr_po,
             purchase = excluded.purchase,

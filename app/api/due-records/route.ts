@@ -16,6 +16,7 @@ type DueRecordInput = {
   revisionNumber?: string;
   event?: string;
   supplier?: string;
+  issuePrDate?: string;
   customerPo?: string;
   prPo?: string;
   purchase?: string;
@@ -159,6 +160,7 @@ export async function POST(request: Request) {
             event,
             customerPo,
             supplier: normalizeText(data.supplier),
+            issuePrDate: normalizeText(data.issuePrDate),
             prPo: normalizeText(data.prPo || customerPo),
             purchase: normalizeText(data.purchase),
             invoiceIn: normalizeText(data.invoiceIn),
@@ -197,6 +199,7 @@ export async function POST(request: Request) {
         event,
         customerPo,
         supplier: normalizeText(data.supplier),
+        issuePrDate: normalizeText(data.issuePrDate),
         prPo: normalizeText(data.prPo || customerPo),
         purchase: normalizeText(data.purchase),
         invoiceIn: normalizeText(data.invoiceIn),
@@ -227,6 +230,7 @@ export async function POST(request: Request) {
         event,
         customerPo,
         supplier: normalizeText(data.supplier),
+        issuePrDate: normalizeText(data.issuePrDate),
         prPo: normalizeText(data.prPo || customerPo),
         purchase: normalizeText(data.purchase),
         invoiceIn: normalizeText(data.invoiceIn),

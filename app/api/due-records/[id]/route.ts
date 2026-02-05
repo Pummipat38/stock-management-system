@@ -13,6 +13,7 @@ type DueRecordPatch = {
   revisionLevel?: string;
   revisionNumber?: string;
   event?: string;
+  issuePrDate?: string;
   customerPo?: string;
   quantity?: number;
   dueDate?: string;
@@ -73,6 +74,7 @@ export async function PATCH(
       revisionLevel: patch.revisionLevel ?? existing.revisionLevel,
       revisionNumber: patch.revisionNumber ?? existing.revisionNumber,
       event: patch.event ?? existing.event,
+      issuePrDate: patch.issuePrDate ?? (existing as any).issuePrDate,
       customerPo: patch.customerPo ?? existing.customerPo,
       quantity: patch.quantity ?? existing.quantity,
       dueDate: patch.dueDate ?? existing.dueDate,
@@ -100,6 +102,7 @@ export async function PATCH(
         revisionLevel: normalizeText(merged.revisionLevel),
         revisionNumber: normalizeText(merged.revisionNumber),
         event: normalizeText(merged.event),
+        issuePrDate: normalizeText(merged.issuePrDate),
         customerPo: normalizeText(merged.customerPo),
         quantity: Number(merged.quantity) || 0,
         dueDate: normalizeText(merged.dueDate),
