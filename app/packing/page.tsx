@@ -1890,14 +1890,14 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
-                <div className="min-w-[3000px]">
+                <div className="min-w-[3240px]">
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid min-w-[3000px] ${
+                        className={`grid min-w-[3240px] ${
                           isSelectMode
-                            ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
-                            : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                            ? 'grid-cols-[60px_360px_140px_140px_110px_150px_260px_110px_160px_130px_200px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                            : 'grid-cols-[360px_140px_140px_110px_150px_260px_110px_160px_130px_200px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
@@ -1948,10 +1948,10 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid min-w-[3000px] ${
+                              className={`grid min-w-[3240px] ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
-                                  : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                                  ? 'grid-cols-[60px_360px_140px_140px_110px_150px_260px_110px_160px_130px_200px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
+                                  : 'grid-cols-[360px_140px_140px_110px_150px_260px_110px_160px_130px_200px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
                               } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-full min-h-[44px]`}
                             >
                               {isSelectMode && (
