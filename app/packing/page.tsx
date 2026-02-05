@@ -1890,15 +1890,15 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
-                <div className="min-w-[3456px]">
+                <div className={isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'}>
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid min-w-[3456px] ${
+                        className={`grid ${isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'} ${
                           isSelectMode
-                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_140px]'
                             : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
-                        } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
+                        } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-fit min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
                         <span
@@ -1948,11 +1948,11 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid min-w-[3456px] ${
+                              className={`grid ${isSelectMode ? 'min-w-[3340px]' : 'min-w-[3236px]'} ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_140px]'
                                   : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
-                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-full min-h-[56px]`}
+                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-fit min-h-[56px]`}
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
@@ -1984,7 +1984,7 @@ function DueDeliveryPage() {
                                       />
                                     ) : null}
                                     <div className="min-w-0 flex flex-col leading-tight">
-                                      <span className="min-w-0 truncate" title={customerName}>
+                                      <span className="min-w-0 truncate text-sm" title={customerName}>
                                         {customerName}
                                       </span>
                                       <span className="min-w-0 truncate text-[10px] opacity-80" title={flagCountry}>
@@ -2042,8 +2042,8 @@ function DueDeliveryPage() {
                               {record.invoiceOut || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            <div className="px-1 py-1 flex items-center justify-center text-center border-l border-white/20 overflow-hidden">
-                              <div className="flex items-center justify-center gap-2 w-full">
+                            <div className="px-1 py-1 flex items-center justify-start text-center border-l border-white/20 overflow-hidden">
+                              <div className="flex items-center justify-start gap-2">
                                 {listMode === 'pending' ? (
                                   <button
                                     onClick={() => openDeliverForm(record)}
