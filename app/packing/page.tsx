@@ -672,6 +672,38 @@ function DueDeliveryPage() {
     return response.json().catch(() => null);
   };
 
+  const deleteDueRecord = async (record: DueRecord) => {
+    const ok = window.confirm('ต้องการลบรายการนี้ใช่ไหม?');
+    if (!ok) return;
+
+    try {
+      const response = await fetch(`/api/due-records/${record.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || 'Failed to delete due record');
+      }
+
+      setRecords(prev => prev.filter(item => item.id !== record.id));
+      setSelectedIds(prev => prev.filter(id => id !== record.id));
+
+      if (editingRecord?.id === record.id) {
+        setEditingRecord(null);
+        setFormData(createEmptyForm(formData.deliveryType));
+        setView('list');
+      }
+
+      if (deliverRecord?.id === record.id) {
+        closeDeliverForm();
+      }
+    } catch (error) {
+      console.error('Error deleting due record:', error);
+      alert('ลบไม่สำเร็จ (Supabase): ' + error);
+    }
+  };
+
   const handleImportExcel = async () => {
     if (!importFile) {
       alert('กรุณาเลือกไฟล์ Excel');
@@ -1915,18 +1947,28 @@ function DueDeliveryPage() {
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
                             <div className="px-2 py-1 flex items-center justify-center text-center border-l border-white/20 overflow-hidden">
-                              {listMode === 'pending' ? (
+                              <div className="flex items-center justify-center gap-2 w-full">
+                                {listMode === 'pending' ? (
+                                  <button
+                                    onClick={() => openDeliverForm(record)}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-8 flex-1 whitespace-nowrap"
+                                  >
+                                    📁 ส่งงาน
+                                  </button>
+                                ) : (
+                                  <span className="bg-white/15 text-white/80 px-3 py-1 rounded-md text-xs leading-tight h-8 flex items-center justify-center flex-1 whitespace-nowrap">
+                                    ส่งแล้ว
+                                  </span>
+                                )}
                                 <button
-                                  onClick={() => openDeliverForm(record)}
-                                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-8 w-full whitespace-nowrap"
+                                  type="button"
+                                  onClick={() => deleteDueRecord(record)}
+                                  className="bg-red-600 hover:bg-red-700 text-white h-8 w-10 rounded-md flex items-center justify-center text-xs"
+                                  title="ลบรายการ"
                                 >
-                                  📁 ส่งงาน
+                                  🗑
                                 </button>
-                              ) : (
-                                <span className="bg-white/15 text-white/80 px-4 py-2 rounded-lg text-sm">
-                                  ส่งแล้ว {record.deliveredAt ? `(${record.deliveredAt.split('T')[0]})` : ''}
-                                </span>
-                              )}
+                              </div>
                             </div>
                             </div>
                           </div>
