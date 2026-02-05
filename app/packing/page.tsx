@@ -1952,7 +1952,7 @@ function DueDeliveryPage() {
                                 isSelectMode
                                   ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_140px]'
                                   : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
-                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-fit min-h-[56px]`}
+                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-fit min-h-[52px]`}
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
@@ -1965,7 +1965,7 @@ function DueDeliveryPage() {
                               </div>
                             )}
                             <div
-                              className={`px-2 py-1 flex items-start justify-start text-left gap-2 overflow-hidden ${
+                              className={`px-2 py-0.5 flex items-center justify-start text-left gap-2 overflow-hidden ${
                                 isSelectMode ? 'border-l border-white/20' : ''
                               }`}
                             >
@@ -1979,7 +1979,7 @@ function DueDeliveryPage() {
                                       <img
                                         src={flagUrl}
                                         alt={flagCountry}
-                                        className="h-[14px] w-[18px] rounded-sm border border-white/30 mt-[2px]"
+                                        className="h-8 w-12 shrink-0 rounded-sm border border-white/30 object-cover"
                                         loading="lazy"
                                       />
                                     ) : null}
