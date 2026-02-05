@@ -1493,6 +1493,52 @@ function DueDeliveryPage() {
     handleEditRecord(targetRecord);
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) {
+      alert('กรุณาเลือกรายการที่ต้องการลบ');
+      return;
+    }
+
+    const ok = window.confirm(`ต้องการลบ ${selectedIds.length} รายการที่เลือกใช่ไหม?`);
+    if (!ok) return;
+
+    const idsToDelete = [...selectedIds];
+    const snapshot = records;
+
+    setRecords(prev => prev.filter(record => !idsToDelete.includes(record.id)));
+    setSelectedIds([]);
+
+    if (editingRecord && idsToDelete.includes(editingRecord.id)) {
+      setEditingRecord(null);
+      setFormData(createEmptyForm(formData.deliveryType));
+      setView('list');
+    }
+
+    if (deliverRecord && idsToDelete.includes(deliverRecord.id)) {
+      closeDeliverForm();
+    }
+
+    try {
+      for (const id of idsToDelete) {
+        const response = await fetch(`/api/due-records/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
+          throw new Error(text || 'Failed to delete due record');
+        }
+      }
+
+      await loadDueRecords(undefined, true);
+    } catch (error) {
+      console.error('Error deleting selected due records:', error);
+      setRecords(snapshot);
+      setSelectedIds(idsToDelete);
+      alert('ลบไม่สำเร็จ (Supabase): ' + error);
+    }
+  };
+
   const handleRestoreSelected = async () => {
     if (selectedIds.length === 0) {
       alert('กรุณาเลือกรายการที่ต้องการส่งกลับ');
@@ -1780,6 +1826,15 @@ function DueDeliveryPage() {
                         ✏️ แก้ไขที่เลือก ({selectedIds.length})
                       </button>
                     )}
+                    {isSelectMode && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteSelected}
+                        className="px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700"
+                      >
+                        🗑️ ลบที่เลือก ({selectedIds.length})
+                      </button>
+                    )}
                     {isSelectMode && listMode === 'delivered' && (
                       <button
                         type="button"
@@ -1976,14 +2031,16 @@ function DueDeliveryPage() {
                                     ส่งแล้ว
                                   </span>
                                 )}
-                                <button
-                                  type="button"
-                                  onClick={() => deleteDueRecord(record)}
-                                  className="bg-red-600 hover:bg-red-700 text-white h-8 w-10 rounded-md flex items-center justify-center text-xs"
-                                  title="ลบรายการ"
-                                >
-                                  🗑
-                                </button>
+                                {isSelectMode && (
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteDueRecord(record)}
+                                    className="bg-red-600 hover:bg-red-700 text-white h-8 w-10 rounded-md flex items-center justify-center text-xs"
+                                    title="ลบรายการ"
+                                  >
+                                    🗑
+                                  </button>
+                                )}
                               </div>
                             </div>
                             </div>
