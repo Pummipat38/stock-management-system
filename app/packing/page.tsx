@@ -514,6 +514,22 @@ const formatDueDate = (value?: string) => {
 const buildToday = () => new Date().toISOString().split('T')[0];
 
 function DueDeliveryPage() {
+  const dueRowColors = [
+    'text-emerald-300',
+    'text-cyan-300',
+    'text-sky-300',
+    'text-blue-300',
+    'text-indigo-300',
+    'text-violet-300',
+    'text-fuchsia-300',
+    'text-pink-300',
+    'text-rose-300',
+    'text-amber-300',
+    'text-lime-300',
+  ];
+
+  const getDueRowColor = (rowIndex: number) => dueRowColors[rowIndex % dueRowColors.length];
+
   const [view, setView] = useState<'menu' | 'list' | 'form'>('menu');
   const [selectedType, setSelectedType] = useState<'domestic' | 'international'>('domestic');
   const [records, setRecords] = useState<DueRecord[]>([]);
@@ -1861,7 +1877,7 @@ function DueDeliveryPage() {
                                 isSelectMode
                                   ? 'grid-cols-[60px_280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
                                   : 'grid-cols-[280px_140px_140px_110px_150px_260px_110px_120px_130px_140px_150px_120px_150px_130px_110px_110px_110px_110px_110px_160px]'
-                              } items-stretch gap-0 text-white text-xs font-semibold leading-tight w-full min-h-[44px]`}
+                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-full min-h-[44px]`}
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
