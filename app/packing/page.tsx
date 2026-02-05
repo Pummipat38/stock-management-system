@@ -620,6 +620,7 @@ function DueDeliveryPage() {
         isDelivered: record.isDelivered ?? false,
         productRequestNo: record.productRequestNo ?? '',
         supplier: record.supplier ?? '',
+        customerPo: (record as any).customerPo ?? '',
         prPo: record.prPo ?? '',
         withdrawalNumber: record.withdrawalNumber ?? '',
         purchase: record.purchase ?? '',
@@ -1884,8 +1885,11 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.prPo || ''}>
-                              {record.prPo || '-'}
+                            <div
+                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
+                              title={record.prPo || (record as any).customerPo || ''}
+                            >
+                              {record.prPo || (record as any).customerPo || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
                               {record.withdrawalNumber || '-'}

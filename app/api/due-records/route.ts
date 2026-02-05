@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 type DueRecordInput = {
+  id?: string;
   deliveryType?: string;
   myobNumber?: string;
   productRequestNo?: string;
@@ -132,6 +133,44 @@ export async function POST(request: Request) {
       data.deliveredAt === null || data.deliveredAt === undefined || data.deliveredAt === ''
         ? null
         : new Date(data.deliveredAt);
+
+    if (data.id) {
+      const record = await prisma.dueRecord.update({
+        where: { id: data.id },
+        data: {
+          dedupeKey,
+          deliveryType,
+          myobNumber: normalizeText(data.myobNumber),
+          productRequestNo: normalizeText(data.productRequestNo),
+          customer,
+          countryOfOrigin: normalizeText(data.countryOfOrigin),
+          sampleRequestSheet: normalizeText(data.sampleRequestSheet),
+          model,
+          partNumber,
+          partName,
+          revisionLevel,
+          revisionNumber,
+          event,
+          customerPo,
+          supplier: normalizeText(data.supplier),
+          prPo: normalizeText(data.prPo),
+          purchase: normalizeText(data.purchase),
+          invoiceIn: normalizeText(data.invoiceIn),
+          invoiceOut: normalizeText(data.invoiceOut),
+          withdrawalNumber: normalizeText(data.withdrawalNumber),
+          quantity,
+          dueDate,
+          dueSupplierToCustomer: normalizeText(data.dueSupplierToCustomer),
+          dueSupplierToRk: normalizeText(data.dueSupplierToRk),
+          dueRkToCustomer: normalizeText(data.dueRkToCustomer),
+          isDelivered: Boolean(data.isDelivered),
+          deliveredAt,
+          ...(updatedAt ? { updatedAt } : {}),
+        },
+      });
+
+      return NextResponse.json(record, { status: 201 });
+    }
 
     const record = await prisma.dueRecord.upsert({
       where: { dedupeKey },
