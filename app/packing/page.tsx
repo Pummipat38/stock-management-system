@@ -2034,7 +2034,7 @@ function DueDeliveryPage() {
                               className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
                               title={record.issuePrDate || ''}
                             >
-                              {record.issuePrDate || '-'}
+                              {record.issuePrDate ? formatDueDate(record.issuePrDate) : '-'}
                             </div>
                             <div
                               className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
