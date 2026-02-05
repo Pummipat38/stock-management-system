@@ -1890,14 +1890,14 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
-                <div className="min-w-[3480px]">
+                <div className="min-w-[3456px]">
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid min-w-[3480px] ${
+                        className={`grid min-w-[3456px] ${
                           isSelectMode
-                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_120px]'
-                            : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_120px]'
+                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                            : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-full min-h-[64px]`}
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
@@ -1948,11 +1948,11 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid min-w-[3480px] ${
+                              className={`grid min-w-[3456px] ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_120px]'
-                                  : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_120px]'
-                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-full min-h-[44px]`}
+                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                                  : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_130px_110px_110px_110px_110px_110px_96px]'
+                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-full min-h-[56px]`}
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
@@ -1965,7 +1965,7 @@ function DueDeliveryPage() {
                               </div>
                             )}
                             <div
-                              className={`px-2 py-0 flex items-center justify-start text-left gap-2 whitespace-nowrap overflow-hidden ${
+                              className={`px-2 py-1 flex items-start justify-start text-left gap-2 overflow-hidden ${
                                 isSelectMode ? 'border-l border-white/20' : ''
                               }`}
                             >
@@ -1979,13 +1979,18 @@ function DueDeliveryPage() {
                                       <img
                                         src={flagUrl}
                                         alt={flagCountry}
-                                        className="h-[14px] w-[18px] rounded-sm border border-white/30"
+                                        className="h-[14px] w-[18px] rounded-sm border border-white/30 mt-[2px]"
                                         loading="lazy"
                                       />
                                     ) : null}
-                                    <span className="min-w-0 truncate" title={customerName}>
-                                      {customerName}
-                                    </span>
+                                    <div className="min-w-0 flex flex-col leading-tight">
+                                      <span className="min-w-0 truncate" title={customerName}>
+                                        {customerName}
+                                      </span>
+                                      <span className="min-w-0 truncate text-[10px] opacity-80" title={flagCountry}>
+                                        {flagCountry || '-'}
+                                      </span>
+                                    </div>
                                   </>
                                 );
                               })()}
@@ -2037,17 +2042,17 @@ function DueDeliveryPage() {
                               {record.invoiceOut || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            <div className="px-2 py-1 flex items-center justify-center text-center border-l border-white/20 overflow-hidden">
+                            <div className="px-1 py-1 flex items-center justify-center text-center border-l border-white/20 overflow-hidden">
                               <div className="flex items-center justify-center gap-2 w-full">
                                 {listMode === 'pending' ? (
                                   <button
                                     onClick={() => openDeliverForm(record)}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md flex items-center justify-center gap-2 text-xs leading-tight h-8 flex-1 whitespace-nowrap"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md inline-flex items-center justify-center gap-2 text-xs leading-tight h-8 whitespace-nowrap"
                                   >
                                     📁 ส่งงาน
                                   </button>
                                 ) : (
-                                  <span className="bg-white/15 text-white/80 px-3 py-1 rounded-md text-xs leading-tight h-8 flex items-center justify-center flex-1 whitespace-nowrap">
+                                  <span className="bg-white/15 text-white/80 px-3 py-1 rounded-md text-xs leading-tight h-8 inline-flex items-center justify-center whitespace-nowrap">
                                     ส่งแล้ว
                                   </span>
                                 )}
