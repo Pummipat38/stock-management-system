@@ -30,6 +30,16 @@ interface DueFormData {
   dueDate: string;
 }
 
+interface DuePartRow {
+  model: string;
+  partNumber: string;
+  partName: string;
+  revisionLevel: string;
+  revisionNumber: string;
+  myobNumber: string;
+  quantity: number;
+}
+
 interface DueRecord extends DueFormData {
   id: string;
   createdAt: string;
@@ -504,6 +514,16 @@ const createEmptyForm = (deliveryType: 'domestic' | 'international'): DueFormDat
   dueDate: '',
 });
 
+const createEmptyPartRow = (): DuePartRow => ({
+  model: '',
+  partNumber: '',
+  partName: '',
+  revisionLevel: '1',
+  revisionNumber: '',
+  myobNumber: '',
+  quantity: 0,
+});
+
 const formatDueDate = (value?: string) => {
   if (!value) return '-';
   const date = new Date(value);
@@ -542,6 +562,8 @@ function DueDeliveryPage() {
   const [listMode, setListMode] = useState<'pending' | 'delivered'>('pending');
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<DueFormData>(createEmptyForm('domestic'));
+  const [isMultiPartMode, setIsMultiPartMode] = useState(false);
+  const [partRows, setPartRows] = useState<DuePartRow[]>([createEmptyPartRow()]);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [importKey, setImportKey] = useState('');
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -1203,6 +1225,29 @@ function DueDeliveryPage() {
     }));
   };
 
+  const updatePartRowField = (rowIndex: number, field: keyof DuePartRow, value: string) => {
+    setPartRows(prev => {
+      const next = [...prev];
+      const current = next[rowIndex] || createEmptyPartRow();
+      next[rowIndex] = {
+        ...current,
+        [field]: field === 'quantity' ? Number(value) : value,
+      } as DuePartRow;
+      return next;
+    });
+  };
+
+  const addPartRow = () => {
+    setPartRows(prev => [...prev, createEmptyPartRow()]);
+  };
+
+  const removePartRow = (rowIndex: number) => {
+    setPartRows(prev => {
+      if (prev.length <= 1) return [createEmptyPartRow()];
+      return prev.filter((_, idx) => idx !== rowIndex);
+    });
+  };
+
   const handleDeliverInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setDeliverFormData(prev => ({ ...prev, [name]: value }));
@@ -1425,21 +1470,82 @@ function DueDeliveryPage() {
       const updated = nextRecords.find(record => record.id === editingRecord.id);
       if (updated) recordsToUpsert = [updated];
     } else {
-      const tempId = `temp-${Date.now()}`;
-      const newRecord: DueRecord = {
-        ...formData,
-        quantity: Number(formData.quantity) || 0,
-        customerPo: formData.customerPo || formData.prPo,
-        prPo: formData.prPo || formData.customerPo,
-        dueRkToCustomer: formData.dueDate,
-        id: tempId,
-        createdAt: now,
-        updatedAt: now,
-        isDelivered: nextIsDelivered,
-        deliveredAt: deliveredAtIso,
-      };
-      nextRecords = [...records, newRecord];
-      recordsToUpsert = [newRecord];
+      if (isMultiPartMode) {
+        const activeRows = partRows.filter(row =>
+          [
+            row.model,
+            row.partNumber,
+            row.partName,
+            row.revisionLevel,
+            row.revisionNumber,
+            row.myobNumber,
+            String(row.quantity ?? ''),
+          ]
+            .map(v => String(v ?? '').trim())
+            .some(Boolean)
+        );
+
+        if (activeRows.length === 0) {
+          alert('กรุณาเพิ่มข้อมูล Part อย่างน้อย 1 รายการ');
+          return;
+        }
+
+        const missingIndex = activeRows.findIndex(row =>
+          !String(row.model || '').trim() ||
+          !String(row.partNumber || '').trim() ||
+          !String(row.partName || '').trim() ||
+          !String(row.revisionLevel || '').trim() ||
+          !String(row.revisionNumber || '').trim() ||
+          !String(row.myobNumber || '').trim() ||
+          !(Number(row.quantity) > 0)
+        );
+
+        if (missingIndex >= 0) {
+          alert(`กรุณากรอกข้อมูล Part ให้ครบ (แถวที่ ${missingIndex + 1})`);
+          return;
+        }
+
+        const newRecords: DueRecord[] = activeRows.map((row, index) => {
+          const tempId = `temp-${Date.now()}-${index}`;
+          return {
+            ...formData,
+            model: row.model,
+            partNumber: row.partNumber,
+            partName: row.partName,
+            revisionLevel: row.revisionLevel,
+            revisionNumber: row.revisionNumber,
+            myobNumber: row.myobNumber,
+            quantity: Number(row.quantity) || 0,
+            customerPo: formData.customerPo || formData.prPo,
+            prPo: formData.prPo || formData.customerPo,
+            dueRkToCustomer: formData.dueDate,
+            id: tempId,
+            createdAt: now,
+            updatedAt: now,
+            isDelivered: nextIsDelivered,
+            deliveredAt: deliveredAtIso,
+          };
+        });
+
+        nextRecords = [...records, ...newRecords];
+        recordsToUpsert = newRecords;
+      } else {
+        const tempId = `temp-${Date.now()}`;
+        const newRecord: DueRecord = {
+          ...formData,
+          quantity: Number(formData.quantity) || 0,
+          customerPo: formData.customerPo || formData.prPo,
+          prPo: formData.prPo || formData.customerPo,
+          dueRkToCustomer: formData.dueDate,
+          id: tempId,
+          createdAt: now,
+          updatedAt: now,
+          isDelivered: nextIsDelivered,
+          deliveredAt: deliveredAtIso,
+        };
+        nextRecords = [...records, newRecord];
+        recordsToUpsert = [newRecord];
+      }
     }
 
     setRecords(nextRecords);
@@ -1462,6 +1568,8 @@ function DueDeliveryPage() {
     if (saved) {
       setEditingRecord(null);
       setFormData(createEmptyForm(formData.deliveryType));
+      setIsMultiPartMode(false);
+      setPartRows([createEmptyPartRow()]);
       setView('list');
     }
   };
@@ -1826,6 +1934,8 @@ function DueDeliveryPage() {
                         onClick={() => {
                           setEditingRecord(null);
                           setFormData(createEmptyForm(selectedType));
+                          setIsMultiPartMode(false);
+                          setPartRows([createEmptyPartRow()]);
                           setView('form');
                         }}
                         className="px-6 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600"
@@ -2327,6 +2437,8 @@ function DueDeliveryPage() {
                   onClick={() => {
                     setEditingRecord(null);
                     setFormData(createEmptyForm(formData.deliveryType));
+                    setIsMultiPartMode(false);
+                    setPartRows([createEmptyPartRow()]);
                     setView('list');
                   }}
                   className="text-white/70 hover:text-white"
@@ -2336,6 +2448,56 @@ function DueDeliveryPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
+              {!editingRecord && (
+                <div className="flex justify-end">
+                  {isMultiPartMode ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const first = partRows[0] || createEmptyPartRow();
+                        setFormData(prev => ({
+                          ...prev,
+                          model: first.model,
+                          partNumber: first.partNumber,
+                          partName: first.partName,
+                          revisionLevel: first.revisionLevel,
+                          revisionNumber: first.revisionNumber,
+                          myobNumber: first.myobNumber,
+                          quantity: Number(first.quantity) || 0,
+                        }));
+                        setIsMultiPartMode(false);
+                        setPartRows([createEmptyPartRow()]);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-white/15 text-white/80 hover:bg-white/25"
+                    >
+                      Single Part
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMultiPartMode(true);
+                        setPartRows([
+                          {
+                            ...createEmptyPartRow(),
+                            model: formData.model,
+                            partNumber: formData.partNumber,
+                            partName: formData.partName,
+                            revisionLevel: formData.revisionLevel,
+                            revisionNumber: formData.revisionNumber,
+                            myobNumber: formData.myobNumber,
+                            quantity: Number(formData.quantity) || 0,
+                          },
+                        ]);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-white/15 text-white/80 hover:bg-white/25"
+                    >
+                      Multi Part
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-white/80 mb-2">Customer *</label>
@@ -2368,84 +2530,177 @@ function DueDeliveryPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">MODEL *</label>
-                  <input
-                    name="model"
-                    value={formData.model}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                {!editingRecord && isMultiPartMode ? (
+                  <div className="lg:col-span-2 space-y-4">
+                    {partRows.map((row, rowIndex) => (
+                      <div key={rowIndex} className="space-y-3 rounded-2xl border border-white/15 bg-white/5 p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-white/80 mb-2">MODEL *</label>
+                            <input
+                              value={row.model}
+                              onChange={e => updatePartRowField(rowIndex, 'model', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-white/80 mb-2">PART NO. *</label>
+                            <input
+                              value={row.partNumber}
+                              onChange={e => updatePartRowField(rowIndex, 'partNumber', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-white/80 mb-2">PART NAME *</label>
+                            <input
+                              value={row.partName}
+                              onChange={e => updatePartRowField(rowIndex, 'partName', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                        </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">PART NO. *</label>
-                  <input
-                    name="partNumber"
-                    value={formData.partNumber}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                          <div>
+                            <label className="block text-white/80 mb-2">DWG REV *</label>
+                            <input
+                              value={row.revisionLevel}
+                              onChange={e => updatePartRowField(rowIndex, 'revisionLevel', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-white/80 mb-2">DWG NO. *</label>
+                            <input
+                              value={row.revisionNumber}
+                              onChange={e => updatePartRowField(rowIndex, 'revisionNumber', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-white/80 mb-2">MYOB *</label>
+                            <input
+                              value={row.myobNumber}
+                              onChange={e => updatePartRowField(rowIndex, 'myobNumber', e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-white/80 mb-2">Q'TY to Customer *</label>
+                            <input
+                              type="number"
+                              value={row.quantity}
+                              onChange={e => updatePartRowField(rowIndex, 'quantity', e.target.value)}
+                              min="0"
+                              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => removePartRow(rowIndex)}
+                              className="px-4 py-2 rounded-xl bg-white/10 text-white/80 hover:bg-white/20"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
 
-                <div>
-                  <label className="block text-white/80 mb-2">PART NAME *</label>
-                  <input
-                    name="partName"
-                    value={formData.partName}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={addPartRow}
+                        className="px-6 py-3 rounded-xl bg-white/15 text-white/80 hover:bg-white/25"
+                      >
+                        ➕ Add Part
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-white/80 mb-2">MODEL *</label>
+                      <input
+                        name="model"
+                        value={formData.model}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">DWG REV *</label>
-                  <input
-                    name="revisionLevel"
-                    value={formData.revisionLevel}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                    <div>
+                      <label className="block text-white/80 mb-2">PART NO. *</label>
+                      <input
+                        name="partNumber"
+                        value={formData.partNumber}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">DWG NO. *</label>
-                  <input
-                    name="revisionNumber"
-                    value={formData.revisionNumber}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                    <div>
+                      <label className="block text-white/80 mb-2">PART NAME *</label>
+                      <input
+                        name="partName"
+                        value={formData.partName}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">MYOB *</label>
-                  <input
-                    name="myobNumber"
-                    value={formData.myobNumber}
-                    onChange={handleInputChange}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                    <div>
+                      <label className="block text-white/80 mb-2">DWG REV *</label>
+                      <input
+                        name="revisionLevel"
+                        value={formData.revisionLevel}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-white/80 mb-2">Q'TY to Customer *</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    required
-                  />
-                </div>
+                    <div>
+                      <label className="block text-white/80 mb-2">DWG NO. *</label>
+                      <input
+                        name="revisionNumber"
+                        value={formData.revisionNumber}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">MYOB *</label>
+                      <input
+                        name="myobNumber"
+                        value={formData.myobNumber}
+                        onChange={handleInputChange}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">Q'TY to Customer *</label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={handleInputChange}
+                        min="0"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="block text-white/80 mb-2">EVENT *</label>
