@@ -52,6 +52,7 @@ export default function IssuingPage() {
   const [selectedDeleteKeys, setSelectedDeleteKeys] = useState<string[]>([]);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailGroupKey, setDetailGroupKey] = useState<string | null>(null);
+  const [allowEditOlder, setAllowEditOlder] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 13;
 
@@ -63,7 +64,17 @@ export default function IssuingPage() {
     return Date.now() - issueTime <= twoDaysMs;
   };
 
-  const getGroupKey = (item: StockItem) => `${item.myobNumber}||${item.partNumber}||${item.model}`;
+  const normalizeGroupToken = (value?: string) =>
+    (value || '')
+      .toString()
+      .normalize('NFKC')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
+      .replace(/\s+/g, '')
+      .toUpperCase()
+      .replace(/[^0-9A-Z]/g, '');
+  const getGroupKey = (item: StockItem) => `${normalizeGroupToken(item.myobNumber)}||${normalizeGroupToken(item.partNumber)}`;
   const sortStockItems = (items: StockItem[]) =>
     [...items].sort((a, b) => {
       const myobCompare = a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
@@ -129,7 +140,7 @@ export default function IssuingPage() {
       alert('ไม่พบรายการที่เลือก');
       return;
     }
-    if (!isEditAllowed(representative)) {
+    if (!isEditAllowed(representative) && !allowEditOlder) {
       alert('รายการนี้เกินเวลาแก้ไข (2 วัน)');
       return;
     }
@@ -151,7 +162,14 @@ export default function IssuingPage() {
     const handleWheel = (event: Event) => {
       const wheelEvent = event as WheelEvent;
       const issuedItems = filteredItems.filter(item => item.issuedQty && item.issuedQty > 0);
-      const totalPages = Math.ceil(issuedItems.length / itemsPerPage);
+      const groupedMap = new Map<string, StockItem[]>();
+      issuedItems.forEach(item => {
+        const key = getGroupKey(item);
+        const group = groupedMap.get(key) || [];
+        group.push(item);
+        groupedMap.set(key, group);
+      });
+      const totalPages = Math.ceil(groupedMap.size / itemsPerPage);
       
       if (totalPages <= 1) return;
 
@@ -214,11 +232,8 @@ export default function IssuingPage() {
       setFilteredItems(data);
 
       const getBalanceForData = (item: StockItem, items: StockItem[]) => {
-        const sameItemGroup = items.filter(stock => 
-          stock.myobNumber === item.myobNumber &&
-          stock.partNumber === item.partNumber && 
-          stock.model === item.model
-        );
+        const targetKey = getGroupKey(item);
+        const sameItemGroup = items.filter(stock => getGroupKey(stock) === targetKey);
 
         const totalReceived = sameItemGroup
           .filter(stock => stock.receivedQty > 0)
@@ -232,16 +247,32 @@ export default function IssuingPage() {
       };
 
       // กรองเฉพาะรายการรับเข้า (receivedQty > 0) และมีสต็อกคงเหลือรวมมากกว่า 0 (รวม part เดียวกัน)
-      const availableMap = new Map<string, StockItem>();
+      const availableMap = new Map<string, { item: StockItem; models: Set<string> }>();
       data.forEach((item: StockItem) => {
         if (item.receivedQty > 0 && getBalanceForData(item, data) > 0) {
           const key = getGroupKey(item);
-          if (!availableMap.has(key)) {
-            availableMap.set(key, item);
+          const existing = availableMap.get(key);
+          if (existing) {
+            if (item.model) existing.models.add(item.model);
+          } else {
+            availableMap.set(key, { item, models: new Set(item.model ? [item.model] : []) });
           }
         }
       });
-      setAvailableItems(sortStockItems(Array.from(availableMap.values())));
+
+      const availableItemsGrouped = Array.from(availableMap.values()).map(({ item, models }) => {
+        const modelsText = Array.from(models)
+          .map(model => (model || '').trim())
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }))
+          .join(', ');
+        return {
+          ...item,
+          model: modelsText || item.model,
+        };
+      });
+
+      setAvailableItems(sortStockItems(availableItemsGrouped));
     } catch (error) {
       console.error('Error fetching stock items:', error);
     } finally {
@@ -305,10 +336,9 @@ export default function IssuingPage() {
     }
 
     // คำนวณสต็อกคงเหลือรวมของ MYOB + Part Number เดียวกัน
-    const sameItemGroupForCheck = stockItems.filter(item => 
-      item.myobNumber === selectedItem.myobNumber &&
-      item.partNumber === selectedItem.partNumber && 
-      item.model === selectedItem.model &&
+    const selectedKey = getGroupKey(selectedItem);
+    const sameItemGroupForCheck = stockItems.filter(item =>
+      getGroupKey(item) === selectedKey &&
       (item.receivedQty - (item.issuedQty || 0)) > 0
     );
     
@@ -323,12 +353,12 @@ export default function IssuingPage() {
 
     try {
       // หา MYOB + Part Number เดียวกันที่มีสต็อกคงเหลือ (FIFO - First In First Out)
-      const sameItemGroup = stockItems.filter(item => 
-        item.myobNumber === selectedItem.myobNumber &&
-        item.partNumber === selectedItem.partNumber && 
-        item.model === selectedItem.model &&
-        (item.receivedQty - (item.issuedQty || 0)) > 0
-      ).sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
+      const sameItemGroup = stockItems
+        .filter(item =>
+          getGroupKey(item) === selectedKey &&
+          (item.receivedQty - (item.issuedQty || 0)) > 0
+        )
+        .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
 
       let remainingQtyToIssue = formData.issuedQty;
       const updatePromises = [];
@@ -525,7 +555,7 @@ export default function IssuingPage() {
       return;
     }
 
-    const availableQty = selectedItem.receivedQty - (selectedItem.issuedQty || 0);
+    const availableQty = getBalance(selectedItem);
     if (formData.issuedQty > availableQty) {
       alert(`จำนวนที่จ่ายออกเกินจำนวนคงเหลือ (คงเหลือ: ${availableQty})`);
       return;
@@ -630,7 +660,7 @@ export default function IssuingPage() {
         return;
       }
 
-      const availableQty = stockItem.receivedQty - (stockItem.issuedQty || 0);
+      const availableQty = getBalance(stockItem);
       if (part.issuedQty > availableQty) {
         alert(`จำนวนที่จ่ายออกเกินจำนวนคงเหลือสำหรับรายการที่ ${i + 1} (คงเหลือ: ${availableQty})`);
         return;
@@ -638,30 +668,74 @@ export default function IssuingPage() {
     }
 
     try {
-      // Submit each part as a separate record
-      for (const part of bulkFormData.parts) {
-        const response = await fetch('/api/stock', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            stockItemId: part.stockItemId,
-            issuedQty: part.issuedQty,
-            invoiceNumber: part.invoiceNumber,
-            issueDate: part.issueDate,
-            dueDate: part.dueDate,
-            event: part.event,
-            supplier: part.supplier,
-            customer: part.customer,
-            withdrawalNumber: part.withdrawalNumber,
-            remarks: part.remarks,
-          }),
-        });
+      const updatePromises: Promise<Response>[] = [];
 
-        if (!response.ok) {
-          throw new Error('Failed to save part');
+      for (const part of bulkFormData.parts) {
+        const baseItem = stockItems.find(item => item.id === part.stockItemId);
+        if (!baseItem) {
+          throw new Error('ไม่พบข้อมูล Part');
         }
+
+        const sameItemGroup = stockItems
+          .filter(item =>
+            getGroupKey(item) === getGroupKey(baseItem) &&
+            (item.receivedQty - (item.issuedQty || 0)) > 0
+          )
+          .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
+
+        let remainingQtyToIssue = part.issuedQty;
+
+        for (const item of sameItemGroup) {
+          if (remainingQtyToIssue <= 0) break;
+
+          const availableInThisItem = item.receivedQty - (item.issuedQty || 0);
+          const qtyToIssueFromThisItem = Math.min(remainingQtyToIssue, availableInThisItem);
+
+          if (qtyToIssueFromThisItem > 0) {
+            const issueRecord = {
+              myobNumber: item.myobNumber,
+              model: item.model,
+              partName: item.partName,
+              partNumber: item.partNumber,
+              revision: item.revision,
+              poNumber: item.poNumber,
+              receivedQty: 0,
+              receivedDate: item.receivedDate,
+              supplier: part.supplier || baseItem.supplier,
+              issuedQty: qtyToIssueFromThisItem,
+              invoiceNumber: part.invoiceNumber,
+              issueDate: part.issueDate,
+              dueDate: part.dueDate || undefined,
+              customer: part.customer || '',
+              event: part.event || item.event,
+              withdrawalNumber: part.withdrawalNumber || '',
+              remarks: part.remarks || item.remarks,
+            };
+
+            updatePromises.push(
+              fetch('/api/stock', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(issueRecord),
+              })
+            );
+
+            remainingQtyToIssue -= qtyToIssueFromThisItem;
+          }
+        }
+
+        if (remainingQtyToIssue > 0) {
+          throw new Error('งานคงเหลือไม่พอ');
+        }
+      }
+
+      const responses = await Promise.all(updatePromises);
+      const allSuccess = responses.every(response => response.ok);
+
+      if (!allSuccess) {
+        throw new Error('Failed to save parts');
       }
 
       await fetchStockItems();
@@ -718,12 +792,14 @@ export default function IssuingPage() {
     try {
       if (isIssueRecord) {
         // ลบรายการจ่ายออก - ลบรายการแต่คืนยอดไปรายการรับเข้า
-        const originalItems = stockItems.filter(originalItem => 
-          originalItem.partNumber === item.partNumber &&
-          originalItem.model === item.model &&
-          originalItem.receivedQty > 0 &&
-          originalItem.id !== item.id
-        ).sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
+        const targetKey = getGroupKey(item);
+        const originalItems = stockItems
+          .filter(originalItem =>
+            getGroupKey(originalItem) === targetKey &&
+            originalItem.receivedQty > 0 &&
+            originalItem.id !== item.id
+          )
+          .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
 
         if (originalItems.length === 0) {
           // ถ้าไม่มีรายการรับเข้า ก็ลบได้เลย
@@ -787,9 +863,9 @@ export default function IssuingPage() {
 
       } else if (isReceiveRecord) {
         // ลบรายการรับเข้า - ต้องลบรายการจ่ายออกที่เกี่ยวข้องด้วย
-        const relatedIssueRecords = stockItems.filter(relatedItem => 
-          relatedItem.partNumber === item.partNumber &&
-          relatedItem.model === item.model &&
+        const targetKey = getGroupKey(item);
+        const relatedIssueRecords = stockItems.filter(relatedItem =>
+          getGroupKey(relatedItem) === targetKey &&
           relatedItem.receivedQty === 0 &&
           relatedItem.issuedQty && relatedItem.issuedQty > 0 &&
           relatedItem.id !== item.id
@@ -845,11 +921,8 @@ export default function IssuingPage() {
 
   const getBalance = (item: StockItem) => {
     // คำนวณยอดคงเหลือจากสต็อกของ MYOB + Part Number เดียวกัน (แยกกัน)
-    const sameItemGroup = stockItems.filter(stock => 
-      stock.myobNumber === item.myobNumber &&
-      stock.partNumber === item.partNumber && 
-      stock.model === item.model
-    );
+    const targetKey = getGroupKey(item);
+    const sameItemGroup = stockItems.filter(stock => getGroupKey(stock) === targetKey);
     
     const totalReceived = sameItemGroup
       .filter(stock => stock.receivedQty > 0)
@@ -936,6 +1009,15 @@ export default function IssuingPage() {
           >
             ⚙️ ตัวเลือก
           </button>
+          <button
+            type="button"
+            onClick={() => setAllowEditOlder(prev => !prev)}
+            className={`${
+              allowEditOlder ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-white/10 hover:bg-white/20'
+            } text-white px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto border border-white/30`}
+          >
+            🔓 แก้ไขเกิน 2 วัน: {allowEditOlder ? 'ON' : 'OFF'}
+          </button>
           {isDeleteMode && (
             <button
               onClick={handleEditSelected}
@@ -1017,7 +1099,6 @@ export default function IssuingPage() {
                           const sameItemGroup = stockItems.filter(stock => 
                             stock.myobNumber === selectedItem.myobNumber &&
                             stock.partNumber === selectedItem.partNumber && 
-                            stock.model === selectedItem.model && 
                             stock.receivedQty > 0
                           );
                           return sameItemGroup.reduce((sum, stock) => sum + stock.receivedQty, 0);
@@ -1026,7 +1107,6 @@ export default function IssuingPage() {
                           const sameItemGroup = stockItems.filter(stock => 
                             stock.myobNumber === selectedItem.myobNumber &&
                             stock.partNumber === selectedItem.partNumber && 
-                            stock.model === selectedItem.model && 
                             stock.issuedQty && stock.issuedQty > 0
                           );
                           return sameItemGroup.reduce((sum, stock) => sum + (stock.issuedQty || 0), 0);
@@ -1352,13 +1432,20 @@ export default function IssuingPage() {
                     .map(([key, items]) => {
                       const totalIssued = items.reduce((sum, item) => sum + (item.issuedQty || 0), 0);
                       const totalReceived = stockItems
-                        .filter(stock =>
-                          stock.myobNumber === items[0].myobNumber &&
-                          stock.partNumber === items[0].partNumber &&
-                          stock.model === items[0].model &&
-                          stock.receivedQty > 0
-                        )
+                        .filter(stock => getGroupKey(stock) === key && stock.receivedQty > 0)
                         .reduce((sum, stock) => sum + stock.receivedQty, 0);
+
+                      const modelSet = new Set(
+                        stockItems
+                          .filter(stock => getGroupKey(stock) === key)
+                          .map(stock => stock.model)
+                          .filter(Boolean)
+                      );
+                      const modelsText = Array.from(modelSet)
+                        .map(model => (model || '').trim())
+                        .filter(Boolean)
+                        .sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }))
+                        .join(', ');
 
                       const latestIssueItem = items
                         .slice()
@@ -1370,6 +1457,7 @@ export default function IssuingPage() {
                         totalIssued,
                         totalReceived,
                         latestIssueItem,
+                        modelsText,
                         latestIssueDate: latestIssueItem.issueDate || latestIssueItem.createdAt,
                       };
                     })
@@ -1429,7 +1517,9 @@ export default function IssuingPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-xl text-center" style={{width: '100px'}}>
                             <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-base font-bold border-2 ${partColor} ${partColor.replace('text-', 'bg-')}/10 ${partColor.replace('text-', 'border-')}/50`}>
-                              {representative.model}
+                              <span className="truncate" title={group.modelsText || representative.model}>
+                                {group.modelsText || representative.model}
+                              </span>
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-left" style={{width: '120px'}}>
@@ -1459,7 +1549,7 @@ export default function IssuingPage() {
                               >
                                 🔍
                               </button>
-                              {isEditAllowed(representative) && (
+                              {(isEditAllowed(representative) || allowEditOlder) && (
                                 <button
                                   onClick={() => handleEditIssue(representative)}
                                   className="text-blue-400 hover:text-blue-300 transition-colors"
@@ -1719,7 +1809,41 @@ export default function IssuingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-5xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">🔍 รายละเอียดรับเข้า/จ่ายออก</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">🔍 รายละเอียดรับเข้า/จ่ายออก</h2>
+                {(() => {
+                  const headerItem = detailGroupItems[0];
+                  const modelsText = Array.from(
+                    new Set(
+                      stockItems
+                        .filter(item => (detailGroupKey ? getGroupKey(item) === detailGroupKey : false))
+                        .map(item => item.model)
+                        .filter(Boolean)
+                    )
+                  )
+                    .map(model => (model || '').trim())
+                    .filter(Boolean)
+                    .sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }))
+                    .join(', ');
+
+                  if (!headerItem) return null;
+
+                  return (
+                    <div className="mt-1 text-sm text-gray-600">
+                      <div>
+                        <span className="font-semibold">MYOB:</span> {headerItem.myobNumber || '-'}
+                        <span className="mx-2 text-gray-300">|</span>
+                        <span className="font-semibold">PART NUMBER:</span> {headerItem.partNumber || '-'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">PART NAME:</span> {headerItem.partName || '-'}
+                        <span className="mx-2 text-gray-300">|</span>
+                        <span className="font-semibold">MODEL:</span> {modelsText || headerItem.model || '-'}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
               <button
                 onClick={() => setIsDetailOpen(false)}
                 className="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50"

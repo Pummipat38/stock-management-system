@@ -31,6 +31,20 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
     return received - (issued || 0);
   };
 
+  const normalizeGroupToken = (value?: string) =>
+    (value || '')
+      .toString()
+      .normalize('NFKC')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
+      .replace(/\s+/g, '')
+      .toUpperCase()
+      .replace(/[^0-9A-Z]/g, '');
+
+  const getGroupKey = (item: StockItem) =>
+    `${normalizeGroupToken(item.myobNumber)}||${normalizeGroupToken(item.partNumber)}`;
+
   const getBalanceColor = (balance: number) => {
     if (balance <= 0) return 'text-red-600 bg-red-50';
     if (balance <= 10) return 'text-yellow-600 bg-yellow-50';
@@ -39,17 +53,23 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
 
   // รวม part เหมือนกันและคำนวณยอดคงเหลือรวม
   const groupedItems = items.reduce((acc, item) => {
-    const key = `${item.myobNumber}-${item.model}-${item.partNumber}-${item.partName}`;
+    const key = getGroupKey(item);
     const balance = calculateBalance(item.receivedQty, item.issuedQty);
     
     if (acc[key]) {
       acc[key].totalBalance += balance;
       acc[key].totalReceived += item.receivedQty;
       acc[key].totalIssued += (item.issuedQty || 0);
+      if (item.model && !acc[key].models.includes(item.model)) {
+        acc[key].models.push(item.model);
+      }
+      if (!acc[key].partName && item.partName) {
+        acc[key].partName = item.partName;
+      }
     } else {
       acc[key] = {
         myobNumber: item.myobNumber,
-        model: item.model,
+        models: item.model ? [item.model] : [],
         partNumber: item.partNumber,
         partName: item.partName,
         totalBalance: balance,
@@ -61,7 +81,7 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
     return acc;
   }, {} as Record<string, {
     myobNumber: string;
-    model: string;
+    models: string[];
     partNumber: string;
     partName: string;
     totalBalance: number;
@@ -69,7 +89,16 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
     totalIssued: number;
   }>);
 
-  const consolidatedItems = Object.values(groupedItems).filter(item => item.totalBalance > 0);
+  const isHiddenFromBalance = (item: {
+    myobNumber: string;
+    partNumber: string;
+  }) =>
+    normalizeGroupToken(item.myobNumber) === 'SC010044' &&
+    normalizeGroupToken(item.partNumber) === '1145354';
+
+  const consolidatedItems = Object.values(groupedItems).filter(
+    item => item.totalBalance > 0 && !isHiddenFromBalance(item)
+  );
   const partColors = [
     { text: 'text-orange-400', border: 'border-orange-400/70', bg: 'bg-orange-400/10' },
     { text: 'text-violet-300', border: 'border-violet-300/70', bg: 'bg-violet-300/10' },
@@ -97,7 +126,8 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
             </thead>
             <tbody className="bg-white/5 backdrop-blur-sm divide-y divide-white/10">
               {consolidatedItems.map((item, index) => {
-                const rowKey = `${item.myobNumber}-${item.partNumber}-${item.model}`;
+                const modelText = item.models.length > 0 ? item.models.join(', ') : '-';
+                const rowKey = `${normalizeGroupToken(item.myobNumber)}-${normalizeGroupToken(item.partNumber)}`;
                 const colorIndex = Math.abs(
                   rowKey.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)
                 ) % partColors.length;
@@ -107,7 +137,7 @@ export default function StockBalanceTable({ items }: StockBalanceTableProps) {
                     <td className={`px-6 py-4 whitespace-nowrap text-lg font-semibold ${rowColor.text}`}>{item.myobNumber}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-lg">
                       <span className={`inline-flex items-center justify-center px-4 py-1 rounded-full border ${rowColor.text} ${rowColor.border} ${rowColor.bg} font-semibold`}>
-                        {item.model}
+                        {modelText}
                       </span>
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-lg font-mono ${rowColor.text}`}>{item.partNumber}</td>

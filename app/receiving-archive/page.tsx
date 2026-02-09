@@ -25,7 +25,7 @@ export default function ReceivingArchivePage() {
   const normalizeSearchText = (value?: string) =>
     (value || '').toString().toLowerCase().replace(/[\s-]+/g, '');
 
-  const getGroupKey = (item: StockItem) => `${item.myobNumber}||${item.partNumber}||${item.model}`;
+  const getGroupKey = (item: StockItem) => `${item.myobNumber}||${item.partNumber}`;
 
   const getBalanceMap = (items: StockItem[]) => {
     const balanceMap = new Map<string, number>();
@@ -92,8 +92,11 @@ export default function ReceivingArchivePage() {
       const existing = groupedMap.get(key);
       if (existing) {
         existing.totalReceived += item.receivedQty;
+        if (item.model && !existing.model.split(',').map(s => s.trim()).filter(Boolean).includes(item.model)) {
+          existing.model = existing.model ? `${existing.model}, ${item.model}` : item.model;
+        }
         existing.entries.push(item);
-        if (new Date(item.receivedDate) > new Date(existing.lastReceivedDate)) {
+        if (new Date(item.receivedDate).getTime() > new Date(existing.lastReceivedDate).getTime()) {
           existing.lastReceivedDate = item.receivedDate;
         }
       } else {
@@ -105,7 +108,7 @@ export default function ReceivingArchivePage() {
           partName: item.partName,
           totalReceived: item.receivedQty,
           lastReceivedDate: item.receivedDate,
-          entries: [item]
+          entries: [item],
         });
       }
     });

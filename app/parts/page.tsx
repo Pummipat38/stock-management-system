@@ -15,7 +15,14 @@ export default function PartsPage() {
   useEffect(() => {
     const handleWheel = (event: Event) => {
       const wheelEvent = event as WheelEvent;
-      const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+      const uniqueCount = Object.keys(
+        filteredItems.reduce((acc, item) => {
+          const key = `${item.myobNumber}-${item.partNumber}`;
+          acc[key] = true;
+          return acc;
+        }, {} as Record<string, boolean>)
+      ).length;
+      const totalPages = Math.ceil(uniqueCount / itemsPerPage);
       
       if (totalPages <= 1) return;
 
@@ -84,20 +91,30 @@ export default function PartsPage() {
     );
   }
 
-  // Get unique parts (group by MYOB, Part Number, Part Name, Supplier)
+  // Get unique parts (group by MYOB, Part Number)
   const uniqueParts = filteredItems.reduce((acc, item) => {
-    const key = `${item.myobNumber}-${item.partNumber}-${item.partName}-${item.supplier || ''}`;
+    const key = `${item.myobNumber}-${item.partNumber}`;
     if (!acc[key]) {
       acc[key] = {
         myobNumber: item.myobNumber,
         partNumber: item.partNumber,
         partName: item.partName,
-        supplier: item.supplier || '-',
-        model: item.model,
+        suppliers: item.supplier ? [item.supplier] : [],
+        models: item.model ? [item.model] : [],
         totalReceived: 0,
         totalIssued: 0,
         balance: 0
       };
+    } else {
+      if (!acc[key].partName && item.partName) {
+        acc[key].partName = item.partName;
+      }
+      if (item.supplier && !acc[key].suppliers.includes(item.supplier)) {
+        acc[key].suppliers.push(item.supplier);
+      }
+      if (item.model && !acc[key].models.includes(item.model)) {
+        acc[key].models.push(item.model);
+      }
     }
     acc[key].totalReceived += item.receivedQty || 0;
     acc[key].totalIssued += item.issuedQty || 0;
@@ -188,6 +205,8 @@ export default function PartsPage() {
                 <tbody className="divide-y divide-white/10">
                   {[
                     ...currentItems.map((part, index) => {
+                      const supplierText = part.suppliers && part.suppliers.length > 0 ? part.suppliers.join(', ') : '-';
+                      const modelText = part.models && part.models.length > 0 ? part.models.join(', ') : '-';
                       return (
                         <tr key={`${part.myobNumber}-${part.partNumber}-${index}`} className="hover:bg-white/5 transition-colors">
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-bold w-24">
@@ -204,13 +223,13 @@ export default function PartsPage() {
                             </div>
                           </td>
                           <td className="px-4 py-4 text-sm text-white w-32">
-                            <div className="truncate" title={part.supplier}>
-                              {part.supplier}
+                            <div className="truncate" title={supplierText}>
+                              {supplierText}
                             </div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm w-24">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border-2 truncate text-white bg-white/10 border-white/30">
-                              {part.model}
+                              {modelText}
                             </span>
                           </td>
                         </tr>

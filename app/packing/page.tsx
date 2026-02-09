@@ -597,6 +597,14 @@ function DueDeliveryPage() {
   const dueXSyncingRef = useRef(false);
   const [dueTableScrollWidth, setDueTableScrollWidth] = useState(0);
 
+  const isInternationalType = selectedType === 'international';
+
+  const internationalGridTemplateColumnsSelect =
+    '60px 520px 140px 140px max-content 150px max-content 110px 160px 130px max-content 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 140px';
+
+  const internationalGridTemplateColumnsNormal =
+    '520px 140px 140px max-content 150px max-content 110px 160px 130px max-content 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 96px';
+
   const syncDueHorizontalScroll = (source: 'table' | 'bar') => {
     if (dueXSyncingRef.current) return;
     const table = dueTableXRef.current;
@@ -2006,15 +2014,32 @@ function DueDeliveryPage() {
                 onScroll={() => syncDueHorizontalScroll('table')}
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
-                <div className={isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'}>
+                <div
+                  className={`${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
+                    isInternationalType ? 'w-max' : ''
+                  }`}
+                >
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
                         className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                           isSelectMode
-                            ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
-                            : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                        } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-fit min-h-[64px]`}
+                            ? isInternationalType
+                              ? 'grid-cols-[60px_520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                              : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                            : isInternationalType
+                              ? 'grid-cols-[520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                              : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                        } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-max min-h-[64px]`}
+                        style={
+                          isInternationalType
+                            ? {
+                                gridTemplateColumns: isSelectMode
+                                  ? internationalGridTemplateColumnsSelect
+                                  : internationalGridTemplateColumnsNormal,
+                              }
+                            : undefined
+                        }
                       >
                         {isSelectMode && <span className="px-2 py-2 flex items-center justify-center">เลือก</span>}
                         <span
@@ -2067,9 +2092,22 @@ function DueDeliveryPage() {
                             <div
                               className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                                 isSelectMode
-                                  ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
-                                  : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-fit min-h-[52px]`}
+                                  ? isInternationalType
+                                    ? 'grid-cols-[60px_520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                                    : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                                  : isInternationalType
+                                    ? 'grid-cols-[520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                    : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                              } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-max min-h-[52px]`}
+                              style={
+                                isInternationalType
+                                  ? {
+                                      gridTemplateColumns: isSelectMode
+                                        ? internationalGridTemplateColumnsSelect
+                                        : internationalGridTemplateColumnsNormal,
+                                    }
+                                  : undefined
+                              }
                             >
                               {isSelectMode && (
                                 <div className="flex items-center justify-center">
@@ -2118,13 +2156,23 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.sampleRequestSheet || ''}>
                               {record.sampleRequestSheet || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.model}>
+                            <div
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
+                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
+                              }`}
+                              title={record.model}
+                            >
                               {record.model}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.partNumber}>
                               {record.partNumber}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.partName}>
+                            <div
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
+                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
+                              }`}
+                              title={record.partName}
+                            >
                               {record.partName}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionLevel || '-'}</div>
@@ -2132,7 +2180,12 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.event || ''}>
                               {record.event || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.supplier || ''}>
+                            <div
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
+                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
+                              }`}
+                              title={record.supplier || ''}
+                            >
                               {record.supplier || '-'}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>

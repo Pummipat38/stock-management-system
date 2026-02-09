@@ -11,6 +11,16 @@ export default function StockPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
 
+  const normalizeSearchText = (value?: string) =>
+    (value || '')
+      .toString()
+      .normalize('NFKC')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
+      .toLowerCase()
+      .replace(/[\s-]+/g, '');
+
   useEffect(() => {
     fetchStockItems();
   }, []);
@@ -31,12 +41,16 @@ export default function StockPage() {
     }
   };
 
-  const filteredItems = stockItems.filter(item =>
-    item.partName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.myobNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredItems = stockItems.filter(item => {
+    const search = normalizeSearchText(searchTerm);
+    if (!search) return true;
+    return (
+      normalizeSearchText(item.partName).includes(search) ||
+      normalizeSearchText(item.partNumber).includes(search) ||
+      normalizeSearchText(item.model).includes(search) ||
+      normalizeSearchText(item.myobNumber).includes(search)
+    );
+  });
 
   const calculateBalance = (received: number, issued?: number) => {
     return received - (issued || 0);

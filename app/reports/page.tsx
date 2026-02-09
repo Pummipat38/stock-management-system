@@ -50,8 +50,60 @@ export default function ReportsPage() {
     return item.receivedQty - (item.issuedQty || 0);
   };
 
-  const lowStockItems = stockItems.filter(item => getBalance(item) <= 10 && getBalance(item) > 0);
-  const outOfStockItems = stockItems.filter(item => getBalance(item) <= 0);
+  const buildGroupedItems = (items: StockItem[]) => {
+    const groupedMap = new Map<string, {
+      key: string;
+      myobNumber: string;
+      partNumber: string;
+      partName: string;
+      models: string[];
+      totalReceived: number;
+      totalIssued: number;
+      balance: number;
+    }>();
+
+    items.forEach(item => {
+      const key = `${item.myobNumber}||${item.partNumber}`;
+      const received = item.receivedQty || 0;
+      const issued = item.issuedQty || 0;
+
+      const existing = groupedMap.get(key);
+      if (existing) {
+        existing.totalReceived += received;
+        existing.totalIssued += issued;
+        existing.balance = existing.totalReceived - existing.totalIssued;
+        if (item.model && !existing.models.includes(item.model)) {
+          existing.models.push(item.model);
+        }
+        if (!existing.partName && item.partName) {
+          existing.partName = item.partName;
+        }
+      } else {
+        groupedMap.set(key, {
+          key,
+          myobNumber: item.myobNumber,
+          partNumber: item.partNumber,
+          partName: item.partName,
+          models: item.model ? [item.model] : [],
+          totalReceived: received,
+          totalIssued: issued,
+          balance: received - issued,
+        });
+      }
+    });
+
+    return Array.from(groupedMap.values()).sort((a, b) => {
+      const myobCompare = a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+      if (myobCompare !== 0) return myobCompare;
+      return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+    });
+  };
+
+  const groupedAllItems = buildGroupedItems(stockItems);
+  const groupedFilteredItems = buildGroupedItems(filteredItems);
+
+  const lowStockItems = groupedAllItems.filter(item => item.balance <= 10 && item.balance > 0);
+  const outOfStockItems = groupedAllItems.filter(item => item.balance <= 0);
   const totalReceived = stockItems.reduce((sum, item) => sum + item.receivedQty, 0);
   const totalIssued = stockItems.reduce((sum, item) => sum + (item.issuedQty || 0), 0);
   const totalBalance = totalReceived - totalIssued;
@@ -115,7 +167,7 @@ export default function ReportsPage() {
         </div>
         {searchTerm && (
           <p className="mt-2 text-sm text-gray-600">
-            พบ {filteredItems.length} รายการจากทั้งหมด {stockItems.length} รายการ
+            พบ {groupedFilteredItems.length} รายการจากทั้งหมด {groupedAllItems.length} รายการ
           </p>
         )}
       </div>
@@ -129,7 +181,7 @@ export default function ReportsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">รายการทั้งหมด</p>
-              <p className="text-2xl font-bold text-gray-900">{stockItems.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{groupedAllItems.length}</p>
             </div>
           </div>
         </div>
@@ -185,13 +237,13 @@ export default function ReportsPage() {
           {lowStockItems.length > 0 ? (
             <div className="max-h-64 overflow-y-auto space-y-3">
               {lowStockItems.map((item) => (
-                <div key={item.id} className="flex justify-between items-center p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+                <div key={item.key} className="flex justify-between items-center p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
                   <div>
                     <p className="font-medium text-white">{item.partName}</p>
                     <p className="text-sm text-white/70">{item.myobNumber} - {item.partNumber}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-yellow-300">{getBalance(item)}</p>
+                    <p className="text-lg font-bold text-yellow-300">{item.balance}</p>
                     <p className="text-xs text-white/60">คงเหลือ</p>
                   </div>
                 </div>
@@ -296,8 +348,8 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {stockItems.map((item) => {
-                const balance = getBalance(item);
+              {groupedFilteredItems.map((item) => {
+                const balance = item.balance;
                 let statusColor = 'bg-green-100 text-green-800';
                 let statusText = 'ปกติ';
                 
@@ -310,7 +362,7 @@ export default function ReportsPage() {
                 }
 
                 return (
-                  <tr key={item.id} className={`hover:bg-white/5 transition-colors ${
+                  <tr key={item.key} className={`hover:bg-white/5 transition-colors ${
                     balance < 10 && balance > 0 ? 'bg-yellow-500/10 border-l-4 border-yellow-400/50' : 
                     balance <= 0 ? 'bg-red-500/10 border-l-4 border-red-400/50' : ''
                   }`}>
@@ -334,10 +386,10 @@ export default function ReportsPage() {
                       <div className="text-xs text-white/60">{item.partNumber}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
-                      {item.receivedQty.toLocaleString()}
+                      {item.totalReceived.toLocaleString()}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
-                      {(item.issuedQty || 0).toLocaleString()}
+                      {item.totalIssued.toLocaleString()}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center">
