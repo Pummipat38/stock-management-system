@@ -220,6 +220,8 @@ export default function IssuingPage() {
         customer: '',
         withdrawalNumber: '',
         remarks: '',
+        isNGItem: false,
+        ngProblem: '',
       }
     ]
   });
@@ -605,10 +607,10 @@ export default function IssuingPage() {
   const addBulkPart = () => {
     setBulkFormData(prev => ({
       ...prev,
-      parts: [...prev.parts, { 
-        stockItemId: '', 
+      parts: [...prev.parts, {
+        stockItemId: '',
         issuedQty: 0,
-        invoiceNumber: '',
+        invoiceNumber: bulkSharedInvoice,
         issueDate: new Date().toISOString().split('T')[0],
         dueDate: '',
         event: '',
@@ -616,6 +618,8 @@ export default function IssuingPage() {
         customer: '',
         withdrawalNumber: '',
         remarks: '',
+        isNGItem: false,
+        ngProblem: '',
       }]
     }));
   };
@@ -629,7 +633,11 @@ export default function IssuingPage() {
     }
   };
 
-  const updateBulkPart = (index: number, field: keyof BulkIssuingPartData, value: string | number) => {
+  const updateBulkPart = (
+    index: number,
+    field: keyof BulkIssuingPartData,
+    value: string | number | boolean
+  ) => {
     setBulkFormData(prev => ({
       ...prev,
       parts: prev.parts.map((part, i) => 
@@ -649,8 +657,13 @@ export default function IssuingPage() {
         return;
       }
 
-      if (!part.invoiceNumber) {
+      if (!part.isNGItem && !part.invoiceNumber) {
         alert(`กรุณาระบุเลขที่ใบเบิก/Invoice สำหรับรายการที่ ${i + 1}`);
+        return;
+      }
+
+      if (part.isNGItem && !(part.ngProblem || '').trim()) {
+        alert(`กรุณาระบุปัญหาของชิ้นงาน (NG) สำหรับรายการที่ ${i + 1}`);
         return;
       }
 
@@ -710,6 +723,8 @@ export default function IssuingPage() {
               event: part.event || item.event,
               withdrawalNumber: part.withdrawalNumber || '',
               remarks: part.remarks || item.remarks,
+              isNGItem: part.isNGItem || false,
+              ngProblem: part.ngProblem || '',
             };
 
             updatePromises.push(
@@ -721,6 +736,37 @@ export default function IssuingPage() {
                 body: JSON.stringify(issueRecord),
               })
             );
+
+            if (part.isNGItem) {
+              const ngRecord = {
+                myobNumber: item.myobNumber,
+                model: item.model,
+                partName: item.partName,
+                partNumber: item.partNumber,
+                revision: item.revision || '',
+                poNumber: item.poNumber || '',
+                receivedDate: item.receivedDate,
+                supplier: part.supplier || baseItem.supplier || '',
+                issuedQty: qtyToIssueFromThisItem,
+                invoiceNumber: part.invoiceNumber || '',
+                issueDate: part.issueDate,
+                customer: part.customer || '',
+                event: part.event || item.event || '',
+                withdrawalNumber: part.withdrawalNumber || '',
+                ngProblem: part.ngProblem || '',
+                remarks: part.remarks || '',
+              };
+
+              updatePromises.push(
+                fetch('/api/ng-items', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(ngRecord),
+                })
+              );
+            }
 
             remainingQtyToIssue -= qtyToIssueFromThisItem;
           }
@@ -752,6 +798,8 @@ export default function IssuingPage() {
           customer: '',
           withdrawalNumber: '',
           remarks: '',
+          isNGItem: false,
+          ngProblem: '',
         }]
       });
       alert('บันทึกข้อมูลการจ่ายออกหลาย Part สำเร็จ');
@@ -1271,14 +1319,13 @@ export default function IssuingPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">เลข INVOICE *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">เลข INVOICE (ถ้ามี)</label>
                       <input
                         type="text"
                         name="invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                        required
                         placeholder="หมายเลข Invoice"
                       />
                     </div>
@@ -1414,7 +1461,7 @@ export default function IssuingPage() {
                   <th className="px-6 py-3 text-left text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '120px'}}>PART NUMBER</th>
                   <th className="px-6 py-3 text-left text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '160px'}}>PART NAME</th>
                   <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '120px'}}>CUSTOMER</th>
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '80px'}}>จัดการ</th>
+                  <th className="px-3 py-3 text-center text-sm text-white/70 uppercase tracking-wider" style={{width: '80px'}}>จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -1594,7 +1641,7 @@ export default function IssuingPage() {
       
       <form onSubmit={handleBulkSubmit} className="space-y-6">
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">🧾 เลข Invoice เดียวกัน (ถ้ามี)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">🧾 ใส่เลข Invoice ให้ทุก Part (ถ้ามี)</h3>
           <input
             type="text"
             value={bulkSharedInvoice}
@@ -1612,7 +1659,7 @@ export default function IssuingPage() {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             placeholder="เช่น INV-2026-001"
           />
-          <p className="text-xs text-gray-500 mt-2">กรอกครั้งเดียว ระบบจะใส่ให้ทุก Part อัตโนมัติ</p>
+          <p className="text-xs text-gray-500 mt-2">กรอกครั้งเดียว ระบบจะใส่ให้ทุก Part อัตโนมัติ (ยังแก้แต่ละ Part แยกได้)</p>
         </div>
         {/* Parts List */}
         <div className="bg-green-50 p-4 rounded-lg">
@@ -1678,6 +1725,37 @@ export default function IssuingPage() {
                   </div>
                 </div>
 
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ประเภทงาน *</label>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name={`bulkIsNGItem-${index}`}
+                        value="false"
+                        checked={!part.isNGItem}
+                        onChange={() => {
+                          updateBulkPart(index, 'isNGItem', false);
+                          updateBulkPart(index, 'ngProblem', '');
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">งานตัดออกปกติ</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name={`bulkIsNGItem-${index}`}
+                        value="true"
+                        checked={part.isNGItem === true}
+                        onChange={() => updateBulkPart(index, 'isNGItem', true)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-red-700 font-medium">งานตัดออกเป็นงาน NG</span>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Show available quantity for selected part */}
                 {part.stockItemId && (
                   <div className="mt-2 text-sm text-gray-600">
@@ -1697,13 +1775,15 @@ export default function IssuingPage() {
                   <h5 className="text-md font-semibold text-gray-800 mb-3">📋 ข้อมูลสำหรับ Part นี้</h5>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">INVOICE *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        INVOICE {!part.isNGItem ? '*' : '(ถ้ามี)'}
+                      </label>
                       <input
                         type="text"
                         value={part.invoiceNumber}
                         onChange={(e) => updateBulkPart(index, 'invoiceNumber', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                        required
+                        required={!part.isNGItem}
                       />
                     </div>
             
@@ -1778,6 +1858,20 @@ export default function IssuingPage() {
                       />
                     </div>
                   </div>
+
+                  {part.isNGItem && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-red-700 mb-1">ปัญหาของชิ้นงาน (NG) *</label>
+                      <textarea
+                        value={part.ngProblem || ''}
+                        onChange={(e) => updateBulkPart(index, 'ngProblem', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                        required={part.isNGItem}
+                        placeholder="อธิบายปัญหาที่พบในชิ้นงาน..."
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
