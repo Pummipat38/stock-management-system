@@ -1701,8 +1701,8 @@ export default function IssuingPage() {
                       required
                     >
                       <option value="">-- เลือก Part --</option>
-                      {sortedAvailableItems.map((item) => {
-                        const availableQty = item.receivedQty - (item.issuedQty || 0);
+                      {sortedAvailableItems.filter(item => getBalance(item) > 0).map((item) => {
+                        const availableQty = getBalance(item);
                         return (
                           <option key={item.id} value={item.id}>
                             {item.myobNumber} | {item.partNumber} | {item.partName} | {item.model} (คงเหลือ: {availableQty})
@@ -1762,7 +1762,7 @@ export default function IssuingPage() {
                     {(() => {
                       const selectedItem = availableItems.find(item => item.id === part.stockItemId);
                       if (selectedItem) {
-                        const availableQty = selectedItem.receivedQty - (selectedItem.issuedQty || 0);
+                        const availableQty = getBalance(selectedItem);
                         return `สต็อกคงเหลือ: ${availableQty} ชิ้น`;
                       }
                       return '';
