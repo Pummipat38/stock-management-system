@@ -600,10 +600,10 @@ function DueDeliveryPage() {
   const isInternationalType = selectedType === 'international';
 
   const internationalGridTemplateColumnsSelect =
-    '60px 520px 140px 140px max-content 150px max-content 110px 160px 130px max-content 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 140px';
+    '60px 520px 140px 140px 150px 150px 110px 160px 130px 150px 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 140px';
 
   const internationalGridTemplateColumnsNormal =
-    '520px 140px 140px max-content 150px max-content 110px 160px 130px max-content 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 96px';
+    '520px 140px 140px 150px 150px 110px 160px 130px 150px 150px 120px 150px 120px 130px 110px 110px 110px 110px 110px 96px';
 
   const syncDueHorizontalScroll = (source: 'table' | 'bar') => {
     if (dueXSyncingRef.current) return;
@@ -2025,10 +2025,10 @@ function DueDeliveryPage() {
                         className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                           isSelectMode
                             ? isInternationalType
-                              ? 'grid-cols-[60px_520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                              ? 'grid-cols-[60px_520px_140px_140px_150px_150px_110px_160px_130px_150px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                               : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                             : isInternationalType
-                              ? 'grid-cols-[520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                              ? 'grid-cols-[520px_140px_140px_150px_150px_110px_160px_130px_150px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                               : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-max min-h-[64px]`}
                         style={
@@ -2093,10 +2093,10 @@ function DueDeliveryPage() {
                               className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                                 isSelectMode
                                   ? isInternationalType
-                                    ? 'grid-cols-[60px_520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
+                                    ? 'grid-cols-[60px_520px_140px_140px_150px_150px_110px_160px_130px_150px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                                     : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                                   : isInternationalType
-                                    ? 'grid-cols-[520px_140px_140px_max-content_150px_max-content_110px_160px_130px_max-content_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                    ? 'grid-cols-[520px_140px_140px_150px_150px_110px_160px_130px_150px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                                     : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                               } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-max min-h-[52px]`}
                               style={
@@ -2157,9 +2157,7 @@ function DueDeliveryPage() {
                               {record.sampleRequestSheet || '-'}
                             </div>
                             <div
-                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
-                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
-                              }`}
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis`}
                               title={record.model}
                             >
                               {record.model}
@@ -2168,9 +2166,7 @@ function DueDeliveryPage() {
                               {record.partNumber}
                             </div>
                             <div
-                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
-                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
-                              }`}
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis`}
                               title={record.partName}
                             >
                               {record.partName}
@@ -2181,9 +2177,7 @@ function DueDeliveryPage() {
                               {record.event || '-'}
                             </div>
                             <div
-                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap ${
-                                isInternationalType ? 'min-w-max' : 'overflow-hidden text-ellipsis'
-                              }`}
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis`}
                               title={record.supplier || ''}
                             >
                               {record.supplier || '-'}
