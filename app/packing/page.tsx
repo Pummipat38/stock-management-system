@@ -743,6 +743,7 @@ function DueDeliveryPage() {
         throw new Error(text || 'Failed to delete due record');
       }
 
+      // อัปเดต state โดยตรง ไม่ต้อง reload ทั้งหมด
       setRecords(prev => prev.filter(item => item.id !== record.id));
       setSelectedIds(prev => prev.filter(id => id !== record.id));
 
@@ -755,6 +756,8 @@ function DueDeliveryPage() {
       if (deliverRecord?.id === record.id) {
         closeDeliverForm();
       }
+
+      // ไม่เรียก loadDueRecords เพื่อป้องกันปัญหา dedupeKey ที่ทับข้อมูลอื่น
     } catch (error) {
       console.error('Error deleting due record:', error);
       alert('ลบไม่สำเร็จ (Supabase): ' + error);
@@ -1672,7 +1675,8 @@ function DueDeliveryPage() {
         }
       }
 
-      await loadDueRecords(undefined, true);
+      // ไม่เรียก loadDueRecords เพื่อป้องกันปัญหา dedupeKey ที่ทับข้อมูลอื่น
+      // state ถูกอัปเดตโดยตรงข้างบนแล้ว
     } catch (error) {
       console.error('Error deleting selected due records:', error);
       setRecords(snapshot);
