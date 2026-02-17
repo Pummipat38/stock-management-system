@@ -1437,7 +1437,8 @@ function DueDeliveryPage() {
       setRecords(nextRecords);
       try {
         await upsertDueRecord(updatedRecord);
-        await loadDueRecords(undefined, true);
+        // ไม่เรียก loadDueRecords เพื่อป้องกันปัญหา dedupeKey ที่ทับข้อมูลอื่น
+        // state ถูกอัปเดตโดยตรงแล้ว
       } catch (error) {
         console.error('Error syncing due records:', error);
         alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
@@ -1569,7 +1570,8 @@ function DueDeliveryPage() {
           await upsertDueRecord(payload);
         }
       }
-      await loadDueRecords(undefined, true);
+      // ไม่เรียก loadDueRecords เพื่อป้องกันปัญหา dedupeKey ที่ทับข้อมูลอื่น
+      // state ถูกอัปเดตโดยตรงแล้ว
       saved = true;
     } catch (error) {
       console.error('Error syncing due records:', error);
@@ -1700,7 +1702,8 @@ function DueDeliveryPage() {
     try {
       const changed = nextRecords.filter(record => selectedIds.includes(record.id));
       await syncDueRecords(changed);
-      await loadDueRecords(undefined, true);
+      // ไม่เรียก loadDueRecords เพื่อป้องกันปัญหา dedupeKey ที่ทับข้อมูลอื่น
+      // state ถูกอัปเดตโดยตรงแล้ว
     } catch (error) {
       console.error('Error syncing due records:', error);
       alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
@@ -2238,6 +2241,16 @@ function DueDeliveryPage() {
                                     title="ลบรายการ"
                                   >
                                     🗑
+                                  </button>
+                                )}
+                                {!isSelectMode && (
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteDueRecord(record)}
+                                    className="bg-orange-600 hover:bg-orange-700 text-white h-8 px-2 rounded-md flex items-center justify-center text-xs"
+                                    title="ลบเฉพาะรายการนี้เท่านั้น"
+                                  >
+                                    🗑️
                                   </button>
                                 )}
                               </div>
