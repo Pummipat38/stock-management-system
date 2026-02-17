@@ -110,8 +110,11 @@ export default function ReceivingPage() {
 
   const fetchStockItems = async () => {
     try {
-      const response = await fetch('/api/stock');
+      // Bypass cache เพื่อดูข้อมูลล่าสุด
+      const response = await fetch(`/api/stock?ts=${Date.now()}`);
       const data = await response.json();
+      console.log('Stock items fetched:', data.length);
+      console.log('TSO10061 found:', data.filter((item: any) => item.myobNumber === 'TSO10061'));
       setStockItems(data);
       setFilteredItems(data);
     } catch (error) {

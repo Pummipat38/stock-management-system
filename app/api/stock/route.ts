@@ -42,7 +42,8 @@ export async function GET() {
     // ตรวจสอบและส่งข้อมูลเป็น array เสมอ
     const raw = Array.isArray(stockItems) ? stockItems : [];
 
-    const dedupeWindowMs = 10 * 60 * 1000;
+    // ลดเวลา dedupe window เพื่อลดปัญหาการกรองข้อมูลที่อาจจะกรองข้อมูลจริงไป
+    const dedupeWindowMs = 1 * 60 * 1000; // 1 นาที
     const keptByKey = new Map<string, any>();
     const result: any[] = [];
 
