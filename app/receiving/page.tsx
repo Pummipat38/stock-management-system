@@ -1110,22 +1110,18 @@ export default function ReceivingPage() {
                     const partColor = partColors[colorIndex];
                     
                     return (
-                      <tr key={group.key} className={`hover:bg-white/5 transition-colors ${isNewPart ? 'border-t-2 border-blue-400/50' : ''}`}>
+                      <tr key={item.id} className="hover:bg-white/5 transition-colors">
                         {isDeleteMode && (
                           <td className="px-3 py-4 whitespace-nowrap text-center w-16">
                             <input
                               type="checkbox"
-                              checked={group.items.every(entry => selectedDeleteIds.includes(entry.id))}
+                              checked={selectedDeleteIds.includes(item.id)}
                               onChange={() => {
-                                const ids = group.items.map(entry => entry.id);
-                                setSelectedDeleteIds(prev => {
-                                  const allSelected = ids.every(id => prev.includes(id));
-                                  if (allSelected) {
-                                    return prev.filter(id => !ids.includes(id));
+                                setSelectedDeleteIds((prev: string[]) => {
+                                  if (prev.includes(item.id)) {
+                                    return prev.filter((id: string) => id !== item.id);
                                   }
-                                  const next = new Set(prev);
-                                  ids.forEach(id => next.add(id));
-                                  return Array.from(next);
+                                  return [...prev, item.id];
                                 });
                               }}
                               className="h-4 w-4 text-red-600 border-gray-300 rounded"
@@ -1137,7 +1133,7 @@ export default function ReceivingPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xl text-center w-24">
                           <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-base font-bold border-2 ${partColor} ${partColor.replace('text-', 'bg-')}/10 ${partColor.replace('text-', 'border-')}/50`}>
-                            {group.modelText}
+                            {item.model || '-'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-32">
@@ -1154,7 +1150,7 @@ export default function ReceivingPage() {
                           <div className="flex space-x-1 justify-center">
                             <button
                               onClick={() => {
-                                setDetailGroupKey(group.key);
+                                setDetailGroupKey(getGroupKey(item));
                                 setIsDetailOpen(true);
                               }}
                               className="text-yellow-300 hover:text-yellow-200 transition-colors text-2xl"
