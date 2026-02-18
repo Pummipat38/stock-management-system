@@ -1375,17 +1375,10 @@ function DueDeliveryPage() {
           const qtyToIssueFromThisItem = Math.min(remainingQtyToIssue, availableInThisItem);
 
           if (qtyToIssueFromThisItem > 0) {
-            const issueRecord = {
-              myobNumber: item.myobNumber,
-              model: item.model,
-              partName: item.partName,
-              partNumber: item.partNumber,
-              revision: item.revision,
-              poNumber: item.poNumber,
-              receivedQty: 0,
-              receivedDate: item.receivedDate,
-              supplier: deliverFormData.supplier || item.supplier,
-              issuedQty: qtyToIssueFromThisItem,
+            // อัปเดต issuedQty ของรายการเดิมแทนการสร้างใหม่
+            const updatedItem = {
+              ...item,
+              issuedQty: (item.issuedQty || 0) + qtyToIssueFromThisItem,
               invoiceNumber: deliverFormData.invoiceNumber || deliverFormData.customerPo || deliverRecord.customerPo || '',
               issueDate: deliverFormData.issueDate,
               dueDate: deliverFormData.dueDate || deliverRecord.dueDate || undefined,
@@ -1395,16 +1388,16 @@ function DueDeliveryPage() {
               remarks: deliverFormData.remarks || '',
             };
 
-            const response = await fetch('/api/stock', {
-              method: 'POST',
+            const response = await fetch(`/api/stock/${item.id}`, {
+              method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(issueRecord),
+              body: JSON.stringify(updatedItem),
             });
 
             if (!response.ok) {
-              alert('เกิดข้อผิดพลาดในการบันทึกบางรายการ');
+              alert('เกิดข้อผิดพลาดในการอัปเดตสต๊อกบางรายการ');
               return;
             }
 
@@ -1443,7 +1436,18 @@ function DueDeliveryPage() {
         console.error('Error syncing due records:', error);
         alert('บันทึกไม่สำเร็จ (Supabase): ' + error);
       }
-      setStockItems(prev => [...prev]);
+      
+      // รีเฟรชข้อมูลสต๊อกใหม่หลังจ่ายออก
+      try {
+        const stockResponse = await fetch('/api/stock');
+        if (stockResponse.ok) {
+          const stockData = await stockResponse.json();
+          setStockItems(stockData);
+        }
+      } catch (error) {
+        console.error('Error refreshing stock:', error);
+      }
+      
       closeDeliverForm();
       alert(deliverJobMode === 'mass' ? 'บันทึกงาน MASS สำเร็จ (ไม่ตัดสต๊อก)' : 'บันทึกและตัดสต๊อกสำเร็จ');
     } catch (error) {
