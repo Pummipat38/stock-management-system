@@ -1049,31 +1049,50 @@ export default function ReceivingPage() {
                 {(() => {
                 const balanceMap = getBalanceMap(stockItems);
                 const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-                // แสดงรายการที่รับเข้าทั้งหมด ไม่ว่า balance จะเป็นเท่าไหร่
-                const inStockReceivedItems = receivedItems;
-                
-                // แยกรายการกัน ไม่รวมเป็นกลุ่ม
-                const sortedItems = inStockReceivedItems
-                  .slice()
+                const inStockReceivedItems = receivedItems.filter(item => (balanceMap.get(getGroupKey(item)) || 0) > 0);
+                const groupedMap = new Map<string, StockItem[]>();
+                inStockReceivedItems.forEach(item => {
+                  const key = getGroupKey(item);
+                  const group = groupedMap.get(key) || [];
+                  group.push(item);
+                  groupedMap.set(key, group);
+                });
+
+                const groupedItems = Array.from(groupedMap.entries())
+                  .map(([key, items]) => {
+                    const sortedItems = items
+                      .slice()
+                      .sort((a, b) => new Date(b.receivedDate || b.createdAt).getTime() - new Date(a.receivedDate || a.createdAt).getTime());
+                    const representative = sortedItems[0];
+                    const models = Array.from(new Set(items.map(item => (item.model || '').trim()).filter(Boolean)));
+                    return {
+                      key,
+                      items,
+                      representative,
+                      modelText: models.length > 0 ? models.join(', ') : '-',
+                    };
+                  })
                   .sort((a, b) => {
-                    // เรียงตาม MYOB ก่อน แล้วค่อยตาม Part Number
-                    if (a.myobNumber !== b.myobNumber) {
-                      return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+                    if (a.representative.myobNumber !== b.representative.myobNumber) {
+                      return a.representative.myobNumber.localeCompare(b.representative.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
                     }
-                    return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+                    return a.representative.partNumber.localeCompare(b.representative.partNumber, 'en', { numeric: true, sensitivity: 'base' });
                   });
 
-                const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+                const totalPages = Math.ceil(groupedItems.length / itemsPerPage);
                 const startIndex = (currentPage - 1) * itemsPerPage;
                 const endIndex = startIndex + itemsPerPage;
-                const currentItems = sortedItems.slice(startIndex, endIndex);
+                const currentItems = groupedItems.slice(startIndex, endIndex);
 
                 // สร้าง empty rows เพื่อให้ตารางมีความสูงคงที่
                 const emptyRowsCount = Math.max(0, itemsPerPage - currentItems.length);
                 const emptyRows = Array(emptyRowsCount).fill(null);
 
                 return [
-                  ...currentItems.map((item, index) => {
+                  ...currentItems.map((group, index) => {
+                    const prevGroup = index > 0 ? currentItems[index - 1] : null;
+                    const item = group.representative;
+                    const isNewPart = !prevGroup || prevGroup.key !== group.key;
                     
                     // สร้างสีที่แตกต่างกันสำหรับแต่ละ part
                     const partKey = `${item.myobNumber}-${item.partNumber}`;
@@ -1093,18 +1112,22 @@ export default function ReceivingPage() {
                     const partColor = partColors[colorIndex];
                     
                     return (
-                      <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={group.key} className={`hover:bg-white/5 transition-colors ${isNewPart ? 'border-t-2 border-blue-400/50' : ''}`}>
                         {isDeleteMode && (
                           <td className="px-3 py-4 whitespace-nowrap text-center w-16">
                             <input
                               type="checkbox"
-                              checked={selectedDeleteIds.includes(item.id)}
+                              checked={group.items.every(entry => selectedDeleteIds.includes(entry.id))}
                               onChange={() => {
+                                const ids = group.items.map(entry => entry.id);
                                 setSelectedDeleteIds(prev => {
-                                  if (prev.includes(item.id)) {
-                                    return prev.filter(id => id !== item.id);
+                                  const allSelected = ids.every(id => prev.includes(id));
+                                  if (allSelected) {
+                                    return prev.filter(id => !ids.includes(id));
                                   }
-                                  return [...prev, item.id];
+                                  const next = new Set(prev);
+                                  ids.forEach(id => next.add(id));
+                                  return Array.from(next);
                                 });
                               }}
                               className="h-4 w-4 text-red-600 border-gray-300 rounded"
@@ -1116,7 +1139,7 @@ export default function ReceivingPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xl text-center w-24">
                           <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-base font-bold border-2 ${partColor} ${partColor.replace('text-', 'bg-')}/10 ${partColor.replace('text-', 'border-')}/50`}>
-                            {item.model || '-'}
+                            {group.modelText}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-32">
@@ -1133,7 +1156,7 @@ export default function ReceivingPage() {
                           <div className="flex space-x-1 justify-center">
                             <button
                               onClick={() => {
-                                setDetailGroupKey(getGroupKey(item));
+                                setDetailGroupKey(group.key);
                                 setIsDetailOpen(true);
                               }}
                               className="text-yellow-300 hover:text-yellow-200 transition-colors text-2xl"
