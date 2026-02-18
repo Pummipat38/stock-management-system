@@ -1204,6 +1204,52 @@ export default function IssuingPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* แสดงรายการจ่ายออกและปุ่มลบรายการซ้ำ */}
+                  {selectedItem && (() => {
+                    const issuedItems = stockItems.filter(item => 
+                      item.myobNumber === selectedItem.myobNumber &&
+                      item.partNumber === selectedItem.partNumber && 
+                      item.issuedQty && item.issuedQty > 0
+                    ).sort((a, b) => new Date(b.issueDate || b.createdAt).getTime() - new Date(a.issueDate || a.createdAt).getTime());
+
+                    if (issuedItems.length <= 1) return null;
+
+                    return (
+                      <div className="mt-4 p-4 bg-orange-50 rounded-lg">
+                        <h4 className="text-sm font-semibold text-orange-800 mb-2">
+                          รายการจ่ายออก ({issuedItems.length} รายการ)
+                        </h4>
+                        <div className="text-xs text-orange-600 mb-3">
+                          พบรายการจ่ายออกซ้ำ สามารถลบรายการเก่าเพื่อปรับสต๊อก
+                        </div>
+                        <button
+                          onClick={() => {
+                            const confirmMessage = `ต้องการลบรายการจ่ายออกซ้ำทั้งหมด ${issuedItems.length - 1} รายการหรือไม่?\n(จะเหลือไว้เฉพาะรายการล่าสุด)\n\nสต๊อกจะเพิ่มจาก ${getBalance(selectedItem)} เป็น ${getBalance(selectedItem) + issuedItems.slice(1).reduce((sum, item) => sum + (item.issuedQty || 0), 0)}`;
+                            if (confirm(confirmMessage)) {
+                              // ลบรายการเก่าทั้งหมด เหลือไว้แค่รายการล่าสุด
+                              const itemsToDelete = issuedItems.slice(1);
+                              
+                              let deletedCount = 0;
+                              itemsToDelete.forEach(item => {
+                                fetch(`/api/stock/${item.id}`, { method: 'DELETE' })
+                                  .then(() => deletedCount++)
+                                  .catch(err => console.error('Error deleting item:', err));
+                              });
+                              
+                              setTimeout(() => {
+                                fetchStockItems();
+                                alert(`ลบรายการจ่ายออกซ้ำ ${deletedCount} รายการเรียบร้อยแล้ว`);
+                              }, 1000);
+                            }
+                          }}
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                          🗑️ ลบรายการจ่ายออกซ้ำ ({issuedItems.length - 1} รายการ)
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
