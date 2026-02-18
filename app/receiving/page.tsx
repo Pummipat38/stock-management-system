@@ -461,6 +461,12 @@ export default function ReceivingPage() {
                 .slice()
                 .sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
               const totalReceived = items.reduce((sum, item) => sum + item.receivedQty, 0);
+              
+              // คำนวณยอดเบิกทั้งหมด (รวมรายการที่ issuedQty > 0 ด้วย)
+              const allItemsWithSameKey = stockItems.filter(item => getGroupKey(item) === detailGroupKey);
+              const totalIssued = allItemsWithSameKey.reduce((sum, item) => sum + (item.issuedQty || 0), 0);
+              const actualBalance = totalReceived - totalIssued;
+              
               const headerItem = items[0];
               const models = Array.from(
                 new Set(items.map(item => (item.model || '').trim()).filter(Boolean))
@@ -491,6 +497,17 @@ export default function ReceivingPage() {
                         <div className="text-xs text-blue-600">รับเข้าทั้งหมด</div>
                         <div className="text-lg font-semibold text-blue-700">{totalReceived.toLocaleString()}</div>
                         <div className="text-xs text-blue-500">รับเข้า {items.length} ครั้ง</div>
+                      </div>
+                      <div className={`${actualBalance >= 0 ? 'bg-green-50' : 'bg-red-50'} rounded-lg p-4`}>
+                        <div className={`text-xs ${actualBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {actualBalance >= 0 ? 'คงเหลือ' : 'ติดลบ'}
+                        </div>
+                        <div className={`text-lg font-semibold ${actualBalance >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                          {actualBalance.toLocaleString()}
+                        </div>
+                        <div className={`text-xs ${actualBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          (รับ {totalReceived} - เบิก {totalIssued})
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1051,49 +1068,29 @@ export default function ReceivingPage() {
                 const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
                 // แสดงรายการที่รับเข้าทั้งหมด ไม่ว่า balance จะเป็นเท่าไหร่
                 const inStockReceivedItems = receivedItems;
-                const groupedMap = new Map<string, StockItem[]>();
-                inStockReceivedItems.forEach(item => {
-                  const key = getGroupKey(item);
-                  const group = groupedMap.get(key) || [];
-                  group.push(item);
-                  groupedMap.set(key, group);
-                });
-
-                const groupedItems = Array.from(groupedMap.entries())
-                  .map(([key, items]) => {
-                    const sortedItems = items
-                      .slice()
-                      .sort((a, b) => new Date(b.receivedDate || b.createdAt).getTime() - new Date(a.receivedDate || a.createdAt).getTime());
-                    const representative = sortedItems[0];
-                    const models = Array.from(new Set(items.map(item => (item.model || '').trim()).filter(Boolean)));
-                    return {
-                      key,
-                      items,
-                      representative,
-                      modelText: models.length > 0 ? models.join(', ') : '-',
-                    };
-                  })
+                
+                // แยกรายการกัน ไม่รวมเป็นกลุ่ม
+                const sortedItems = inStockReceivedItems
+                  .slice()
                   .sort((a, b) => {
-                    if (a.representative.myobNumber !== b.representative.myobNumber) {
-                      return a.representative.myobNumber.localeCompare(b.representative.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+                    // เรียงตาม MYOB ก่อน แล้วค่อยตาม Part Number
+                    if (a.myobNumber !== b.myobNumber) {
+                      return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
                     }
-                    return a.representative.partNumber.localeCompare(b.representative.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+                    return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
                   });
 
-                const totalPages = Math.ceil(groupedItems.length / itemsPerPage);
+                const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
                 const startIndex = (currentPage - 1) * itemsPerPage;
                 const endIndex = startIndex + itemsPerPage;
-                const currentItems = groupedItems.slice(startIndex, endIndex);
+                const currentItems = sortedItems.slice(startIndex, endIndex);
 
                 // สร้าง empty rows เพื่อให้ตารางมีความสูงคงที่
                 const emptyRowsCount = Math.max(0, itemsPerPage - currentItems.length);
                 const emptyRows = Array(emptyRowsCount).fill(null);
 
                 return [
-                  ...currentItems.map((group, index) => {
-                    const prevGroup = index > 0 ? currentItems[index - 1] : null;
-                    const item = group.representative;
-                    const isNewPart = !prevGroup || prevGroup.key !== group.key;
+                  ...currentItems.map((item, index) => {
                     
                     // สร้างสีที่แตกต่างกันสำหรับแต่ละ part
                     const partKey = `${item.myobNumber}-${item.partNumber}`;
