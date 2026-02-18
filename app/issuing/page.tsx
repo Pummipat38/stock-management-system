@@ -563,6 +563,42 @@ export default function IssuingPage() {
       return;
     }
 
+    // ตรวจสอบข้อมูลซ้ำก่อนจ่ายออก
+    const normalizedInvoice = (formData.invoiceNumber || '').toLowerCase().trim();
+    const normalizedPartName = selectedItem.partName.toLowerCase().trim();
+    const normalizedPartNumber = selectedItem.partNumber.toLowerCase().trim();
+    const issuedQty = formData.issuedQty;
+
+    const duplicates = stockItems.filter(item => {
+      if (!item.issuedQty || item.issuedQty <= 0) return false;
+      
+      const itemInvoice = (item.invoiceNumber || '').toLowerCase().trim();
+      const itemPartName = item.partName.toLowerCase().trim();
+      const itemPartNumber = item.partNumber.toLowerCase().trim();
+      const itemQty = item.issuedQty;
+
+      // ตรวจสอบว่ามีข้อมูลซ้ำกัน (invoice + part name + part number + จำนวน)
+      return (
+        itemInvoice === normalizedInvoice &&
+        itemPartName === normalizedPartName &&
+        itemPartNumber === normalizedPartNumber &&
+        itemQty === issuedQty
+      );
+    });
+
+    if (duplicates.length > 0) {
+      const duplicateInfo = duplicates.map(item => 
+        `MYOB: ${item.myobNumber}, Part: ${item.partNumber}, จำนวน: ${item.issuedQty}, วันที่: ${new Date(item.issueDate || item.createdAt).toLocaleDateString('th-TH')}`
+      ).join('\n');
+      
+      const confirmMessage = `พบข้อมูลจ่ายออกซ้ำ ${duplicates.length} รายการ:\n\n${duplicateInfo}\n\nต้องการจ่ายออกซ้ำหรือไม่?`;
+      const confirmed = confirm(confirmMessage);
+      
+      if (!confirmed) {
+        return;
+      }
+    }
+
     try {
       const method = editingItem ? 'PUT' : 'POST';
       const url = editingItem ? `/api/stock/${editingItem.id}` : '/api/stock';

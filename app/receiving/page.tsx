@@ -563,6 +563,31 @@ export default function ReceivingPage() {
                           (รับ {totalReceived} - เบิก {totalIssued})
                         </div>
                       </div>
+                      {items.length > 1 && (
+                        <div className="bg-orange-50 rounded-lg p-4">
+                          <div className="text-xs text-orange-600">จัดการรายการซ้ำ</div>
+                          <button
+                            onClick={() => {
+                              const confirmMessage = `ต้องการลบรายการซ้ำทั้งหมด ${items.length - 1} รายการหรือไม่?\n(จะเหลือไว้เฉพาะรายการล่าสุด)`;
+                              if (confirm(confirmMessage)) {
+                                // เรียงตามวันที่ ลบรายการเก่าทั้งหมด เหลือไว้แค่รายการล่าสุด
+                                const sortedByDate = items.sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime());
+                                const itemsToDelete = sortedByDate.slice(1); // รายการเก่าทั้งหมด
+                                
+                                itemsToDelete.forEach(item => {
+                                  handleDelete(item.id);
+                                });
+                                
+                                setIsDetailOpen(false);
+                                alert(`ลบรายการซ้ำ ${itemsToDelete.length} รายการเรียบร้อยแล้ว`);
+                              }
+                            }}
+                            className="mt-2 w-full bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                          >
+                            🗑️ ลบรายการซ้ำทั้งหมด ({items.length - 1} รายการ)
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
