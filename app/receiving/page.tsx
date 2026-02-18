@@ -1049,7 +1049,8 @@ export default function ReceivingPage() {
                 {(() => {
                 const balanceMap = getBalanceMap(stockItems);
                 const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-                const inStockReceivedItems = receivedItems.filter(item => (balanceMap.get(getGroupKey(item)) || 0) > 0);
+                // แสดงรายการที่รับเข้าทั้งหมด ไม่ว่า balance จะเป็นเท่าไหร่
+                const inStockReceivedItems = receivedItems;
                 const groupedMap = new Map<string, StockItem[]>();
                 inStockReceivedItems.forEach(item => {
                   const key = getGroupKey(item);
