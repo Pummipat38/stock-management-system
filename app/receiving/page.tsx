@@ -35,6 +35,20 @@ interface BulkReceivingFormData {
   parts: BulkPartData[];
 }
 
+interface ReceivingFormData {
+  myobNumber: string;
+  model: string;
+  partName: string;
+  partNumber: string;
+  revision: string;
+  poNumber: string;
+  receivedQty: number;
+  receivedDate: string;
+  supplier?: string;
+  customer?: string;
+  remarks?: string;
+}
+
 export default function ReceivingPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
@@ -207,11 +221,51 @@ export default function ReceivingPage() {
     }));
   };
 
+  // ตรวจสอบข้อมูลซ้ำก่อนบันทึก
+  const checkDuplicateData = (data: ReceivingFormData) => {
+    const normalizedInvoice = (data.poNumber || '').toLowerCase().trim();
+    const normalizedPartName = data.partName.toLowerCase().trim();
+    const normalizedPartNumber = data.partNumber.toLowerCase().trim();
+    const receivedQty = data.receivedQty;
+
+    const duplicates = stockItems.filter(item => {
+      if (!item.receivedQty || item.receivedQty <= 0) return false;
+      
+      const itemInvoice = (item.poNumber || '').toLowerCase().trim();
+      const itemPartName = item.partName.toLowerCase().trim();
+      const itemPartNumber = item.partNumber.toLowerCase().trim();
+      const itemQty = item.receivedQty;
+
+      // ตรวจสอบว่ามีข้อมูลซ้ำกัน (invoice + part name + part number + จำนวน)
+      return (
+        itemInvoice === normalizedInvoice &&
+        itemPartName === normalizedPartName &&
+        itemPartNumber === normalizedPartNumber &&
+        itemQty === receivedQty
+      );
+    });
+
+    return duplicates;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form submitted with data:', formData);
-    
+    // ตรวจสอบข้อมูลซ้ำ
+    const duplicates = checkDuplicateData(formData);
+    if (duplicates.length > 0) {
+      const duplicateInfo = duplicates.map(item => 
+        `MYOB: ${item.myobNumber}, Part: ${item.partNumber}, จำนวน: ${item.receivedQty}, วันที่: ${new Date(item.receivedDate).toLocaleDateString('th-TH')}`
+      ).join('\n');
+      
+      const confirmMessage = `พบข้อมูลซ้ำ ${duplicates.length} รายการ:\n\n${duplicateInfo}\n\nต้องการบันทึกซ้ำหรือไม่?`;
+      const confirmed = confirm(confirmMessage);
+      
+      if (!confirmed) {
+        return;
+      }
+    }
+
     try {
       const url = editingItem ? `/api/stock/${editingItem.id}` : '/api/stock';
       const method = editingItem ? 'PUT' : 'POST';
