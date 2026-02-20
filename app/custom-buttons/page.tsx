@@ -190,12 +190,22 @@ export default function CustomButtonsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <div className="min-h-screen bg-black text-white p-6 relative">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">🔧 จัดการปุ่มกำหนดเอง</h1>
-          <p className="text-gray-400">สร้างและจัดการปุ่มที่สามารถตั้งชื่อและเนื้อหาเองได้</p>
+          <h1 className="text-3xl font-bold text-white mb-2">� MASTER PLAN</h1>
+          <p className="text-gray-400">จัดการเอกสารและสถานะ Part ตามที่กำหนด</p>
+        </div>
+
+        {/* Back Button - positioned absolute top right */}
+        <div className="absolute top-0 right-0">
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
+          >
+            ← BACK
+          </button>
         </div>
 
         {/* Action Buttons */}
@@ -205,12 +215,6 @@ export default function CustomButtonsPage() {
             className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
           >
             ➕ สร้างปุ่มใหม่
-          </button>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-          >
-            🏠 กลับหน้าหลัก
           </button>
         </div>
 
