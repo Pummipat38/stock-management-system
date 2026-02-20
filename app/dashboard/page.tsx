@@ -171,7 +171,7 @@ export default function Dashboard() {
     {
       title: 'MASTER PLAN',
       subtitle: '(DOCUMENT & STATUSPART)',
-      icon: '🔧',
+      icon: '�',
       href: '/custom-buttons',
       delay: 'delay-700'
     },
