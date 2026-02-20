@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Mock data for testing
+// Simple mock-only version to avoid runtime crashes
 let mockButtons = [
   {
     id: '1',
@@ -26,16 +26,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    mockButtons = mockButtons.filter(button => button.id !== params.id);
-    mockButtonData = mockButtonData.filter(data => data.buttonId !== params.id);
-    
-    return NextResponse.json({ message: 'Button deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting custom button:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete custom button' },
-      { status: 500 }
-    );
-  }
+  mockButtons = mockButtons.filter(button => button.id !== params.id);
+  mockButtonData = mockButtonData.filter(data => data.buttonId !== params.id);
+  
+  return NextResponse.json({ message: 'Button deleted successfully' });
 }

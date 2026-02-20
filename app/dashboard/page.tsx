@@ -169,8 +169,8 @@ export default function Dashboard() {
       delay: 'delay-600'
     },
     {
-      title: 'CUSTOM BUTTONS',
-      subtitle: '(ปุ่มกำหนดเอง)',
+      title: 'MASTER PLAN',
+      subtitle: '(DOCUMENT & STATUSPART)',
       icon: '🔧',
       href: '/custom-buttons',
       delay: 'delay-700'
