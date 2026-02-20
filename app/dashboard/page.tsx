@@ -171,7 +171,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 via-emerald-800 via-teal-700 to-green-600 relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden">
       <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
       
       {/* Sparkling Stars */}

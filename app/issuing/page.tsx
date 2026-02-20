@@ -1026,12 +1026,12 @@ export default function IssuingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 via-purple-700 to-pink-600 relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-20 w-72 h-72 bg-gray-800/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 bg-gray-700/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-gray-900/30 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-8 py-4 sm:py-8 relative z-10 max-w-[95%]">
@@ -1224,23 +1224,27 @@ export default function IssuingPage() {
                           พบรายการจ่ายออกซ้ำ สามารถลบรายการเก่าเพื่อปรับสต๊อก
                         </div>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             const confirmMessage = `ต้องการลบรายการจ่ายออกซ้ำทั้งหมด ${issuedItems.length - 1} รายการหรือไม่?\n(จะเหลือไว้เฉพาะรายการล่าสุด)\n\nสต๊อกจะเพิ่มจาก ${getBalance(selectedItem)} เป็น ${getBalance(selectedItem) + issuedItems.slice(1).reduce((sum, item) => sum + (item.issuedQty || 0), 0)}`;
                             if (confirm(confirmMessage)) {
                               // ลบรายการเก่าทั้งหมด เหลือไว้แค่รายการล่าสุด
                               const itemsToDelete = issuedItems.slice(1);
                               
-                              let deletedCount = 0;
-                              itemsToDelete.forEach(item => {
-                                fetch(`/api/stock/${item.id}`, { method: 'DELETE' })
-                                  .then(() => deletedCount++)
-                                  .catch(err => console.error('Error deleting item:', err));
-                              });
-                              
-                              setTimeout(() => {
-                                fetchStockItems();
+                              try {
+                                let deletedCount = 0;
+                                for (const item of itemsToDelete) {
+                                  const response = await fetch(`/api/stock/${item.id}`, { method: 'DELETE' });
+                                  if (response.ok) {
+                                    deletedCount++;
+                                  }
+                                }
+                                
+                                await fetchStockItems();
                                 alert(`ลบรายการจ่ายออกซ้ำ ${deletedCount} รายการเรียบร้อยแล้ว`);
-                              }, 1000);
+                              } catch (error) {
+                                console.error('Error deleting items:', error);
+                                alert('เกิดข้อผิดพลาดในการลบรายการ กรุณาลองใหม่');
+                              }
                             }
                           }}
                           className="w-full bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
