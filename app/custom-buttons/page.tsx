@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+ type FieldType = 'text' | 'date' | 'number' | 'textarea';
+
 interface CustomButton {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ interface ButtonData {
   buttonId: string;
   fieldName: string;
   fieldValue: string;
-  fieldType: 'text' | 'date' | 'number' | 'textarea';
+  fieldType: FieldType;
   createdAt: string;
 }
 
@@ -37,7 +39,7 @@ export default function CustomButtonsPage() {
   const [newData, setNewData] = useState({
     fieldName: '',
     fieldValue: '',
-    fieldType: 'text' as const
+    fieldType: 'text' as FieldType
   });
 
   const router = useRouter();
@@ -427,7 +429,7 @@ export default function CustomButtonsPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">ประเภทฟิลด์</label>
                   <select
                     value={newData.fieldType}
-                    onChange={(e) => setNewData(prev => ({ ...prev, fieldType: e.target.value as any }))}
+                    onChange={(e) => setNewData(prev => ({ ...prev, fieldType: e.target.value as FieldType }))}
                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   >
                     <option value="text">📝 ข้อความ</option>
@@ -450,7 +452,7 @@ export default function CustomButtonsPage() {
                     />
                   ) : (
                     <input
-                      type={newData.fieldType as 'text' | 'date' | 'number'}
+                      type={newData.fieldType}
                       value={newData.fieldValue}
                       onChange={(e) => setNewData(prev => ({ ...prev, fieldValue: e.target.value }))}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
