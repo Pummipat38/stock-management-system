@@ -646,178 +646,201 @@ export default function ReceivingPage() {
       </div>
 
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">
-              {editingItem ? '✏️ แก้ไขข้อมูลการรับเข้า' : '📥 บันทึกการรับเข้าใหม่'}
-            </h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  {editingItem ? '✏️ แก้ไขข้อมูลการรับเข้า' : '📥 บันทึกการรับเข้าใหม่'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setIsFormOpen(false);
+                    setEditingItem(null);
+                  }}
+                  className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* ข้อมูลพื้นฐาน */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 ข้อมูลสินค้า</h3>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  📋 ข้อมูลสินค้า
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">เลข MYOB *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                     <input
                       type="text"
                       name="myobNumber"
                       value={formData.myobNumber}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอกเลข MYOB"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Model *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Model *</label>
                     <input
                       type="text"
                       name="model"
                       value={formData.model}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอก Model"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Part Number *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Part Number *</label>
                     <input
                       type="text"
                       name="partNumber"
                       value={formData.partNumber}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอก Part Number"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Part Name *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Part Name *</label>
                     <input
                       type="text"
                       name="partName"
                       value={formData.partName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอก Part Name"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Revision</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Revision</label>
                     <input
                       type="text"
                       name="revision"
                       value={formData.revision}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอก Revision (ถ้ามี)"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">เลข PO *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">จำนวนที่รับเข้า *</label>
                     <input
-                      type="text"
-                      name="poNumber"
-                      value={formData.poNumber}
+                      type="number"
+                      name="receivedQty"
+                      value={formData.receivedQty}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="0"
+                      min="1"
                       required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
-                    <input
-                      type="text"
-                      name="supplier"
-                      value={formData.supplier || ''}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="ชื่อผู้จำหน่าย/ซัพพลายเออร์"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                    <input
-                      type="text"
-                      name="customer"
-                      value={formData.customer || ''}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="ชื่อลูกค้า"
                     />
                   </div>
                 </div>
               </div>
 
               {/* ข้อมูลการรับเข้า */}
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">📥 ข้อมูลการรับเข้า</h3>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  📦 ข้อมูลการรับเข้า
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนที่รับเข้า *</label>
-                    <input
-                      type="number"
-                      name="receivedQty"
-                      value={formData.receivedQty}
-                      onChange={handleChange}
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">วันที่รับเข้า *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">วันที่รับเข้า *</label>
                     <input
                       type="date"
                       name="receivedDate"
                       value={formData.receivedDate}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
-                </div>
-              </div>
 
-              {/* หมายเหตุ */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">📝 หมายเหตุ</h3>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">เลขที่ใบสำคัญ/Invoice *</label>
+                    <input
+                      type="text"
+                      name="poNumber"
+                      value={formData.poNumber}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอกเลขที่ใบสำคัญ"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Supplier</label>
+                    <input
+                      type="text"
+                      name="supplier"
+                      value={formData.supplier}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอกชื่อ Supplier"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Customer</label>
+                    <input
+                      type="text"
+                      name="customer"
+                      value={formData.customer}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="กรอกชื่อ Customer"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">หมายเหตุ</label>
                   <textarea
                     name="remarks"
-                    value={formData.remarks || ''}
+                    value={formData.remarks}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="ใส่หมายเหตุเพิ่มเติม..."
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                    placeholder="กรอกหมายเหตุเพิ่มเติม (ถ้ามี)"
                   />
                 </div>
               </div>
 
               {/* ปุ่มควบคุม */}
-              <div className="flex justify-end space-x-3 pt-4 border-t">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
                 <button
                   type="button"
                   onClick={() => {
                     setIsFormOpen(false);
                     setEditingItem(null);
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
                   ❌ ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
                 >
-                  {editingItem ? '💾 อัปเดต' : '💾 บันทึก'}
+                  💾 {editingItem ? 'อัปเดต' : 'บันทึก'}
                 </button>
               </div>
             </form>
