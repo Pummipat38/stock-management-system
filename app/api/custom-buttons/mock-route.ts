@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Mock data for testing without database
-let mockButtons = [
+const mockButtons = [
   {
     id: '1',
     name: 'MODEL',
@@ -11,7 +11,7 @@ let mockButtons = [
   }
 ];
 
-let mockButtonData = [
+const mockButtonData = [
   {
     id: '1',
     buttonId: '1',

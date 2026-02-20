@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Mock data for testing
+let mockButtonData = [
+  {
+    id: '1',
+    buttonId: '1',
+    fieldName: 'Model Name',
+    fieldValue: 'ABC-123',
+    fieldType: 'text',
+    createdAt: new Date().toISOString()
+  }
+];
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.customButtonData.delete({
-      where: { id: params.id }
-    });
+    mockButtonData = mockButtonData.filter(data => data.id !== params.id);
     
     return NextResponse.json({ message: 'Button data deleted successfully' });
   } catch (error) {
