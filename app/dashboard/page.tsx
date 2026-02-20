@@ -168,6 +168,13 @@ export default function Dashboard() {
       href: '/reports',
       delay: 'delay-600'
     },
+    {
+      title: 'CUSTOM BUTTONS',
+      subtitle: '(ปุ่มกำหนดเอง)',
+      icon: '🔧',
+      href: '/custom-buttons',
+      delay: 'delay-700'
+    },
   ];
 
   return (

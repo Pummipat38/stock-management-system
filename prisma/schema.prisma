@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model StockItem {
@@ -105,4 +105,33 @@ model DueRecord {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("due_records")
+}
+
+model CustomButton {
+  id          String   @id @default(cuid())
+  name        String
+  color       String   @default("blue")
+  description String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  buttonData  CustomButtonData[]
+
+  @@map("custom_buttons")
+}
+
+model CustomButtonData {
+  id         String   @id @default(cuid())
+  buttonId   String
+  fieldName  String   @map("field_name")
+  fieldValue String   @map("field_value")
+  fieldType  String   @default("text") @map("field_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  button     CustomButton @relation(fields: [buttonId], references: [id], onDelete: Cascade)
+
+  @@map("custom_button_data")
 }
