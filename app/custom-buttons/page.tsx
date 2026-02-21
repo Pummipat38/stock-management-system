@@ -14,32 +14,24 @@ interface MasterPlanRow {
   cells: Record<string, string>;
 }
 
+interface MasterPlanSheet {
+  id: string;
+  name: string;
+  columns: MasterPlanColumn[];
+  rows: MasterPlanRow[];
+}
+
 export default function CustomButtonsPage() {
-  const [masterPlanColumns, setMasterPlanColumns] = useState<MasterPlanColumn[]>([]);
-  const [masterPlanRows, setMasterPlanRows] = useState<MasterPlanRow[]>([]);
+  const [masterPlanSheets, setMasterPlanSheets] = useState<MasterPlanSheet[]>([]);
+  const [selectedSheetId, setSelectedSheetId] = useState<string>('');
+  const [isCreateSheetModalOpen, setIsCreateSheetModalOpen] = useState(false);
+  const [newSheetName, setNewSheetName] = useState('');
 
   const router = useRouter();
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('master_plan_sheet_v1');
-      if (stored) {
-        const parsed = JSON.parse(stored) as {
-          columns?: MasterPlanColumn[];
-          rows?: MasterPlanRow[];
-        };
-        if (Array.isArray(parsed.columns) && Array.isArray(parsed.rows)) {
-          setMasterPlanColumns(parsed.columns);
-          setMasterPlanRows(parsed.rows);
-          return;
-        }
-      }
-    } catch {
-      // ignore
-    }
-
+  const createDefaultColumns = (): MasterPlanColumn[] => {
     const docColId = 'col_doc';
-    const defaultColumns: MasterPlanColumn[] = [
+    return [
       { id: docColId, name: 'DOCUMENT', type: 'text' },
       { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
       { id: 'col_meeting', name: 'MEETING', type: 'text' },
@@ -48,80 +40,186 @@ export default function CustomButtonsPage() {
       { id: 'col_status', name: 'STATUS', type: 'text' },
       { id: 'col_remark', name: 'REMARK', type: 'textarea' },
     ];
+  };
 
-    const emptyCells = defaultColumns.reduce<Record<string, string>>((acc, col) => {
+  const createEmptyRowCells = (columns: MasterPlanColumn[]) =>
+    columns.reduce<Record<string, string>>((acc, col) => {
       acc[col.id] = '';
       return acc;
     }, {});
 
-    setMasterPlanColumns(defaultColumns);
-    setMasterPlanRows([
-      { id: 'row_1', cells: { ...emptyCells } },
-      { id: 'row_2', cells: { ...emptyCells } },
-      { id: 'row_3', cells: { ...emptyCells } },
-    ]);
+  useEffect(() => {
+    try {
+      const storedSheets = localStorage.getItem('master_plan_sheets_v1');
+      if (storedSheets) {
+        const parsed = JSON.parse(storedSheets) as {
+          sheets?: MasterPlanSheet[];
+          selectedSheetId?: string;
+        };
+        if (Array.isArray(parsed.sheets) && parsed.sheets.length > 0) {
+          setMasterPlanSheets(parsed.sheets);
+          setSelectedSheetId(parsed.selectedSheetId || parsed.sheets[0].id);
+          return;
+        }
+      }
+
+      const storedLegacy = localStorage.getItem('master_plan_sheet_v1');
+      if (storedLegacy) {
+        const legacy = JSON.parse(storedLegacy) as {
+          columns?: MasterPlanColumn[];
+          rows?: MasterPlanRow[];
+        };
+        if (Array.isArray(legacy.columns) && Array.isArray(legacy.rows)) {
+          const migratedSheet: MasterPlanSheet = {
+            id: 'sheet_migrated',
+            name: 'MASTER PLAN',
+            columns: legacy.columns,
+            rows: legacy.rows,
+          };
+          setMasterPlanSheets([migratedSheet]);
+          setSelectedSheetId(migratedSheet.id);
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    const defaultColumns = createDefaultColumns();
+    const emptyCells = createEmptyRowCells(defaultColumns);
+    const defaultSheet: MasterPlanSheet = {
+      id: 'sheet_default',
+      name: 'MODEL',
+      columns: defaultColumns,
+      rows: [
+        { id: 'row_1', cells: { ...emptyCells } },
+        { id: 'row_2', cells: { ...emptyCells } },
+        { id: 'row_3', cells: { ...emptyCells } },
+      ],
+    };
+    setMasterPlanSheets([defaultSheet]);
+    setSelectedSheetId(defaultSheet.id);
   }, []);
 
   useEffect(() => {
-    if (masterPlanColumns.length === 0) return;
+    if (masterPlanSheets.length === 0) return;
     try {
       localStorage.setItem(
-        'master_plan_sheet_v1',
-        JSON.stringify({ columns: masterPlanColumns, rows: masterPlanRows })
+        'master_plan_sheets_v1',
+        JSON.stringify({ sheets: masterPlanSheets, selectedSheetId })
       );
     } catch {
       // ignore
     }
-  }, [masterPlanColumns, masterPlanRows]);
+  }, [masterPlanSheets, selectedSheetId]);
+
+  const selectedSheet = masterPlanSheets.find(s => s.id === selectedSheetId) || null;
 
   const addMasterPlanRow = () => {
-    const emptyCells = masterPlanColumns.reduce<Record<string, string>>((acc, col) => {
-      acc[col.id] = '';
-      return acc;
-    }, {});
-    setMasterPlanRows(prev => [
-      ...prev,
-      { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: emptyCells },
-    ]);
+    if (!selectedSheet) return;
+    const emptyCells = createEmptyRowCells(selectedSheet.columns);
+    const newRow: MasterPlanRow = {
+      id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      cells: emptyCells,
+    };
+    setMasterPlanSheets(prev =>
+      prev.map(sheet =>
+        sheet.id === selectedSheet.id
+          ? { ...sheet, rows: [...sheet.rows, newRow] }
+          : sheet
+      )
+    );
   };
 
   const addMasterPlanColumn = () => {
+    if (!selectedSheet) return;
     const newId = `col_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     const nextCol: MasterPlanColumn = {
       id: newId,
-      name: `COL ${masterPlanColumns.length + 1}`,
+      name: `COL ${selectedSheet.columns.length + 1}`,
       type: 'text',
     };
-    setMasterPlanColumns(prev => [...prev, nextCol]);
-    setMasterPlanRows(prev =>
-      prev.map(row => ({
-        ...row,
-        cells: {
-          ...row.cells,
-          [newId]: '',
-        },
-      }))
+    setMasterPlanSheets(prev =>
+      prev.map(sheet => {
+        if (sheet.id !== selectedSheet.id) return sheet;
+        return {
+          ...sheet,
+          columns: [...sheet.columns, nextCol],
+          rows: sheet.rows.map(row => ({
+            ...row,
+            cells: {
+              ...row.cells,
+              [newId]: '',
+            },
+          })),
+        };
+      })
     );
   };
 
   const updateMasterPlanColumnName = (colId: string, name: string) => {
-    setMasterPlanColumns(prev => prev.map(col => (col.id === colId ? { ...col, name } : col)));
+    if (!selectedSheet) return;
+    setMasterPlanSheets(prev =>
+      prev.map(sheet =>
+        sheet.id === selectedSheet.id
+          ? {
+              ...sheet,
+              columns: sheet.columns.map(col => (col.id === colId ? { ...col, name } : col)),
+            }
+          : sheet
+      )
+    );
   };
 
   const updateMasterPlanCell = (rowId: string, colId: string, value: string) => {
-    setMasterPlanRows(prev =>
-      prev.map(row =>
-        row.id === rowId
-          ? {
-              ...row,
-              cells: {
-                ...row.cells,
-                [colId]: value,
-              },
-            }
-          : row
-      )
+    if (!selectedSheet) return;
+    setMasterPlanSheets(prev =>
+      prev.map(sheet => {
+        if (sheet.id !== selectedSheet.id) return sheet;
+        return {
+          ...sheet,
+          rows: sheet.rows.map(row =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  cells: {
+                    ...row.cells,
+                    [colId]: value,
+                  },
+                }
+              : row
+          ),
+        };
+      })
     );
+  };
+
+  const openCreateSheetModal = () => {
+    setNewSheetName('');
+    setIsCreateSheetModalOpen(true);
+  };
+
+  const createSheet = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newSheetName.trim();
+    if (!name) return;
+
+    const columns = createDefaultColumns();
+    const emptyCells = createEmptyRowCells(columns);
+    const newSheet: MasterPlanSheet = {
+      id: `sheet_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      name,
+      columns,
+      rows: [
+        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+      ],
+    };
+
+    setMasterPlanSheets(prev => [...prev, newSheet]);
+    setSelectedSheetId(newSheet.id);
+    setIsCreateSheetModalOpen(false);
   };
 
   return (
@@ -157,6 +255,28 @@ export default function CustomButtonsPage() {
           >
             ➕ เพิ่มคอลัมน์
           </button>
+          <button
+            onClick={openCreateSheetModal}
+            className="px-6 py-3 bg-indigo-700 hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg"
+          >
+            ➕ เพิ่มปุ่ม
+          </button>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-3">
+          {masterPlanSheets.map(sheet => (
+            <button
+              key={sheet.id}
+              onClick={() => setSelectedSheetId(sheet.id)}
+              className={
+                sheet.id === selectedSheetId
+                  ? 'px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-lg transition-colors'
+                  : 'px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors'
+              }
+            >
+              {sheet.name}
+            </button>
+          ))}
         </div>
 
         {/* Buttons Grid */}
@@ -168,7 +288,7 @@ export default function CustomButtonsPage() {
                   <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
                     #
                   </th>
-                  {masterPlanColumns.map(col => (
+                  {(selectedSheet?.columns || []).map(col => (
                     <th
                       key={col.id}
                       className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
@@ -183,7 +303,7 @@ export default function CustomButtonsPage() {
                 </tr>
               </thead>
               <tbody>
-                {masterPlanRows.map((row, rowIndex) => (
+                {(selectedSheet?.rows || []).map((row, rowIndex) => (
                   <tr
                     key={row.id}
                     className={
@@ -195,7 +315,7 @@ export default function CustomButtonsPage() {
                     <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
                       {rowIndex + 1}
                     </td>
-                    {masterPlanColumns.map(col => (
+                    {(selectedSheet?.columns || []).map(col => (
                       <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
                         {col.type === 'textarea' ? (
                           <textarea
@@ -216,10 +336,10 @@ export default function CustomButtonsPage() {
                   </tr>
                 ))}
 
-                {masterPlanRows.length === 0 && (
+                {(selectedSheet?.rows || []).length === 0 && (
                   <tr>
                     <td
-                      colSpan={masterPlanColumns.length + 1}
+                      colSpan={(selectedSheet?.columns || []).length + 1}
                       className="px-6 py-10 text-center text-gray-400"
                     >
                       ยังไม่มีข้อมูล
@@ -230,6 +350,57 @@ export default function CustomButtonsPage() {
             </table>
           </div>
         </div>
+
+        {isCreateSheetModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white">➕ เพิ่มปุ่ม</h2>
+                  <button
+                    onClick={() => setIsCreateSheetModalOpen(false)}
+                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={createSheet} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อปุ่ม *</label>
+                  <input
+                    type="text"
+                    value={newSheetName}
+                    onChange={(e) => setNewSheetName(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="กรอกชื่อ (เช่น: MODEL, ISSUE PR)"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateSheetModalOpen(false)}
+                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    ❌ ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    💾 สร้าง
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
