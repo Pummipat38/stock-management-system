@@ -333,7 +333,7 @@ export default function CustomButtonsPage() {
         {/* Button Data Modal */}
         {isDataModalOpen && selectedButton && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -361,37 +361,73 @@ export default function CustomButtonsPage() {
                   </button>
                 </div>
 
-                <div className="space-y-4">
-                  {buttonData.map((data) => (
-                    <div key={data.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-white mb-2">{data.fieldName}</h4>
-                          {data.fieldType === 'textarea' ? (
-                            <p className="text-gray-300 whitespace-pre-wrap">{data.fieldValue}</p>
-                          ) : (
-                            <p className="text-gray-300">{data.fieldValue}</p>
-                          )}
-                          <p className="text-gray-500 text-sm mt-2">
-                            ประเภท: {data.fieldType} | สร้าง: {new Date(data.createdAt).toLocaleDateString('th-TH')}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => deleteButtonData(data.id)}
-                          className="ml-4 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                        >
-                          🗑️
-                        </button>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* ด้านซ้าย - ชื่อเอกสาร */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                      <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        📄 ชื่อเอกสาร
+                      </h4>
+                      <div className="space-y-3">
+                        {buttonData.map((data) => (
+                          <div key={data.id} className="bg-gray-700/50 rounded-lg p-3 border border-gray-600">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-medium text-white">{data.fieldName}</h5>
+                              <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
+                                {data.fieldType}
+                              </span>
+                            </div>
+                            <p className="text-gray-400 text-sm mt-1">
+                              สร้าง: {new Date(data.createdAt).toLocaleDateString('th-TH')}
+                            </p>
+                          </div>
+                        ))}
+                        
+                        {buttonData.length === 0 && (
+                          <div className="text-center py-6 text-gray-400">
+                            <p className="text-sm">📭 ยังไม่มีเอกสาร</p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                  
-                  {buttonData.length === 0 && (
-                    <div className="text-center py-8 text-gray-400">
-                      <p className="text-lg mb-2">📭 ยังไม่มีข้อมูล</p>
-                      <p>กด "เพิ่มข้อมูล" เพื่อเริ่มบันทึก</p>
+                  </div>
+
+                  {/* ด้านขวา - ข้อมูล */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                      <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        📝 ข้อมูลรายละเอียด
+                      </h4>
+                      <div className="space-y-3">
+                        {buttonData.map((data) => (
+                          <div key={data.id} className="bg-gray-700/50 rounded-lg p-3 border border-gray-600">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h5 className="font-medium text-white mb-2">{data.fieldName}</h5>
+                                {data.fieldType === 'textarea' ? (
+                                  <p className="text-gray-300 whitespace-pre-wrap">{data.fieldValue}</p>
+                                ) : (
+                                  <p className="text-gray-300">{data.fieldValue}</p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteButtonData(data.id)}
+                                className="ml-4 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {buttonData.length === 0 && (
+                          <div className="text-center py-6 text-gray-400">
+                            <p className="text-sm">📭 ยังไม่มีข้อมูล</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
