@@ -376,10 +376,10 @@ export default function CustomButtonsPage() {
                           🏷️ ประเภท
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
-                          � วันที่สร้าง
+                          📅 วันที่สร้าง
                         </th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-white">
-                          🗑️ ลบ
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-white">
+                          � หมายเหตุ
                         </th>
                       </tr>
                     </thead>
@@ -412,14 +412,11 @@ export default function CustomButtonsPage() {
                           <td className="px-4 py-3 text-gray-400 text-sm border-r border-gray-600">
                             {new Date(data.createdAt).toLocaleDateString('th-TH')}
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            <button
-                              onClick={() => deleteButtonData(data.id)}
-                              className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
-                              title="ลบข้อมูล"
-                            >
-                              🗑️
-                            </button>
+                          <td className="px-4 py-3 text-gray-300 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                              <span>พร้อมใช้งาน</span>
+                            </div>
                           </td>
                         </tr>
                       ))}
