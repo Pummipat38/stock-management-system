@@ -1,192 +1,124 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
- type FieldType = 'text' | 'date' | 'number' | 'textarea';
-
-interface CustomButton {
+interface MasterPlanColumn {
   id: string;
   name: string;
-  color: string;
-  description: string;
-  createdAt: string;
+  type: 'text' | 'textarea';
 }
 
-interface ButtonData {
+interface MasterPlanRow {
   id: string;
-  buttonId: string;
-  fieldName: string;
-  fieldValue: string;
-  fieldType: FieldType;
-  createdAt: string;
+  cells: Record<string, string>;
 }
 
 export default function CustomButtonsPage() {
-  const [buttons, setButtons] = useState<CustomButton[]>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
-  const [selectedButton, setSelectedButton] = useState<CustomButton | null>(null);
-  const [buttonData, setButtonData] = useState<ButtonData[]>([]);
-  const [isCreateDataModalOpen, setIsCreateDataModalOpen] = useState(false);
-  
-  const [newButton, setNewButton] = useState({
-    name: '',
-    color: 'blue',
-    description: ''
-  });
-
-  const [newData, setNewData] = useState({
-    fieldName: '',
-    fieldValue: '',
-    fieldType: 'text' as FieldType
-  });
-
-  const router = useRouter();
+  const [masterPlanColumns, setMasterPlanColumns] = useState<MasterPlanColumn[]>([]);
+  const [masterPlanRows, setMasterPlanRows] = useState<MasterPlanRow[]>([]);
 
   useEffect(() => {
-    fetchButtons();
+    try {
+      const stored = localStorage.getItem('master_plan_sheet_v1');
+      if (stored) {
+        const parsed = JSON.parse(stored) as {
+          columns?: MasterPlanColumn[];
+          rows?: MasterPlanRow[];
+        };
+        if (Array.isArray(parsed.columns) && Array.isArray(parsed.rows)) {
+          setMasterPlanColumns(parsed.columns);
+          setMasterPlanRows(parsed.rows);
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    const docColId = 'col_doc';
+    const defaultColumns: MasterPlanColumn[] = [
+      { id: docColId, name: 'DOCUMENT', type: 'text' },
+      { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
+      { id: 'col_meeting', name: 'MEETING', type: 'text' },
+      { id: 'col_start', name: 'START', type: 'text' },
+      { id: 'col_finish', name: 'FINISH', type: 'text' },
+      { id: 'col_status', name: 'STATUS', type: 'text' },
+      { id: 'col_remark', name: 'REMARK', type: 'textarea' },
+    ];
+
+    const emptyCells = defaultColumns.reduce<Record<string, string>>((acc, col) => {
+      acc[col.id] = '';
+      return acc;
+    }, {});
+
+    setMasterPlanColumns(defaultColumns);
+    setMasterPlanRows([
+      { id: 'row_1', cells: { ...emptyCells } },
+      { id: 'row_2', cells: { ...emptyCells } },
+      { id: 'row_3', cells: { ...emptyCells } },
+    ]);
   }, []);
 
-  const fetchButtons = async () => {
+  useEffect(() => {
+    if (masterPlanColumns.length === 0) return;
     try {
-      const response = await fetch('/api/custom-buttons');
-      if (response.ok) {
-        const data = await response.json();
-        setButtons(data);
-      }
-    } catch (error) {
-      console.error('Error fetching buttons:', error);
+      localStorage.setItem(
+        'master_plan_sheet_v1',
+        JSON.stringify({ columns: masterPlanColumns, rows: masterPlanRows })
+      );
+    } catch {
+      // ignore
     }
+  }, [masterPlanColumns, masterPlanRows]);
+
+  const addMasterPlanRow = () => {
+    const emptyCells = masterPlanColumns.reduce<Record<string, string>>((acc, col) => {
+      acc[col.id] = '';
+      return acc;
+    }, {});
+    setMasterPlanRows(prev => [
+      ...prev,
+      { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: emptyCells },
+    ]);
   };
 
-  const fetchButtonData = async (buttonId: string) => {
-    try {
-      const response = await fetch(`/api/custom-buttons/${buttonId}/data`);
-      if (response.ok) {
-        const data = await response.json();
-        setButtonData(data);
-      }
-    } catch (error) {
-      console.error('Error fetching button data:', error);
-    }
-  };
-
-  const createButton = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const response = await fetch('/api/custom-buttons', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newButton),
-      });
-
-      if (response.ok) {
-        fetchButtons();
-        setIsCreateModalOpen(false);
-        setNewButton({ name: '', color: 'blue', description: '' });
-        alert('สร้างปุ่มสำเร็จ!');
-      } else {
-        alert('เกิดข้อผิดพลาดในการสร้างปุ่ม');
-      }
-    } catch (error) {
-      console.error('Error creating button:', error);
-      alert('เกิดข้อผิดพลาดในการสร้างปุ่ม');
-    }
-  };
-
-  const createButtonData = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedButton) return;
-    
-    try {
-      const response = await fetch(`/api/custom-buttons/${selectedButton.id}/data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newData,
-          buttonId: selectedButton.id
-        }),
-      });
-
-      if (response.ok) {
-        fetchButtonData(selectedButton.id);
-        setIsCreateDataModalOpen(false);
-        setNewData({ fieldName: '', fieldValue: '', fieldType: 'text' });
-        alert('เพิ่มข้อมูลสำเร็จ!');
-      } else {
-        alert('เกิดข้อผิดพลาดในการเพิ่มข้อมูล');
-      }
-    } catch (error) {
-      console.error('Error creating button data:', error);
-      alert('เกิดข้อผิดพลาดในการเพิ่มข้อมูล');
-    }
-  };
-
-  const deleteButton = async (id: string) => {
-    if (!confirm('ต้องการลบปุ่มนี้หรือไม่?')) return;
-    
-    try {
-      const response = await fetch(`/api/custom-buttons/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        fetchButtons();
-        alert('ลบปุ่มสำเร็จ!');
-      } else {
-        alert('เกิดข้อผิดพลาดในการลบปุ่ม');
-      }
-    } catch (error) {
-      console.error('Error deleting button:', error);
-      alert('เกิดข้อผิดพลาดในการลบปุ่ม');
-    }
-  };
-
-  const deleteButtonData = async (id: string) => {
-    if (!confirm('ต้องการลบข้อมูลนี้หรือไม่?')) return;
-    
-    try {
-      const response = await fetch(`/api/custom-buttons/data/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok && selectedButton) {
-        fetchButtonData(selectedButton.id);
-        alert('ลบข้อมูลสำเร็จ!');
-      } else {
-        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-      }
-    } catch (error) {
-      console.error('Error deleting button data:', error);
-      alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-    }
-  };
-
-  const openButtonData = (button: CustomButton) => {
-    setSelectedButton(button);
-    fetchButtonData(button.id);
-    setIsDataModalOpen(true);
-  };
-
-  const getColorClasses = (color: string) => {
-    const colors: Record<string, { bg: string; hover: string; text: string }> = {
-      blue: { bg: 'bg-blue-600', hover: 'hover:bg-blue-700', text: 'text-white' },
-      green: { bg: 'bg-green-600', hover: 'hover:bg-green-700', text: 'text-white' },
-      red: { bg: 'bg-red-600', hover: 'hover:bg-red-700', text: 'text-white' },
-      yellow: { bg: 'bg-yellow-600', hover: 'hover:bg-yellow-700', text: 'text-white' },
-      purple: { bg: 'bg-purple-600', hover: 'hover:bg-purple-700', text: 'text-white' },
-      pink: { bg: 'bg-pink-600', hover: 'hover:bg-pink-700', text: 'text-white' },
-      indigo: { bg: 'bg-indigo-600', hover: 'hover:bg-indigo-700', text: 'text-white' },
-      gray: { bg: 'bg-gray-600', hover: 'hover:bg-gray-700', text: 'text-white' },
+  const addMasterPlanColumn = () => {
+    const newId = `col_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const nextCol: MasterPlanColumn = {
+      id: newId,
+      name: `COL ${masterPlanColumns.length + 1}`,
+      type: 'text',
     };
-    return colors[color] || colors.blue;
+    setMasterPlanColumns(prev => [...prev, nextCol]);
+    setMasterPlanRows(prev =>
+      prev.map(row => ({
+        ...row,
+        cells: {
+          ...row.cells,
+          [newId]: '',
+        },
+      }))
+    );
+  };
+
+  const updateMasterPlanColumnName = (colId: string, name: string) => {
+    setMasterPlanColumns(prev => prev.map(col => (col.id === colId ? { ...col, name } : col)));
+  };
+
+  const updateMasterPlanCell = (rowId: string, colId: string, value: string) => {
+    setMasterPlanRows(prev =>
+      prev.map(row =>
+        row.id === rowId
+          ? {
+              ...row,
+              cells: {
+                ...row.cells,
+                [colId]: value,
+              },
+            }
+          : row
+      )
+    );
   };
 
   return (
@@ -194,7 +126,7 @@ export default function CustomButtonsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">� MASTER PLAN</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">📝 MASTER PLAN</h1>
           <p className="text-gray-400">จัดการเอกสารและสถานะ Part ตามที่กำหนด</p>
         </div>
 
@@ -211,351 +143,90 @@ export default function CustomButtonsPage() {
         {/* Action Buttons */}
         <div className="mb-6 flex gap-4">
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={addMasterPlanRow}
             className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
           >
-            ➕ สร้างปุ่มใหม่
+            ➕ เพิ่มแถว
+          </button>
+          <button
+            onClick={addMasterPlanColumn}
+            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg"
+          >
+            ➕ เพิ่มคอลัมน์
           </button>
         </div>
 
         {/* Buttons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {buttons.map((button) => {
-            const colorClasses = getColorClasses(button.color);
-            return (
-              <div
-                key={button.id}
-                className="bg-gray-900 border border-gray-700 rounded-xl p-6 hover:shadow-xl transition-all hover:scale-105"
-              >
-                <h3 className="text-xl font-bold text-white mb-2">{button.name}</h3>
-                {button.description && (
-                  <p className="text-gray-400 text-sm mb-4">{button.description}</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-800 border-b border-gray-700">
+                  <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                    #
+                  </th>
+                  {masterPlanColumns.map(col => (
+                    <th
+                      key={col.id}
+                      className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+                    >
+                      <input
+                        value={col.name}
+                        onChange={e => updateMasterPlanColumnName(col.id, e.target.value)}
+                        className="w-full bg-transparent text-gray-100 focus:outline-none"
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {masterPlanRows.map((row, rowIndex) => (
+                  <tr
+                    key={row.id}
+                    className={
+                      rowIndex % 2 === 0
+                        ? 'bg-gray-900/60 border-b border-gray-800'
+                        : 'bg-gray-900 border-b border-gray-800'
+                    }
+                  >
+                    <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
+                      {rowIndex + 1}
+                    </td>
+                    {masterPlanColumns.map(col => (
+                      <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
+                        {col.type === 'textarea' ? (
+                          <textarea
+                            value={row.cells[col.id] ?? ''}
+                            onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
+                            rows={2}
+                            className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
+                          />
+                        ) : (
+                          <input
+                            value={row.cells[col.id] ?? ''}
+                            onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
+                            className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
+                          />
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+                {masterPlanRows.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={masterPlanColumns.length + 1}
+                      className="px-6 py-10 text-center text-gray-400"
+                    >
+                      ยังไม่มีข้อมูล
+                    </td>
+                  </tr>
                 )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openButtonData(button)}
-                    className={`flex-1 px-4 py-2 ${colorClasses.bg} ${colorClasses.hover} ${colorClasses.text} rounded-lg font-medium transition-colors`}
-                  >
-                    📋 ดูข้อมูล
-                  </button>
-                  <button
-                    onClick={() => deleteButton(button.id)}
-                    className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        {/* Create Button Modal */}
-        {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">➕ สร้างปุ่มใหม่</h2>
-                  <button
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              
-              <form onSubmit={createButton} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อปุ่ม *</label>
-                  <input
-                    type="text"
-                    value={newButton.name}
-                    onChange={(e) => setNewButton(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="กรอกชื่อปุ่ม (เช่น: MODEL, ISSUE PR)"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">สีปุ่ม</label>
-                  <select
-                    value={newButton.color}
-                    onChange={(e) => setNewButton(prev => ({ ...prev, color: e.target.value }))}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="blue">🔵 น้ำเงิน</option>
-                    <option value="green">🟢 เขียว</option>
-                    <option value="red">🔴 แดง</option>
-                    <option value="yellow">🟡 เหลือง</option>
-                    <option value="purple">🟣 ม่วง</option>
-                    <option value="pink">🩷 ชมพู</option>
-                    <option value="indigo">🔷 คราม</option>
-                    <option value="gray">⚫ เทา</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">คำอธิบาย</label>
-                  <textarea
-                    value={newButton.description}
-                    onChange={(e) => setNewButton(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                    placeholder="กรอกคำอธิบายปุ่ม (ถ้ามี)"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    ❌ ยกเลิก
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
-                  >
-                    💾 สร้างปุ่ม
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Button Data Modal */}
-        {isDataModalOpen && selectedButton && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    📋 ข้อมูลปุ่ม: {selectedButton.name}
-                  </h2>
-                  <button
-                    onClick={() => setIsDataModalOpen(false)}
-                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <div className="mb-6 flex justify-between items-center">
-                  <h3 className="text-lg font-semibold text-white">ตารางข้อมูล</h3>
-                  <button
-                    onClick={() => setIsCreateDataModalOpen(true)}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                  >
-                    ➕ เพิ่มข้อมูล
-                  </button>
-                </div>
-
-                {/* ตารางแบบ Excel */}
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
-                    <thead>
-                      <tr className="bg-gray-700 border-b border-gray-600">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
-                          📄 ชื่อเอกสาร
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
-                          📝 ข้อมูลรายละเอียด
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
-                          🏷️ ประเภท
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
-                          📅 วันที่สร้าง
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-white">
-                          � หมายเหตุ
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {buttonData.map((data, index) => (
-                        <tr key={data.id} className={`border-b border-gray-600 ${index % 2 === 0 ? 'bg-gray-800/30' : 'bg-gray-800/50'} hover:bg-gray-700/50 transition-colors`}>
-                          <td className="px-4 py-3 text-white border-r border-gray-600">
-                            <div className="font-medium">{data.fieldName}</div>
-                          </td>
-                          <td className="px-4 py-3 text-gray-300 border-r border-gray-600">
-                            {data.fieldType === 'textarea' ? (
-                              <div className="whitespace-pre-wrap max-w-xs">{data.fieldValue}</div>
-                            ) : (
-                              <div className="max-w-xs truncate">{data.fieldValue}</div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 border-r border-gray-600">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              data.fieldType === 'text' ? 'bg-blue-100 text-blue-800' :
-                              data.fieldType === 'date' ? 'bg-green-100 text-green-800' :
-                              data.fieldType === 'number' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-purple-100 text-purple-800'
-                            }`}>
-                              {data.fieldType === 'text' ? '📝 ข้อความ' :
-                               data.fieldType === 'date' ? '📅 วันที่' :
-                               data.fieldType === 'number' ? '🔢 ตัวเลข' :
-                               '📄 ย่อหน้า'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-gray-400 text-sm border-r border-gray-600">
-                            {new Date(data.createdAt).toLocaleDateString('th-TH')}
-                          </td>
-                          <td className="px-4 py-3 text-gray-300 text-sm">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                              <span>พร้อมใช้งาน</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      
-                      {buttonData.length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
-                            <div className="space-y-2">
-                              <p className="text-lg">📭 ยังไม่มีข้อมูล</p>
-                              <p className="text-sm">กด "เพิ่มข้อมูล" เพื่อเริ่มบันทึก</p>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* สรุปข้อมูล */}
-                {buttonData.length > 0 && (
-                  <div className="mt-6 bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-white">{buttonData.length}</div>
-                        <div className="text-sm text-gray-400">รายการทั้งหมด</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-blue-400">
-                          {buttonData.filter(d => d.fieldType === 'text').length}
-                        </div>
-                        <div className="text-sm text-gray-400">ข้อความ</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-green-400">
-                          {buttonData.filter(d => d.fieldType === 'date').length}
-                        </div>
-                        <div className="text-sm text-gray-400">วันที่</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-yellow-400">
-                          {buttonData.filter(d => d.fieldType === 'number').length}
-                        </div>
-                        <div className="text-sm text-gray-400">ตัวเลข</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Create Data Modal */}
-        {isCreateDataModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">➕ เพิ่มข้อมูลใหม่</h2>
-                  <button
-                    onClick={() => setIsCreateDataModalOpen(false)}
-                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              
-              <form onSubmit={createButtonData} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อฟิลด์ *</label>
-                  <input
-                    type="text"
-                    value={newData.fieldName}
-                    onChange={(e) => setNewData(prev => ({ ...prev, fieldName: e.target.value }))}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                    placeholder="กรอกชื่อฟิลด์ (เช่น: วันที่เปิด Issue, PR Number)"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ประเภทฟิลด์</label>
-                  <select
-                    value={newData.fieldType}
-                    onChange={(e) => setNewData(prev => ({ ...prev, fieldType: e.target.value as FieldType }))}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                  >
-                    <option value="text">📝 ข้อความ</option>
-                    <option value="date">📅 วันที่</option>
-                    <option value="number">🔢 ตัวเลข</option>
-                    <option value="textarea">📄 ย่อหน้าข้อความ</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ค่าฟิลด์ *</label>
-                  {newData.fieldType === 'textarea' ? (
-                    <textarea
-                      value={newData.fieldValue}
-                      onChange={(e) => setNewData(prev => ({ ...prev, fieldValue: e.target.value }))}
-                      rows={3}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
-                      placeholder="กรอกค่าฟิลด์"
-                      required
-                    />
-                  ) : (
-                    <input
-                      type={newData.fieldType}
-                      value={newData.fieldValue}
-                      onChange={(e) => setNewData(prev => ({ ...prev, fieldValue: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                      placeholder="กรอกค่าฟิลด์"
-                      required
-                    />
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateDataModalOpen(false)}
-                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    ❌ ยกเลิก
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
-                  >
-                    💾 เพิ่มข้อมูล
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
