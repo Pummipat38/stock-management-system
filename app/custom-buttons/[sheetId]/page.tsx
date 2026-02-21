@@ -17,6 +17,8 @@ interface MasterPlanRow {
 interface MasterPlanPart {
   id: string;
   name: string;
+  partNumber?: string;
+  partName?: string;
   columns: MasterPlanColumn[];
   rows: MasterPlanRow[];
 }
@@ -42,14 +44,25 @@ export default function MasterPlanSheetPage() {
   const [sheets, setSheets] = useState<MasterPlanSheet[]>([]);
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isEditMode, setIsEditMode] = useState(false);
-  const [newPartName, setNewPartName] = useState('');
-  const [partNameDrafts, setPartNameDrafts] = useState<Record<string, string>>({});
+  const [isPartModalOpen, setIsPartModalOpen] = useState(false);
+  const [partModalMode, setPartModalMode] = useState<'create' | 'edit'>('create');
+  const [partModalPartId, setPartModalPartId] = useState<string>('');
+  const [partModalNumber, setPartModalNumber] = useState('');
+  const [partModalName, setPartModalName] = useState('');
 
   const createEmptyRowCells = (columns: MasterPlanColumn[]) =>
     columns.reduce<Record<string, string>>((acc, col) => {
       acc[col.id] = '';
       return acc;
     }, {});
+
+  const partDisplayText = (p: MasterPlanPart) => {
+    const number = (p.partNumber || '').trim();
+    const name = (p.partName || '').trim();
+    if (number && name) return `PART NO. : ${number}  PART NAME : ${name}`;
+    if (number) return `PART NO. : ${number}`;
+    return p.name;
+  };
 
   const migrateSheetToParts = (sheet: MasterPlanSheet): { sheet: MasterPlanSheet; changed: boolean } => {
     if (Array.isArray(sheet.parts) && sheet.parts.length > 0) {
@@ -68,6 +81,8 @@ export default function MasterPlanSheetPage() {
             {
               id: 'part_default',
               name: 'DEFAULT',
+              partNumber: 'DEFAULT',
+              partName: '',
               columns: legacyColumns,
               rows: legacyRows,
             },
@@ -87,6 +102,8 @@ export default function MasterPlanSheetPage() {
           {
             id: 'part_default',
             name: 'DEFAULT',
+            partNumber: 'DEFAULT',
+            partName: '',
             columns,
             rows: [
               { id: 'row_1', cells: { ...emptyCells } },
@@ -166,19 +183,6 @@ export default function MasterPlanSheetPage() {
     return Array.isArray(sheet.parts) ? sheet.parts : [];
   }, [sheet]);
 
-  useEffect(() => {
-    setPartNameDrafts(prev => {
-      const next = { ...prev };
-      for (const p of parts) {
-        if (next[p.id] === undefined) next[p.id] = p.name;
-      }
-      for (const key of Object.keys(next)) {
-        if (!parts.some(p => p.id === key)) delete next[key];
-      }
-      return next;
-    });
-  }, [parts]);
-
   const persistSheets = (nextSheets: MasterPlanSheet[], nextSelectedId?: string) => {
     setSheets(nextSheets);
     if (typeof nextSelectedId === 'string') setSelectedSheetId(nextSelectedId);
@@ -198,54 +202,96 @@ export default function MasterPlanSheetPage() {
     persistSheets(nextSheets, sheetIdToUpdate);
   };
 
-  const createPart = () => {
+  const openCreatePartModal = () => {
+    if (!isEditMode) return;
+    setPartModalMode('create');
+    setPartModalPartId('');
+    setPartModalNumber('');
+    setPartModalName('');
+    setIsPartModalOpen(true);
+  };
+
+  const openEditPartModal = (p: MasterPlanPart) => {
+    if (!isEditMode) return;
+    setPartModalMode('edit');
+    setPartModalPartId(p.id);
+    setPartModalNumber(p.partNumber || '');
+    setPartModalName(p.partName || '');
+    setIsPartModalOpen(true);
+  };
+
+  const savePartFromModal = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!sheetId || !sheet) return;
     if (!isEditMode) return;
-    const name = newPartName.trim();
-    if (!name) return;
+
+    const partNumber = partModalNumber.trim();
+    const partName = partModalName.trim();
+    if (!partNumber || !partName) return;
 
     const columns = getRequiredColumns();
     const emptyCells = createEmptyRowCells(columns);
-    const nextPart: MasterPlanPart = {
-      id: `part_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      name,
-      columns,
-      rows: [
-        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
-        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
-        { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
-      ],
-    };
 
-    updateSheet(sheetId, prev => {
-      const prevParts = Array.isArray(prev.parts) ? prev.parts : [];
-      return {
-        ...prev,
-        parts: [...prevParts, nextPart],
-        columns: undefined,
-        rows: undefined,
+    if (partModalMode === 'create') {
+      const nextPart: MasterPlanPart = {
+        id: `part_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        name: partNumber,
+        partNumber,
+        partName,
+        columns,
+        rows: [
+          { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+          { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+          { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
+        ],
       };
-    });
-    setNewPartName('');
+
+      updateSheet(sheetId, prev => {
+        const prevParts = Array.isArray(prev.parts) ? prev.parts : [];
+        return {
+          ...prev,
+          parts: [...prevParts, nextPart],
+          columns: undefined,
+          rows: undefined,
+        };
+      });
+    } else {
+      const editId = partModalPartId;
+      if (!editId) return;
+      updateSheet(sheetId, prev => {
+        const prevParts = Array.isArray(prev.parts) ? prev.parts : [];
+        return {
+          ...prev,
+          parts: prevParts.map(p =>
+            p.id === editId
+              ? {
+                  ...p,
+                  name: partNumber,
+                  partNumber,
+                  partName,
+                }
+              : p
+          ),
+        };
+      });
+    }
+
+    setIsPartModalOpen(false);
   };
 
-  const updatePartName = (partIdToUpdate: string, nextName: string) => {
+  const deletePart = (p: MasterPlanPart) => {
     if (!sheetId) return;
-    const name = nextName.trim();
-    if (!name) return;
+    if (!isEditMode) return;
+    const ok = window.confirm(`ต้องการลบ Part นี้ใช่ไหม?\n\n${partDisplayText(p)}`);
+    if (!ok) return;
+
     updateSheet(sheetId, prev => {
       const prevParts = Array.isArray(prev.parts) ? prev.parts : [];
       return {
         ...prev,
-        parts: prevParts.map(p => (p.id === partIdToUpdate ? { ...p, name } : p)),
+        parts: prevParts.filter(x => x.id !== p.id),
       };
     });
-  };
-
-  const commitPartName = (partIdToCommit: string) => {
-    const draft = partNameDrafts[partIdToCommit];
-    if (draft === undefined) return;
-    updatePartName(partIdToCommit, draft);
   };
 
   const openPart = (part: MasterPlanPart) => {
@@ -291,55 +337,116 @@ export default function MasterPlanSheetPage() {
                 {isEditMode ? '✅ DONE' : '✏️ EDIT'}
               </button>
 
-              <div className="flex items-center gap-3">
-                <input
-                  value={newPartName}
-                  disabled={!isEditMode}
-                  onChange={e => setNewPartName(e.target.value)}
-                  placeholder="Part number"
-                  className="w-56 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-                <button
-                  type="button"
-                  onClick={createPart}
-                  disabled={!isEditMode || !newPartName.trim()}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  ➕ ADD PART
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={openCreatePartModal}
+                disabled={!isEditMode}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                ➕ ADD PART
+              </button>
             </div>
 
             <div className="flex flex-col gap-3 items-start">
-              {parts.map(p =>
-                isEditMode ? (
-                  <input
-                    key={p.id}
-                    value={partNameDrafts[p.id] ?? p.name}
-                    onChange={e => setPartNameDrafts(prev => ({ ...prev, [p.id]: e.target.value }))}
-                    onBlur={() => commitPartName(p.id)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        (e.target as HTMLInputElement).blur();
-                      }
-                    }}
-                    className="px-5 py-3 bg-gray-800 text-white rounded-lg font-semibold shadow-lg transition-colors w-full max-w-[520px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
+              {parts.map(p => (
+                <div key={p.id} className="flex gap-3 w-full max-w-[720px] items-center">
+                  {isEditMode && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => deletePart(p)}
+                        className="px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-lg font-semibold shadow-lg transition-colors"
+                      >
+                        🗑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditPartModal(p)}
+                        className="px-4 py-3 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg font-semibold shadow-lg transition-colors"
+                      >
+                        ✏️
+                      </button>
+                    </>
+                  )}
                   <button
-                    key={p.id}
                     type="button"
                     onClick={() => openPart(p)}
-                    className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors text-left w-full max-w-[520px]"
+                    className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors text-left w-full"
                   >
-                    {p.name}
+                    {partDisplayText(p)}
                   </button>
-                )
-              )}
+                </div>
+              ))}
 
               {parts.length === 0 && <div className="text-gray-400">ยังไม่มี Part number</div>}
             </div>
           </>
+        )}
+
+        {isPartModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white">
+                    {partModalMode === 'create' ? '➕ ADD PART' : '✏️ EDIT PART'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setIsPartModalOpen(false)}
+                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={savePartFromModal} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">PART NUMBER *</label>
+                  <input
+                    type="text"
+                    value={partModalNumber}
+                    onChange={e => setPartModalNumber(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="เช่น: 18365K77 V000"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">PART NAME *</label>
+                  <input
+                    type="text"
+                    value={partModalName}
+                    onChange={e => setPartModalName(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="เช่น: WASHER,RUBBER"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setIsPartModalOpen(false)}
+                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    ❌ ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    💾 บันทึก
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     </div>
