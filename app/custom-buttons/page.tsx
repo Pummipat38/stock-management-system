@@ -14,11 +14,19 @@ interface MasterPlanRow {
   cells: Record<string, string>;
 }
 
-interface MasterPlanSheet {
+interface MasterPlanPart {
   id: string;
   name: string;
   columns: MasterPlanColumn[];
   rows: MasterPlanRow[];
+}
+
+interface MasterPlanSheet {
+  id: string;
+  name: string;
+  parts?: MasterPlanPart[];
+  columns?: MasterPlanColumn[];
+  rows?: MasterPlanRow[];
 }
 
 export default function CustomButtonsPage() {
@@ -59,6 +67,51 @@ export default function CustomButtonsPage() {
       return acc;
     }, {});
 
+  const migrateSheetToParts = (sheet: MasterPlanSheet): { sheet: MasterPlanSheet; changed: boolean } => {
+    if (Array.isArray(sheet.parts) && sheet.parts.length > 0) {
+      return { sheet, changed: false };
+    }
+
+    const legacyColumns = Array.isArray(sheet.columns) ? sheet.columns : null;
+    const legacyRows = Array.isArray(sheet.rows) ? sheet.rows : null;
+
+    if (legacyColumns && legacyRows) {
+      const migrated: MasterPlanSheet = {
+        id: sheet.id,
+        name: sheet.name,
+        parts: [
+          {
+            id: 'part_default',
+            name: 'DEFAULT',
+            columns: legacyColumns,
+            rows: legacyRows,
+          },
+        ],
+      };
+      return { sheet: migrated, changed: true };
+    }
+
+    const columns = createDefaultColumns();
+    const emptyCells = createEmptyRowCells(columns);
+    const migrated: MasterPlanSheet = {
+      id: sheet.id,
+      name: sheet.name,
+      parts: [
+        {
+          id: 'part_default',
+          name: 'DEFAULT',
+          columns,
+          rows: [
+            { id: 'row_1', cells: { ...emptyCells } },
+            { id: 'row_2', cells: { ...emptyCells } },
+            { id: 'row_3', cells: { ...emptyCells } },
+          ],
+        },
+      ],
+    };
+    return { sheet: migrated, changed: true };
+  };
+
   const isMasterPlanSheet = (sheet: { name: string }) => {
     const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
     return normalized === 'master plan' || normalized === 'masterplan';
@@ -74,13 +127,24 @@ export default function CustomButtonsPage() {
         };
         if (Array.isArray(parsed.sheets) && parsed.sheets.length > 0) {
           const filteredSheets = parsed.sheets.filter(s => !isMasterPlanSheet(s));
+          const migrated = filteredSheets.map(s => migrateSheetToParts(s));
+          const nextSheets = migrated.map(m => m.sheet);
+          const changed = migrated.some(m => m.changed);
           if (filteredSheets.length > 0) {
             const nextSelectedId =
-              filteredSheets.some(s => s.id === parsed.selectedSheetId)
+              nextSheets.some(s => s.id === parsed.selectedSheetId)
                 ? (parsed.selectedSheetId as string)
-                : filteredSheets[0].id;
-            setMasterPlanSheets(filteredSheets);
+                : nextSheets[0].id;
+            setMasterPlanSheets(nextSheets);
             setSelectedSheetId(nextSelectedId);
+
+            if (changed) {
+              try {
+                localStorage.setItem('master_plan_sheets_v1', JSON.stringify({ sheets: nextSheets, selectedSheetId: nextSelectedId }));
+              } catch {
+                // ignore
+              }
+            }
             return;
           }
         }
@@ -102,15 +166,20 @@ export default function CustomButtonsPage() {
 
     const defaultColumns = createDefaultColumns();
     const emptyCells = createEmptyRowCells(defaultColumns);
-    const defaultSheet: MasterPlanSheet = {
-      id: 'sheet_default',
-      name: 'MODEL',
+    const defaultPart: MasterPlanPart = {
+      id: `part_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      name: 'DEFAULT',
       columns: defaultColumns,
       rows: [
         { id: 'row_1', cells: { ...emptyCells } },
         { id: 'row_2', cells: { ...emptyCells } },
         { id: 'row_3', cells: { ...emptyCells } },
       ],
+    };
+    const defaultSheet: MasterPlanSheet = {
+      id: 'sheet_default',
+      name: 'MODEL',
+      parts: [defaultPart],
     };
     setMasterPlanSheets([defaultSheet]);
     setSelectedSheetId(defaultSheet.id);
@@ -145,15 +214,20 @@ export default function CustomButtonsPage() {
 
     const columns = createDefaultColumns();
     const emptyCells = createEmptyRowCells(columns);
-    const newSheet: MasterPlanSheet = {
-      id: `sheet_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      name,
+    const defaultPart: MasterPlanPart = {
+      id: `part_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      name: 'DEFAULT',
       columns,
       rows: [
         { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
         { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
         { id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`, cells: { ...emptyCells } },
       ],
+    };
+    const newSheet: MasterPlanSheet = {
+      id: `sheet_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      name,
+      parts: [defaultPart],
     };
 
     setMasterPlanSheets(prev => [...prev, newSheet]);
