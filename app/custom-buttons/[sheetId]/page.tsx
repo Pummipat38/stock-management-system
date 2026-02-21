@@ -33,6 +33,81 @@ export default function MasterPlanSheetPage() {
 
   const [sheets, setSheets] = useState<MasterPlanSheet[]>([]);
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const isDescriptionColumn = (col: { id: string; name: string }) => {
+    if (col.id === 'col_desc' || col.id === 'col_desc2') return true;
+    const normalized = (col.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return normalized === 'description';
+  };
+
+  const getRequiredColumns = (): MasterPlanColumn[] => [
+    { id: 'col_doc', name: 'DOCUMENT', type: 'text' },
+    { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
+    { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
+    { id: 'col_meeting', name: 'MEETING', type: 'text' },
+    { id: 'col_start', name: 'START', type: 'text' },
+    { id: 'col_finish', name: 'FINISH', type: 'text' },
+    { id: 'col_status', name: 'STATUS', type: 'text' },
+    { id: 'col_remark', name: 'REMARK', type: 'textarea' },
+    { id: 'col_extra_1', name: 'COL 1', type: 'text' },
+    { id: 'col_extra_2', name: 'COL 2', type: 'text' },
+    { id: 'col_extra_3', name: 'COL 3', type: 'text' },
+    { id: 'col_extra_4', name: 'COL 4', type: 'text' },
+    { id: 'col_extra_5', name: 'COL 5', type: 'text' },
+    { id: 'col_extra_6', name: 'COL 6', type: 'text' },
+    { id: 'col_extra_7', name: 'COL 7', type: 'text' },
+    { id: 'col_extra_8', name: 'COL 8', type: 'text' },
+    { id: 'col_extra_9', name: 'COL 9', type: 'text' },
+    { id: 'col_extra_10', name: 'COL 10', type: 'text' },
+  ];
+
+  const upgradeSheetToWide = (prev: MasterPlanSheet) => {
+    const required = getRequiredColumns();
+
+    const prevById = new Map(prev.columns.map(c => [c.id, c] as const));
+    const prevHasDesc2 = prevById.has('col_desc2');
+
+    let nextColumns = prev.columns;
+    if (!prevHasDesc2) {
+      const descIndex = nextColumns.findIndex(c => c.id === 'col_desc');
+      const insertIndex = descIndex >= 0 ? descIndex + 1 : 1;
+      nextColumns = [
+        ...nextColumns.slice(0, insertIndex),
+        { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
+        ...nextColumns.slice(insertIndex),
+      ];
+    }
+
+    const nextById = new Set(nextColumns.map(c => c.id));
+    const missingRequired = required.filter(c => !nextById.has(c.id));
+    if (missingRequired.length > 0) {
+      nextColumns = [...nextColumns, ...missingRequired];
+    }
+
+    const ensureCells = (row: MasterPlanRow): MasterPlanRow => {
+      let nextCells: Record<string, string> | null = null;
+      for (const col of nextColumns) {
+        if (row.cells[col.id] === undefined) {
+          if (!nextCells) nextCells = { ...row.cells };
+          nextCells[col.id] = '';
+        }
+      }
+      return nextCells ? { ...row, cells: nextCells } : row;
+    };
+
+    const nextRows = prev.rows.map(ensureCells);
+
+    const changed =
+      nextColumns.length !== prev.columns.length ||
+      nextColumns.some((c, idx) => prev.columns[idx]?.id !== c.id) ||
+      nextRows.some((r, idx) => r.cells !== prev.rows[idx]?.cells);
+
+    return {
+      changed,
+      sheet: changed ? { ...prev, columns: nextColumns, rows: nextRows } : prev,
+    };
+  };
 
   const isMasterPlanSheet = (sheet: { name: string }) => {
     const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -64,6 +139,20 @@ export default function MasterPlanSheetPage() {
     return sheets.find(s => s.id === sheetId) || null;
   }, [sheets, sheetId]);
 
+  useEffect(() => {
+    if (!sheetId) return;
+    if (sheets.length === 0) return;
+    const current = sheets.find(s => s.id === sheetId);
+    if (!current) return;
+
+    const upgraded = upgradeSheetToWide(current);
+    if (!upgraded.changed) return;
+
+    const nextSheets = sheets.map(s => (s.id === sheetId ? upgraded.sheet : s));
+    persistSheets(nextSheets, sheetId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetId, sheets]);
+
   const persistSheets = (nextSheets: MasterPlanSheet[], nextSelectedId?: string) => {
     setSheets(nextSheets);
     if (typeof nextSelectedId === 'string') setSelectedSheetId(nextSelectedId);
@@ -91,6 +180,7 @@ export default function MasterPlanSheetPage() {
 
   const addRow = () => {
     if (!sheetId || !sheet) return;
+    if (!isEditMode) return;
     const emptyCells = createEmptyRowCells(sheet.columns);
     const newRow: MasterPlanRow = {
       id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -102,6 +192,7 @@ export default function MasterPlanSheetPage() {
 
   const addColumn = () => {
     if (!sheetId || !sheet) return;
+    if (!isEditMode) return;
     const newId = `col_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     const nextCol: MasterPlanColumn = {
       id: newId,
@@ -124,6 +215,7 @@ export default function MasterPlanSheetPage() {
 
   const updateColumnName = (colId: string, name: string) => {
     if (!sheetId || !sheet) return;
+    if (!isEditMode) return;
     updateSheet(sheetId, prev => ({
       ...prev,
       columns: prev.columns.map(c => (c.id === colId ? { ...c, name } : c)),
@@ -132,6 +224,7 @@ export default function MasterPlanSheetPage() {
 
   const updateCell = (rowId: string, colId: string, value: string) => {
     if (!sheetId || !sheet) return;
+    if (!isEditMode) return;
     updateSheet(sheetId, prev => ({
       ...prev,
       rows: prev.rows.map(r =>
@@ -175,13 +268,26 @@ export default function MasterPlanSheetPage() {
           <>
             <div className="mb-6 flex gap-4">
               <button
+                type="button"
+                onClick={() => setIsEditMode(v => !v)}
+                className={
+                  isEditMode
+                    ? 'px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
+                    : 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
+                }
+              >
+                {isEditMode ? '✅ DONE' : '✏️ EDIT'}
+              </button>
+              <button
                 onClick={addRow}
+                disabled={!isEditMode}
                 className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg"
               >
                 ➕ เพิ่มแถว
               </button>
               <button
                 onClick={addColumn}
+                disabled={!isEditMode}
                 className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors shadow-lg"
               >
                 ➕ เพิ่มคอลัมน์
@@ -196,18 +302,41 @@ export default function MasterPlanSheetPage() {
                       <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
                         #
                       </th>
-                      {sheet.columns.map(col => (
-                        <th
-                          key={col.id}
-                          className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
-                        >
-                          <input
-                            value={col.name}
-                            onChange={e => updateColumnName(col.id, e.target.value)}
-                            className="w-full bg-transparent text-gray-100 focus:outline-none"
-                          />
-                        </th>
-                      ))}
+                      {(() => {
+                        const nodes: React.ReactNode[] = [];
+                        for (let i = 0; i < sheet.columns.length; i += 1) {
+                          const col = sheet.columns[i];
+                          const next = sheet.columns[i + 1];
+                          if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
+                            nodes.push(
+                              <th
+                                key={`desc_group_${col.id}_${next.id}`}
+                                colSpan={2}
+                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[360px]"
+                              >
+                                DESCRIPTION
+                              </th>
+                            );
+                            i += 1;
+                            continue;
+                          }
+
+                          nodes.push(
+                            <th
+                              key={col.id}
+                              className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+                            >
+                              <input
+                                value={col.name}
+                                disabled={!isEditMode}
+                                onChange={e => updateColumnName(col.id, e.target.value)}
+                                className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                              />
+                            </th>
+                          );
+                        }
+                        return nodes;
+                      })()}
                     </tr>
                   </thead>
                   <tbody>
@@ -228,15 +357,17 @@ export default function MasterPlanSheetPage() {
                             {col.type === 'textarea' ? (
                               <textarea
                                 value={row.cells[col.id] ?? ''}
+                                disabled={!isEditMode}
                                 onChange={e => updateCell(row.id, col.id, e.target.value)}
                                 rows={2}
-                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
+                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed"
                               />
                             ) : (
                               <input
                                 value={row.cells[col.id] ?? ''}
+                                disabled={!isEditMode}
                                 onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
+                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
                               />
                             )}
                           </td>
