@@ -26,6 +26,7 @@ export default function CustomButtonsPage() {
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isCreateSheetModalOpen, setIsCreateSheetModalOpen] = useState(false);
   const [newSheetName, setNewSheetName] = useState('');
+  const [isSheetTableModalOpen, setIsSheetTableModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -199,6 +200,11 @@ export default function CustomButtonsPage() {
     setIsCreateSheetModalOpen(true);
   };
 
+  const openSheetTable = (sheetId: string) => {
+    setSelectedSheetId(sheetId);
+    setIsSheetTableModalOpen(true);
+  };
+
   const createSheet = (e: React.FormEvent) => {
     e.preventDefault();
     const name = newSheetName.trim();
@@ -244,22 +250,10 @@ export default function CustomButtonsPage() {
         {/* Action Buttons */}
         <div className="mb-6 flex gap-4">
           <button
-            onClick={addMasterPlanRow}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
-          >
-            ➕ เพิ่มแถว
-          </button>
-          <button
-            onClick={addMasterPlanColumn}
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg"
-          >
-            ➕ เพิ่มคอลัมน์
-          </button>
-          <button
             onClick={openCreateSheetModal}
-            className="px-6 py-3 bg-indigo-700 hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg"
+            className="px-8 py-4 bg-indigo-700 hover:bg-indigo-600 text-white rounded-xl text-xl font-bold transition-colors flex items-center gap-3 shadow-lg"
           >
-            ➕ เพิ่มปุ่ม
+            ➕ ADD MODEL
           </button>
         </div>
 
@@ -267,7 +261,7 @@ export default function CustomButtonsPage() {
           {masterPlanSheets.map(sheet => (
             <button
               key={sheet.id}
-              onClick={() => setSelectedSheetId(sheet.id)}
+              onClick={() => openSheetTable(sheet.id)}
               className={
                 sheet.id === selectedSheetId
                   ? 'px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-lg transition-colors'
@@ -279,84 +273,118 @@ export default function CustomButtonsPage() {
           ))}
         </div>
 
-        {/* Buttons Grid */}
-        <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-800 border-b border-gray-700">
-                  <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
-                    #
-                  </th>
-                  {(selectedSheet?.columns || []).map(col => (
-                    <th
-                      key={col.id}
-                      className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
-                    >
-                      <input
-                        value={col.name}
-                        onChange={e => updateMasterPlanColumnName(col.id, e.target.value)}
-                        className="w-full bg-transparent text-gray-100 focus:outline-none"
-                      />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(selectedSheet?.rows || []).map((row, rowIndex) => (
-                  <tr
-                    key={row.id}
-                    className={
-                      rowIndex % 2 === 0
-                        ? 'bg-gray-900/60 border-b border-gray-800'
-                        : 'bg-gray-900 border-b border-gray-800'
-                    }
+        {isSheetTableModalOpen && selectedSheet && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white">📋 {selectedSheet.name}</h2>
+                  <button
+                    onClick={() => setIsSheetTableModalOpen(false)}
+                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
                   >
-                    <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
-                      {rowIndex + 1}
-                    </td>
-                    {(selectedSheet?.columns || []).map(col => (
-                      <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
-                        {col.type === 'textarea' ? (
-                          <textarea
-                            value={row.cells[col.id] ?? ''}
-                            onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
-                            rows={2}
-                            className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
-                          />
-                        ) : (
-                          <input
-                            value={row.cells[col.id] ?? ''}
-                            onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
-                            className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
-                          />
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
 
-                {(selectedSheet?.rows || []).length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={(selectedSheet?.columns || []).length + 1}
-                      className="px-6 py-10 text-center text-gray-400"
-                    >
-                      ยังไม่มีข้อมูล
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+              <div className="p-6">
+                <div className="mb-4 flex gap-3">
+                  <button
+                    onClick={addMasterPlanRow}
+                    className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg"
+                  >
+                    ➕ เพิ่มแถว
+                  </button>
+                  <button
+                    onClick={addMasterPlanColumn}
+                    className="px-5 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors shadow-lg"
+                  >
+                    ➕ เพิ่มคอลัมน์
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-800 border-b border-gray-700">
+                        <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                          #
+                        </th>
+                        {(selectedSheet.columns || []).map(col => (
+                          <th
+                            key={col.id}
+                            className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+                          >
+                            <input
+                              value={col.name}
+                              onChange={e => updateMasterPlanColumnName(col.id, e.target.value)}
+                              className="w-full bg-transparent text-gray-100 focus:outline-none"
+                            />
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(selectedSheet.rows || []).map((row, rowIndex) => (
+                        <tr
+                          key={row.id}
+                          className={
+                            rowIndex % 2 === 0
+                              ? 'bg-gray-900/60 border-b border-gray-800'
+                              : 'bg-gray-900 border-b border-gray-800'
+                          }
+                        >
+                          <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
+                            {rowIndex + 1}
+                          </td>
+                          {(selectedSheet.columns || []).map(col => (
+                            <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
+                              {col.type === 'textarea' ? (
+                                <textarea
+                                  value={row.cells[col.id] ?? ''}
+                                  onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
+                                  rows={2}
+                                  className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
+                                />
+                              ) : (
+                                <input
+                                  value={row.cells[col.id] ?? ''}
+                                  onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
+                                  className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
+                                />
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+
+                      {(selectedSheet.rows || []).length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={(selectedSheet.columns || []).length + 1}
+                            className="px-6 py-10 text-center text-gray-400"
+                          >
+                            ยังไม่มีข้อมูล
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {isCreateSheetModalOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">➕ เพิ่มปุ่ม</h2>
+                  <h2 className="text-xl font-bold text-white">➕ ADD MODEL</h2>
                   <button
                     onClick={() => setIsCreateSheetModalOpen(false)}
                     className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
@@ -370,13 +398,13 @@ export default function CustomButtonsPage() {
 
               <form onSubmit={createSheet} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อปุ่ม *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อ Model *</label>
                   <input
                     type="text"
                     value={newSheetName}
                     onChange={(e) => setNewSheetName(e.target.value)}
                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="กรอกชื่อ (เช่น: MODEL, ISSUE PR)"
+                    placeholder="กรอกชื่อ (เช่น: K4LF)"
                     required
                     autoFocus
                   />
