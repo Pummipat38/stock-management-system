@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface MasterPlanColumn {
   id: string;
@@ -16,6 +17,8 @@ interface MasterPlanRow {
 export default function CustomButtonsPage() {
   const [masterPlanColumns, setMasterPlanColumns] = useState<MasterPlanColumn[]>([]);
   const [masterPlanRows, setMasterPlanRows] = useState<MasterPlanRow[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     try {
@@ -125,19 +128,19 @@ export default function CustomButtonsPage() {
     <div className="min-h-screen bg-black text-white p-6 relative">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 relative">
           <h1 className="text-3xl font-bold text-white mb-2">📝 MASTER PLAN</h1>
           <p className="text-gray-400">จัดการเอกสารและสถานะ Part ตามที่กำหนด</p>
-        </div>
 
-        {/* Back Button - positioned absolute top right */}
-        <div className="absolute top-0 right-0">
-          <button
-            onClick={() => window.location.href = '/dashboard'}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
-          >
-            ← BACK
-          </button>
+          {/* Back Button - positioned absolute top right */}
+          <div className="absolute top-0 right-0">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
+            >
+              ← BACK
+            </button>
+          </div>
         </div>
 
         {/* Action Buttons */}
