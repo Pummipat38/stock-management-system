@@ -1,0 +1,263 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+
+interface MasterPlanColumn {
+  id: string;
+  name: string;
+  type: 'text' | 'textarea';
+}
+
+interface MasterPlanRow {
+  id: string;
+  cells: Record<string, string>;
+}
+
+interface MasterPlanSheet {
+  id: string;
+  name: string;
+  columns: MasterPlanColumn[];
+  rows: MasterPlanRow[];
+}
+
+type StorageState = {
+  sheets?: MasterPlanSheet[];
+  selectedSheetId?: string;
+};
+
+export default function MasterPlanSheetPage() {
+  const router = useRouter();
+  const params = useParams<{ sheetId: string }>();
+  const sheetId = params?.sheetId;
+
+  const [sheets, setSheets] = useState<MasterPlanSheet[]>([]);
+  const [selectedSheetId, setSelectedSheetId] = useState<string>('');
+
+  const isMasterPlanSheet = (sheet: { name: string }) => {
+    const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return normalized === 'master plan' || normalized === 'masterplan';
+  };
+
+  const loadFromStorage = () => {
+    try {
+      const storedSheets = localStorage.getItem('master_plan_sheets_v1');
+      if (!storedSheets) return;
+      const parsed = JSON.parse(storedSheets) as StorageState;
+      if (Array.isArray(parsed.sheets)) {
+        const filtered = parsed.sheets.filter(s => !isMasterPlanSheet(s));
+        setSheets(filtered);
+        setSelectedSheetId(parsed.selectedSheetId || '');
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    loadFromStorage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const sheet = useMemo(() => {
+    if (!sheetId) return null;
+    return sheets.find(s => s.id === sheetId) || null;
+  }, [sheets, sheetId]);
+
+  const persistSheets = (nextSheets: MasterPlanSheet[], nextSelectedId?: string) => {
+    setSheets(nextSheets);
+    if (typeof nextSelectedId === 'string') setSelectedSheetId(nextSelectedId);
+    try {
+      const payload: StorageState = {
+        sheets: nextSheets.filter(s => !isMasterPlanSheet(s)),
+        selectedSheetId: typeof nextSelectedId === 'string' ? nextSelectedId : selectedSheetId,
+      };
+      localStorage.setItem('master_plan_sheets_v1', JSON.stringify(payload));
+    } catch {
+      // ignore
+    }
+  };
+
+  const updateSheet = (sheetIdToUpdate: string, updater: (prev: MasterPlanSheet) => MasterPlanSheet) => {
+    const nextSheets = sheets.map(s => (s.id === sheetIdToUpdate ? updater(s) : s));
+    persistSheets(nextSheets, sheetIdToUpdate);
+  };
+
+  const createEmptyRowCells = (columns: MasterPlanColumn[]) =>
+    columns.reduce<Record<string, string>>((acc, col) => {
+      acc[col.id] = '';
+      return acc;
+    }, {});
+
+  const addRow = () => {
+    if (!sheetId || !sheet) return;
+    const emptyCells = createEmptyRowCells(sheet.columns);
+    const newRow: MasterPlanRow = {
+      id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      cells: emptyCells,
+    };
+
+    updateSheet(sheetId, prev => ({ ...prev, rows: [...prev.rows, newRow] }));
+  };
+
+  const addColumn = () => {
+    if (!sheetId || !sheet) return;
+    const newId = `col_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const nextCol: MasterPlanColumn = {
+      id: newId,
+      name: `COL ${sheet.columns.length + 1}`,
+      type: 'text',
+    };
+
+    updateSheet(sheetId, prev => ({
+      ...prev,
+      columns: [...prev.columns, nextCol],
+      rows: prev.rows.map(r => ({
+        ...r,
+        cells: {
+          ...r.cells,
+          [newId]: '',
+        },
+      })),
+    }));
+  };
+
+  const updateColumnName = (colId: string, name: string) => {
+    if (!sheetId || !sheet) return;
+    updateSheet(sheetId, prev => ({
+      ...prev,
+      columns: prev.columns.map(c => (c.id === colId ? { ...c, name } : c)),
+    }));
+  };
+
+  const updateCell = (rowId: string, colId: string, value: string) => {
+    if (!sheetId || !sheet) return;
+    updateSheet(sheetId, prev => ({
+      ...prev,
+      rows: prev.rows.map(r =>
+        r.id === rowId
+          ? {
+              ...r,
+              cells: {
+                ...r.cells,
+                [colId]: value,
+              },
+            }
+          : r
+      ),
+    }));
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white p-6 relative">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 relative">
+          <h1 className="text-3xl font-bold text-white mb-2">{sheet ? sheet.name : 'MODEL'}</h1>
+          <p className="text-gray-400">ตารางข้อมูล</p>
+
+          <div className="absolute top-0 right-0">
+            <button
+              onClick={() => router.push('/custom-buttons')}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
+            >
+              ← BACK
+            </button>
+          </div>
+        </div>
+
+        {!sheet && (
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 text-gray-300">
+            ไม่พบ Model นี้
+          </div>
+        )}
+
+        {sheet && (
+          <>
+            <div className="mb-6 flex gap-4">
+              <button
+                onClick={addRow}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg"
+              >
+                ➕ เพิ่มแถว
+              </button>
+              <button
+                onClick={addColumn}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors shadow-lg"
+              >
+                ➕ เพิ่มคอลัมน์
+              </button>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-800 border-b border-gray-700">
+                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                        #
+                      </th>
+                      {sheet.columns.map(col => (
+                        <th
+                          key={col.id}
+                          className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+                        >
+                          <input
+                            value={col.name}
+                            onChange={e => updateColumnName(col.id, e.target.value)}
+                            className="w-full bg-transparent text-gray-100 focus:outline-none"
+                          />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sheet.rows.map((row, rowIndex) => (
+                      <tr
+                        key={row.id}
+                        className={
+                          rowIndex % 2 === 0
+                            ? 'bg-gray-900/60 border-b border-gray-800'
+                            : 'bg-gray-900 border-b border-gray-800'
+                        }
+                      >
+                        <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
+                          {rowIndex + 1}
+                        </td>
+                        {sheet.columns.map(col => (
+                          <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
+                            {col.type === 'textarea' ? (
+                              <textarea
+                                value={row.cells[col.id] ?? ''}
+                                onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                rows={2}
+                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
+                              />
+                            ) : (
+                              <input
+                                value={row.cells[col.id] ?? ''}
+                                onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
+                              />
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+
+                    {sheet.rows.length === 0 && (
+                      <tr>
+                        <td colSpan={sheet.columns.length + 1} className="px-6 py-10 text-center text-gray-400">
+                          ยังไม่มีข้อมูล
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -26,7 +26,6 @@ export default function CustomButtonsPage() {
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isCreateSheetModalOpen, setIsCreateSheetModalOpen] = useState(false);
   const [newSheetName, setNewSheetName] = useState('');
-  const [isSheetTableModalOpen, setIsSheetTableModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -49,6 +48,11 @@ export default function CustomButtonsPage() {
       return acc;
     }, {});
 
+  const isMasterPlanSheet = (sheet: { name: string }) => {
+    const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return normalized === 'master plan' || normalized === 'masterplan';
+  };
+
   useEffect(() => {
     try {
       const storedSheets = localStorage.getItem('master_plan_sheets_v1');
@@ -58,9 +62,16 @@ export default function CustomButtonsPage() {
           selectedSheetId?: string;
         };
         if (Array.isArray(parsed.sheets) && parsed.sheets.length > 0) {
-          setMasterPlanSheets(parsed.sheets);
-          setSelectedSheetId(parsed.selectedSheetId || parsed.sheets[0].id);
-          return;
+          const filteredSheets = parsed.sheets.filter(s => !isMasterPlanSheet(s));
+          if (filteredSheets.length > 0) {
+            const nextSelectedId =
+              filteredSheets.some(s => s.id === parsed.selectedSheetId)
+                ? (parsed.selectedSheetId as string)
+                : filteredSheets[0].id;
+            setMasterPlanSheets(filteredSheets);
+            setSelectedSheetId(nextSelectedId);
+            return;
+          }
         }
       }
 
@@ -71,15 +82,7 @@ export default function CustomButtonsPage() {
           rows?: MasterPlanRow[];
         };
         if (Array.isArray(legacy.columns) && Array.isArray(legacy.rows)) {
-          const migratedSheet: MasterPlanSheet = {
-            id: 'sheet_migrated',
-            name: 'MASTER PLAN',
-            columns: legacy.columns,
-            rows: legacy.rows,
-          };
-          setMasterPlanSheets([migratedSheet]);
-          setSelectedSheetId(migratedSheet.id);
-          return;
+          // ignore legacy single-sheet data so it won't recreate MASTER PLAN button
         }
       }
     } catch {
@@ -107,93 +110,12 @@ export default function CustomButtonsPage() {
     try {
       localStorage.setItem(
         'master_plan_sheets_v1',
-        JSON.stringify({ sheets: masterPlanSheets, selectedSheetId })
+        JSON.stringify({ sheets: masterPlanSheets.filter(s => !isMasterPlanSheet(s)), selectedSheetId })
       );
     } catch {
       // ignore
     }
   }, [masterPlanSheets, selectedSheetId]);
-
-  const selectedSheet = masterPlanSheets.find(s => s.id === selectedSheetId) || null;
-
-  const addMasterPlanRow = () => {
-    if (!selectedSheet) return;
-    const emptyCells = createEmptyRowCells(selectedSheet.columns);
-    const newRow: MasterPlanRow = {
-      id: `row_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      cells: emptyCells,
-    };
-    setMasterPlanSheets(prev =>
-      prev.map(sheet =>
-        sheet.id === selectedSheet.id
-          ? { ...sheet, rows: [...sheet.rows, newRow] }
-          : sheet
-      )
-    );
-  };
-
-  const addMasterPlanColumn = () => {
-    if (!selectedSheet) return;
-    const newId = `col_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    const nextCol: MasterPlanColumn = {
-      id: newId,
-      name: `COL ${selectedSheet.columns.length + 1}`,
-      type: 'text',
-    };
-    setMasterPlanSheets(prev =>
-      prev.map(sheet => {
-        if (sheet.id !== selectedSheet.id) return sheet;
-        return {
-          ...sheet,
-          columns: [...sheet.columns, nextCol],
-          rows: sheet.rows.map(row => ({
-            ...row,
-            cells: {
-              ...row.cells,
-              [newId]: '',
-            },
-          })),
-        };
-      })
-    );
-  };
-
-  const updateMasterPlanColumnName = (colId: string, name: string) => {
-    if (!selectedSheet) return;
-    setMasterPlanSheets(prev =>
-      prev.map(sheet =>
-        sheet.id === selectedSheet.id
-          ? {
-              ...sheet,
-              columns: sheet.columns.map(col => (col.id === colId ? { ...col, name } : col)),
-            }
-          : sheet
-      )
-    );
-  };
-
-  const updateMasterPlanCell = (rowId: string, colId: string, value: string) => {
-    if (!selectedSheet) return;
-    setMasterPlanSheets(prev =>
-      prev.map(sheet => {
-        if (sheet.id !== selectedSheet.id) return sheet;
-        return {
-          ...sheet,
-          rows: sheet.rows.map(row =>
-            row.id === rowId
-              ? {
-                  ...row,
-                  cells: {
-                    ...row.cells,
-                    [colId]: value,
-                  },
-                }
-              : row
-          ),
-        };
-      })
-    );
-  };
 
   const openCreateSheetModal = () => {
     setNewSheetName('');
@@ -202,7 +124,7 @@ export default function CustomButtonsPage() {
 
   const openSheetTable = (sheetId: string) => {
     setSelectedSheetId(sheetId);
-    setIsSheetTableModalOpen(true);
+    router.push(`/custom-buttons/${sheetId}`);
   };
 
   const createSheet = (e: React.FormEvent) => {
@@ -226,6 +148,7 @@ export default function CustomButtonsPage() {
     setMasterPlanSheets(prev => [...prev, newSheet]);
     setSelectedSheetId(newSheet.id);
     setIsCreateSheetModalOpen(false);
+    router.push(`/custom-buttons/${newSheet.id}`);
   };
 
   return (
@@ -258,7 +181,7 @@ export default function CustomButtonsPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap gap-3">
-          {masterPlanSheets.map(sheet => (
+          {masterPlanSheets.filter(s => !isMasterPlanSheet(s)).map(sheet => (
             <button
               key={sheet.id}
               onClick={() => openSheetTable(sheet.id)}
@@ -272,112 +195,6 @@ export default function CustomButtonsPage() {
             </button>
           ))}
         </div>
-
-        {isSheetTableModalOpen && selectedSheet && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">📋 {selectedSheet.name}</h2>
-                  <button
-                    onClick={() => setIsSheetTableModalOpen(false)}
-                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="mb-4 flex gap-3">
-                  <button
-                    onClick={addMasterPlanRow}
-                    className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg"
-                  >
-                    ➕ เพิ่มแถว
-                  </button>
-                  <button
-                    onClick={addMasterPlanColumn}
-                    className="px-5 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors shadow-lg"
-                  >
-                    ➕ เพิ่มคอลัมน์
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-800 border-b border-gray-700">
-                        <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
-                          #
-                        </th>
-                        {(selectedSheet.columns || []).map(col => (
-                          <th
-                            key={col.id}
-                            className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
-                          >
-                            <input
-                              value={col.name}
-                              onChange={e => updateMasterPlanColumnName(col.id, e.target.value)}
-                              className="w-full bg-transparent text-gray-100 focus:outline-none"
-                            />
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(selectedSheet.rows || []).map((row, rowIndex) => (
-                        <tr
-                          key={row.id}
-                          className={
-                            rowIndex % 2 === 0
-                              ? 'bg-gray-900/60 border-b border-gray-800'
-                              : 'bg-gray-900 border-b border-gray-800'
-                          }
-                        >
-                          <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
-                            {rowIndex + 1}
-                          </td>
-                          {(selectedSheet.columns || []).map(col => (
-                            <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
-                              {col.type === 'textarea' ? (
-                                <textarea
-                                  value={row.cells[col.id] ?? ''}
-                                  onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
-                                  rows={2}
-                                  className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none"
-                                />
-                              ) : (
-                                <input
-                                  value={row.cells[col.id] ?? ''}
-                                  onChange={e => updateMasterPlanCell(row.id, col.id, e.target.value)}
-                                  className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none"
-                                />
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-
-                      {(selectedSheet.rows || []).length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={(selectedSheet.columns || []).length + 1}
-                            className="px-6 py-10 text-center text-gray-400"
-                          >
-                            ยังไม่มีข้อมูล
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {isCreateSheetModalOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
