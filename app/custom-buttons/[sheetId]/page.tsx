@@ -43,6 +43,7 @@ export default function MasterPlanSheetPage() {
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [newPartName, setNewPartName] = useState('');
+  const [partNameDrafts, setPartNameDrafts] = useState<Record<string, string>>({});
 
   const createEmptyRowCells = (columns: MasterPlanColumn[]) =>
     columns.reduce<Record<string, string>>((acc, col) => {
@@ -165,6 +166,19 @@ export default function MasterPlanSheetPage() {
     return Array.isArray(sheet.parts) ? sheet.parts : [];
   }, [sheet]);
 
+  useEffect(() => {
+    setPartNameDrafts(prev => {
+      const next = { ...prev };
+      for (const p of parts) {
+        if (next[p.id] === undefined) next[p.id] = p.name;
+      }
+      for (const key of Object.keys(next)) {
+        if (!parts.some(p => p.id === key)) delete next[key];
+      }
+      return next;
+    });
+  }, [parts]);
+
   const persistSheets = (nextSheets: MasterPlanSheet[], nextSelectedId?: string) => {
     setSheets(nextSheets);
     if (typeof nextSelectedId === 'string') setSelectedSheetId(nextSelectedId);
@@ -213,6 +227,25 @@ export default function MasterPlanSheetPage() {
       };
     });
     setNewPartName('');
+  };
+
+  const updatePartName = (partIdToUpdate: string, nextName: string) => {
+    if (!sheetId) return;
+    const name = nextName.trim();
+    if (!name) return;
+    updateSheet(sheetId, prev => {
+      const prevParts = Array.isArray(prev.parts) ? prev.parts : [];
+      return {
+        ...prev,
+        parts: prevParts.map(p => (p.id === partIdToUpdate ? { ...p, name } : p)),
+      };
+    });
+  };
+
+  const commitPartName = (partIdToCommit: string) => {
+    const draft = partNameDrafts[partIdToCommit];
+    if (draft === undefined) return;
+    updatePartName(partIdToCommit, draft);
   };
 
   const openPart = (part: MasterPlanPart) => {
@@ -277,25 +310,34 @@ export default function MasterPlanSheetPage() {
               </div>
             </div>
 
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-              <div className="p-6">
-                <div className="flex flex-wrap gap-3">
-                  {parts.map(p => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => openPart(p)}
-                      className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex flex-col gap-3 items-start">
+              {parts.map(p =>
+                isEditMode ? (
+                  <input
+                    key={p.id}
+                    value={partNameDrafts[p.id] ?? p.name}
+                    onChange={e => setPartNameDrafts(prev => ({ ...prev, [p.id]: e.target.value }))}
+                    onBlur={() => commitPartName(p.id)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
+                    className="px-5 py-3 bg-gray-800 text-white rounded-lg font-semibold shadow-lg transition-colors w-full max-w-[520px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => openPart(p)}
+                    className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors text-left w-full max-w-[520px]"
+                  >
+                    {p.name}
+                  </button>
+                )
+              )}
 
-                {parts.length === 0 && (
-                  <div className="pt-6 text-gray-400">ยังไม่มี Part number</div>
-                )}
-              </div>
+              {parts.length === 0 && <div className="text-gray-400">ยังไม่มี Part number</div>}
             </div>
           </>
         )}
