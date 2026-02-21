@@ -333,7 +333,7 @@ export default function CustomButtonsPage() {
         {/* Button Data Modal */}
         {isDataModalOpen && selectedButton && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -352,7 +352,7 @@ export default function CustomButtonsPage() {
               
               <div className="p-6">
                 <div className="mb-6 flex justify-between items-center">
-                  <h3 className="text-lg font-semibold text-white">รายการข้อมูล</h3>
+                  <h3 className="text-lg font-semibold text-white">ตารางข้อมูล</h3>
                   <button
                     onClick={() => setIsCreateDataModalOpen(true)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -361,74 +361,112 @@ export default function CustomButtonsPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* ด้านซ้าย - ชื่อเอกสาร */}
-                  <div className="space-y-4">
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                      <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        📄 ชื่อเอกสาร
-                      </h4>
-                      <div className="space-y-3">
-                        {buttonData.map((data) => (
-                          <div key={data.id} className="bg-gray-700/50 rounded-lg p-3 border border-gray-600">
-                            <div className="flex items-center justify-between">
-                              <h5 className="font-medium text-white">{data.fieldName}</h5>
-                              <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
-                                {data.fieldType}
-                              </span>
+                {/* ตารางแบบ Excel */}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                    <thead>
+                      <tr className="bg-gray-700 border-b border-gray-600">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
+                          📄 ชื่อเอกสาร
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
+                          📝 ข้อมูลรายละเอียด
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
+                          🏷️ ประเภท
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-white border-r border-gray-600">
+                          � วันที่สร้าง
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-white">
+                          🗑️ ลบ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {buttonData.map((data, index) => (
+                        <tr key={data.id} className={`border-b border-gray-600 ${index % 2 === 0 ? 'bg-gray-800/30' : 'bg-gray-800/50'} hover:bg-gray-700/50 transition-colors`}>
+                          <td className="px-4 py-3 text-white border-r border-gray-600">
+                            <div className="font-medium">{data.fieldName}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-300 border-r border-gray-600">
+                            {data.fieldType === 'textarea' ? (
+                              <div className="whitespace-pre-wrap max-w-xs">{data.fieldValue}</div>
+                            ) : (
+                              <div className="max-w-xs truncate">{data.fieldValue}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 border-r border-gray-600">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              data.fieldType === 'text' ? 'bg-blue-100 text-blue-800' :
+                              data.fieldType === 'date' ? 'bg-green-100 text-green-800' :
+                              data.fieldType === 'number' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-purple-100 text-purple-800'
+                            }`}>
+                              {data.fieldType === 'text' ? '📝 ข้อความ' :
+                               data.fieldType === 'date' ? '📅 วันที่' :
+                               data.fieldType === 'number' ? '🔢 ตัวเลข' :
+                               '📄 ย่อหน้า'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-400 text-sm border-r border-gray-600">
+                            {new Date(data.createdAt).toLocaleDateString('th-TH')}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => deleteButtonData(data.id)}
+                              className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
+                              title="ลบข้อมูล"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      
+                      {buttonData.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                            <div className="space-y-2">
+                              <p className="text-lg">📭 ยังไม่มีข้อมูล</p>
+                              <p className="text-sm">กด "เพิ่มข้อมูล" เพื่อเริ่มบันทึก</p>
                             </div>
-                            <p className="text-gray-400 text-sm mt-1">
-                              สร้าง: {new Date(data.createdAt).toLocaleDateString('th-TH')}
-                            </p>
-                          </div>
-                        ))}
-                        
-                        {buttonData.length === 0 && (
-                          <div className="text-center py-6 text-gray-400">
-                            <p className="text-sm">📭 ยังไม่มีเอกสาร</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ด้านขวา - ข้อมูล */}
-                  <div className="space-y-4">
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                      <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        📝 ข้อมูลรายละเอียด
-                      </h4>
-                      <div className="space-y-3">
-                        {buttonData.map((data) => (
-                          <div key={data.id} className="bg-gray-700/50 rounded-lg p-3 border border-gray-600">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <h5 className="font-medium text-white mb-2">{data.fieldName}</h5>
-                                {data.fieldType === 'textarea' ? (
-                                  <p className="text-gray-300 whitespace-pre-wrap">{data.fieldValue}</p>
-                                ) : (
-                                  <p className="text-gray-300">{data.fieldValue}</p>
-                                )}
-                              </div>
-                              <button
-                                onClick={() => deleteButtonData(data.id)}
-                                className="ml-4 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                              >
-                                🗑️
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        {buttonData.length === 0 && (
-                          <div className="text-center py-6 text-gray-400">
-                            <p className="text-sm">📭 ยังไม่มีข้อมูล</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
+
+                {/* สรุปข้อมูล */}
+                {buttonData.length > 0 && (
+                  <div className="mt-6 bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-white">{buttonData.length}</div>
+                        <div className="text-sm text-gray-400">รายการทั้งหมด</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-blue-400">
+                          {buttonData.filter(d => d.fieldType === 'text').length}
+                        </div>
+                        <div className="text-sm text-gray-400">ข้อความ</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-400">
+                          {buttonData.filter(d => d.fieldType === 'date').length}
+                        </div>
+                        <div className="text-sm text-gray-400">วันที่</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-yellow-400">
+                          {buttonData.filter(d => d.fieldType === 'number').length}
+                        </div>
+                        <div className="text-sm text-gray-400">ตัวเลข</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
