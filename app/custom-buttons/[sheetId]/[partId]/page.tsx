@@ -342,6 +342,37 @@ export default function MasterPlanPartPage() {
     didAutoScrollRef.current = true;
   }, [part, timelineColumns.length]);
 
+  const baseHeaderNodes = useMemo(() => {
+    if (!part) return [] as React.ReactNode[];
+    const nodes: React.ReactNode[] = [];
+    for (let i = 0; i < part.columns.length; i += 1) {
+      const col = part.columns[i];
+      const next = part.columns[i + 1];
+      if (!isBaseColumnId(col.id)) break;
+
+      if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
+        nodes.push(
+          <th
+            key={`base_spacer_desc_${col.id}_${next.id}`}
+            colSpan={2}
+            className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[360px]"
+          />
+        );
+        i += 1;
+        continue;
+      }
+
+      nodes.push(
+        <th
+          key={`base_spacer_${col.id}`}
+          className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+        />
+      );
+    }
+
+    return nodes;
+  }, [part]);
+
   const timelineMeta = useMemo(() => {
     if (!part || timelineColumns.length === 0) {
       return {
@@ -472,62 +503,62 @@ export default function MasterPlanPartPage() {
 
             <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
               <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-260px)]">
+                {timelineColumns.length > 0 && (
+                  <table className="border-collapse w-max min-w-full">
+                    <thead>
+                      <tr className="bg-gray-800 border-b border-gray-700">
+                        <th
+                          rowSpan={3}
+                          className="sticky left-0 bg-gray-800 z-30 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14"
+                        />
+                        {baseHeaderNodes}
+                        {timelineMeta.yearGroups.map((g, idx) => (
+                          <th
+                            key={`year_${idx}_${g.label}`}
+                            colSpan={g.span}
+                            className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
+                          >
+                            {g.label}
+                          </th>
+                        ))}
+                      </tr>
+
+                      <tr className="bg-gray-800 border-b border-gray-700">
+                        {baseHeaderNodes}
+                        {timelineMeta.monthGroups.map((g, idx) => (
+                          <th
+                            key={`month_${idx}_${g.label}`}
+                            colSpan={g.span}
+                            className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
+                          >
+                            {g.label}
+                          </th>
+                        ))}
+                      </tr>
+
+                      <tr className="bg-gray-800 border-b border-gray-700">
+                        {baseHeaderNodes}
+                        {timelineMeta.weeks.map((w, idx) => (
+                          <th
+                            key={`week_${idx}_${w}`}
+                            className="px-0 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center w-[14px] min-w-[14px] max-w-[14px] leading-none"
+                          >
+                            {w}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                  </table>
+                )}
+
+                {timelineColumns.length > 0 && <div className="h-3" />}
+
                 <table className="border-collapse w-max min-w-full">
                   <thead>
-                    {timelineColumns.length > 0 && (
-                      <>
-                        <tr className="bg-gray-800 border-b border-gray-700">
-                          <th
-                            rowSpan={4}
-                            className="sticky left-0 bg-gray-800 z-30 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14"
-                          >
-                            NO.
-                          </th>
-                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
-                          {timelineMeta.yearGroups.map((g, idx) => (
-                            <th
-                              key={`year_${idx}_${g.label}`}
-                              colSpan={g.span}
-                              className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
-                            >
-                              {g.label}
-                            </th>
-                          ))}
-                        </tr>
-
-                        <tr className="bg-gray-800 border-b border-gray-700">
-                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
-                          {timelineMeta.monthGroups.map((g, idx) => (
-                            <th
-                              key={`month_${idx}_${g.label}`}
-                              colSpan={g.span}
-                              className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
-                            >
-                              {g.label}
-                            </th>
-                          ))}
-                        </tr>
-
-                        <tr className="bg-gray-800 border-b border-gray-700">
-                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
-                          {timelineMeta.weeks.map((w, idx) => (
-                            <th
-                              key={`week_${idx}_${w}`}
-                              className="px-0 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center w-[14px] min-w-[14px] max-w-[14px] leading-none"
-                            >
-                              {w}
-                            </th>
-                          ))}
-                        </tr>
-                      </>
-                    )}
-
                     <tr className="bg-gray-800 border-b border-gray-700">
-                      {timelineColumns.length === 0 && (
-                        <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
-                          NO.
-                        </th>
-                      )}
+                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                        NO.
+                      </th>
                       {(() => {
                         const nodes: React.ReactNode[] = [];
                         for (let i = 0; i < part.columns.length; i += 1) {
