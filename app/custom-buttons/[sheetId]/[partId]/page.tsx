@@ -769,7 +769,7 @@ export default function MasterPlanPartPage() {
                   <colgroup>{colGroupNodes}</colgroup>
                   <thead>
                     <tr className="bg-gray-800 border-b border-gray-700">
-                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14 text-center">
                         NO.
                       </th>
                       {(() => {
@@ -782,7 +782,7 @@ export default function MasterPlanPartPage() {
                               <th
                                 key={`desc_group_${col.id}_${next.id}`}
                                 colSpan={2}
-                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700"
+                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center"
                               >
                                 DESCRIPTION
                               </th>
@@ -796,7 +796,7 @@ export default function MasterPlanPartPage() {
                               key={col.id}
                               className={
                                 isBaseColumnId(col.id)
-                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700'
+                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center'
                                   : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none'
                               }
                             >
@@ -805,7 +805,7 @@ export default function MasterPlanPartPage() {
                                   value={col.name}
                                   disabled={!isEditMode}
                                   onChange={e => updateColumnName(col.id, e.target.value)}
-                                  className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                  className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
                                 />
                               ) : (
                                 <div className="h-4" />
@@ -827,7 +827,7 @@ export default function MasterPlanPartPage() {
                             : 'bg-gray-900 border-b border-gray-800'
                         }
                       >
-                        <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
+                        <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14 text-center">
                           {rowIndex + 1}
                         </td>
                         {visibleColumns.map(col => {
@@ -843,7 +843,7 @@ export default function MasterPlanPartPage() {
                                 colSpan={mg?.colSpan}
                                 onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                 className={
-                                  `px-2 py-2 border-r border-gray-800 align-top ${
+                                  `px-2 py-2 border-r border-gray-800 align-top text-center ${
                                     isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
                                   }`
                                 }
@@ -855,7 +855,7 @@ export default function MasterPlanPartPage() {
                                     onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                     onChange={e => updateCell(row.id, col.id, e.target.value)}
                                     rows={2}
-                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
                                   />
                                 ) : (
                                   <input
@@ -863,7 +863,7 @@ export default function MasterPlanPartPage() {
                                     disabled={!isEditMode}
                                     onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                     onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
                                   />
                                 )}
                               </td>
