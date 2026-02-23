@@ -55,6 +55,20 @@ export default function MasterPlanPartPage() {
     return normalized === 'description';
   };
 
+  const isBaseColumnId = (id: string) =>
+    id === 'col_doc' ||
+    id === 'col_desc' ||
+    id === 'col_desc2' ||
+    id === 'col_meeting' ||
+    id === 'col_start' ||
+    id === 'col_finish' ||
+    id === 'col_status' ||
+    id === 'col_remark';
+
+  const timelineStart = { year: 2025, monthIndex: 6 };
+  const monthLabel = (monthIndex: number) =>
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'][monthIndex] || '';
+
   const getRequiredColumns = (): MasterPlanColumn[] => [
     { id: 'col_doc', name: 'DOCUMENT', type: 'text' },
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
@@ -295,6 +309,65 @@ export default function MasterPlanPartPage() {
     }));
   };
 
+  const timelineColumns = useMemo(() => {
+    if (!part) return [] as MasterPlanColumn[];
+    return part.columns.filter(c => !isBaseColumnId(c.id));
+  }, [part]);
+
+  const baseColumns = useMemo(() => {
+    if (!part) return [] as MasterPlanColumn[];
+    return part.columns.filter(c => isBaseColumnId(c.id));
+  }, [part]);
+
+  const timelineMeta = useMemo(() => {
+    if (!part || timelineColumns.length === 0) {
+      return {
+        yearGroups: [] as { label: string; span: number }[],
+        monthGroups: [] as { label: string; span: number }[],
+        weeks: [] as number[],
+      };
+    }
+
+    const labels = timelineColumns.map((_, idx) => {
+      const monthOffset = Math.floor(idx / 4);
+      const week = (idx % 4) + 1;
+      const absoluteMonth = timelineStart.monthIndex + monthOffset;
+      const year = timelineStart.year + Math.floor(absoluteMonth / 12);
+      const monthIndex = ((absoluteMonth % 12) + 12) % 12;
+
+      return {
+        year: year >= 2025 && year <= 2026 ? String(year) : '',
+        monthKey: `${year}-${monthIndex}`,
+        monthLabel: monthLabel(monthIndex),
+        week,
+      };
+    });
+
+    const yearGroups: { label: string; span: number }[] = [];
+    for (const l of labels) {
+      const last = yearGroups[yearGroups.length - 1];
+      if (last && last.label === l.year) last.span += 1;
+      else yearGroups.push({ label: l.year, span: 1 });
+    }
+
+    const monthGroups: { label: string; span: number }[] = [];
+    for (const l of labels) {
+      const last = monthGroups[monthGroups.length - 1];
+      const label = l.monthLabel;
+      const key = l.monthKey;
+      if (last && (last as any).key === key) {
+        last.span += 1;
+      } else {
+        const next = { label, span: 1 } as { label: string; span: number } & { key: string };
+        next.key = key;
+        monthGroups.push(next);
+      }
+    }
+
+    const weeks = labels.map(l => l.week);
+    return { yearGroups, monthGroups: monthGroups.map(({ label, span }) => ({ label, span })), weeks };
+  }, [part, timelineColumns]);
+
   const updateColumnName = (colId: string, name: string) => {
     if (!isEditMode) return;
     updatePart(prev => ({
@@ -378,10 +451,60 @@ export default function MasterPlanPartPage() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
+                    {timelineColumns.length > 0 && (
+                      <>
+                        <tr className="bg-gray-800 border-b border-gray-700">
+                          <th
+                            rowSpan={4}
+                            className="sticky left-0 bg-gray-800 z-30 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14"
+                          >
+                            NO.
+                          </th>
+                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
+                          {timelineMeta.yearGroups.map((g, idx) => (
+                            <th
+                              key={`year_${idx}_${g.label}`}
+                              colSpan={g.span}
+                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center"
+                            >
+                              {g.label}
+                            </th>
+                          ))}
+                        </tr>
+
+                        <tr className="bg-gray-800 border-b border-gray-700">
+                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
+                          {timelineMeta.monthGroups.map((g, idx) => (
+                            <th
+                              key={`month_${idx}_${g.label}`}
+                              colSpan={g.span}
+                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center"
+                            >
+                              {g.label}
+                            </th>
+                          ))}
+                        </tr>
+
+                        <tr className="bg-gray-800 border-b border-gray-700">
+                          <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
+                          {timelineMeta.weeks.map((w, idx) => (
+                            <th
+                              key={`week_${idx}_${w}`}
+                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center min-w-[180px]"
+                            >
+                              {w}
+                            </th>
+                          ))}
+                        </tr>
+                      </>
+                    )}
+
                     <tr className="bg-gray-800 border-b border-gray-700">
-                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
-                        NO.
-                      </th>
+                      {timelineColumns.length === 0 && (
+                        <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
+                          NO.
+                        </th>
+                      )}
                       {(() => {
                         const nodes: React.ReactNode[] = [];
                         for (let i = 0; i < part.columns.length; i += 1) {
