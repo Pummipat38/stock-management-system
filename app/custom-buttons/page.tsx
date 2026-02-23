@@ -46,8 +46,6 @@ export default function CustomButtonsPage() {
       { id: 'col_meeting', name: 'MEETING', type: 'text' },
       { id: 'col_start', name: 'START', type: 'text' },
       { id: 'col_finish', name: 'FINISH', type: 'text' },
-      { id: 'col_status', name: 'STATUS', type: 'text' },
-      { id: 'col_remark', name: 'REMARK', type: 'textarea' },
       ...Array.from({ length: 96 }, (_, i) => ({
         id: `col_extra_${i + 1}`,
         name: `COL ${i + 1}`,

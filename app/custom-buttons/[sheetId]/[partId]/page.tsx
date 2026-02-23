@@ -61,9 +61,17 @@ export default function MasterPlanPartPage() {
     id === 'col_desc2' ||
     id === 'col_meeting' ||
     id === 'col_start' ||
-    id === 'col_finish' ||
-    id === 'col_status' ||
-    id === 'col_remark';
+    id === 'col_finish';
+
+  const isHiddenColumnId = (id: string) => id === 'col_status' || id === 'col_remark';
+
+  const getColumnWidthPx = (colId: string) => {
+    if (colId === 'col_doc') return 140;
+    if (colId === 'col_desc' || colId === 'col_desc2') return 150;
+    if (colId === 'col_meeting') return 120;
+    if (colId === 'col_start' || colId === 'col_finish') return 100;
+    return 14;
+  };
 
   const timelineStart = { year: 2025, monthIndex: 0 };
   const monthLabel = (monthIndex: number) =>
@@ -76,8 +84,6 @@ export default function MasterPlanPartPage() {
     { id: 'col_meeting', name: 'MEETING', type: 'text' },
     { id: 'col_start', name: 'START', type: 'text' },
     { id: 'col_finish', name: 'FINISH', type: 'text' },
-    { id: 'col_status', name: 'STATUS', type: 'text' },
-    { id: 'col_remark', name: 'REMARK', type: 'textarea' },
     ...Array.from({ length: 96 }, (_, i) => ({
       id: `col_extra_${i + 1}`,
       name: `COL ${i + 1}`,
@@ -304,15 +310,18 @@ export default function MasterPlanPartPage() {
     }));
   };
 
-  const timelineColumns = useMemo(() => {
+  const visibleColumns = useMemo(() => {
     if (!part) return [] as MasterPlanColumn[];
-    return part.columns.filter(c => !isBaseColumnId(c.id));
+    return part.columns.filter(c => !isHiddenColumnId(c.id));
   }, [part]);
 
+  const timelineColumns = useMemo(() => {
+    return visibleColumns.filter(c => !isBaseColumnId(c.id));
+  }, [visibleColumns]);
+
   const baseColumns = useMemo(() => {
-    if (!part) return [] as MasterPlanColumn[];
-    return part.columns.filter(c => isBaseColumnId(c.id));
-  }, [part]);
+    return visibleColumns.filter(c => isBaseColumnId(c.id));
+  }, [visibleColumns]);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const didAutoScrollRef = useRef(false);
@@ -323,55 +332,27 @@ export default function MasterPlanPartPage() {
     if (!scrollRef.current) return;
     if (timelineColumns.length === 0) return;
 
-    let baseWidth = 0;
-    for (let i = 0; i < part.columns.length; i += 1) {
-      const col = part.columns[i];
-      const next = part.columns[i + 1];
-      if (!isBaseColumnId(col.id)) break;
-
-      if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
-        baseWidth += 360;
-        i += 1;
-        continue;
-      }
-
-      baseWidth += 180;
-    }
+    const baseWidth = baseColumns.reduce((sum, c) => sum + getColumnWidthPx(c.id), 0);
 
     scrollRef.current.scrollLeft = Math.max(0, baseWidth - 60);
     didAutoScrollRef.current = true;
-  }, [part, timelineColumns.length]);
+  }, [part, baseColumns, timelineColumns.length]);
 
-  const baseHeaderNodes = useMemo(() => {
-    if (!part) return [] as React.ReactNode[];
+  const colGroupNodes = useMemo(() => {
     const nodes: React.ReactNode[] = [];
-    for (let i = 0; i < part.columns.length; i += 1) {
-      const col = part.columns[i];
-      const next = part.columns[i + 1];
-      if (!isBaseColumnId(col.id)) break;
 
-      if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
-        nodes.push(
-          <th
-            key={`base_spacer_desc_${col.id}_${next.id}`}
-            colSpan={2}
-            className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[360px]"
-          />
-        );
-        i += 1;
-        continue;
-      }
-
+    nodes.push(<col key="cg_no" style={{ width: 56 }} />);
+    for (const col of visibleColumns) {
       nodes.push(
-        <th
-          key={`base_spacer_${col.id}`}
-          className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+        <col
+          key={`cg_${col.id}`}
+          style={{ width: isBaseColumnId(col.id) ? getColumnWidthPx(col.id) : 14 }}
         />
       );
     }
 
     return nodes;
-  }, [part]);
+  }, [visibleColumns]);
 
   const timelineMeta = useMemo(() => {
     if (!part || timelineColumns.length === 0) {
@@ -504,14 +485,15 @@ export default function MasterPlanPartPage() {
             <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
               <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-260px)]">
                 {timelineColumns.length > 0 && (
-                  <table className="border-collapse w-max min-w-full">
+                  <table className="border-collapse w-max min-w-full table-fixed">
+                    <colgroup>{colGroupNodes}</colgroup>
                     <thead>
                       <tr className="bg-gray-800 border-b border-gray-700">
                         <th
                           rowSpan={3}
                           className="sticky left-0 bg-gray-800 z-30 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14"
                         />
-                        {baseHeaderNodes}
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
@@ -524,7 +506,7 @@ export default function MasterPlanPartPage() {
                       </tr>
 
                       <tr className="bg-gray-800 border-b border-gray-700">
-                        {baseHeaderNodes}
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`month_${idx}_${g.label}`}
@@ -537,7 +519,7 @@ export default function MasterPlanPartPage() {
                       </tr>
 
                       <tr className="bg-gray-800 border-b border-gray-700">
-                        {baseHeaderNodes}
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-gray-200 border-r border-gray-700" />
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
                             key={`week_${idx}_${w}`}
@@ -553,7 +535,8 @@ export default function MasterPlanPartPage() {
 
                 {timelineColumns.length > 0 && <div className="h-3" />}
 
-                <table className="border-collapse w-max min-w-full">
+                <table className="border-collapse w-max min-w-full table-fixed">
+                  <colgroup>{colGroupNodes}</colgroup>
                   <thead>
                     <tr className="bg-gray-800 border-b border-gray-700">
                       <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14">
@@ -561,15 +544,15 @@ export default function MasterPlanPartPage() {
                       </th>
                       {(() => {
                         const nodes: React.ReactNode[] = [];
-                        for (let i = 0; i < part.columns.length; i += 1) {
-                          const col = part.columns[i];
-                          const next = part.columns[i + 1];
+                        for (let i = 0; i < visibleColumns.length; i += 1) {
+                          const col = visibleColumns[i];
+                          const next = visibleColumns[i + 1];
                           if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
                             nodes.push(
                               <th
                                 key={`desc_group_${col.id}_${next.id}`}
                                 colSpan={2}
-                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[360px]"
+                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700"
                               >
                                 DESCRIPTION
                               </th>
@@ -583,7 +566,7 @@ export default function MasterPlanPartPage() {
                               key={col.id}
                               className={
                                 isBaseColumnId(col.id)
-                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]'
+                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700'
                                   : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none'
                               }
                             >
@@ -617,7 +600,7 @@ export default function MasterPlanPartPage() {
                         <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
                           {rowIndex + 1}
                         </td>
-                        {part.columns.map(col => (
+                        {visibleColumns.map(col => (
                           <td
                             key={col.id}
                             className={
@@ -634,7 +617,7 @@ export default function MasterPlanPartPage() {
                                 rows={2}
                                 className={
                                   isBaseColumnId(col.id)
-                                    ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    ? 'w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
                                     : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
                                 }
                               />
@@ -645,7 +628,7 @@ export default function MasterPlanPartPage() {
                                 onChange={e => updateCell(row.id, col.id, e.target.value)}
                                 className={
                                   isBaseColumnId(col.id)
-                                    ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    ? 'w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
                                     : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
                                 }
                               />
@@ -657,7 +640,7 @@ export default function MasterPlanPartPage() {
 
                     {part.rows.length === 0 && (
                       <tr>
-                        <td colSpan={part.columns.length + 1} className="px-6 py-10 text-center text-gray-400">
+                        <td colSpan={visibleColumns.length + 1} className="px-6 py-10 text-center text-gray-400">
                           ยังไม่มีข้อมูล
                         </td>
                       </tr>
