@@ -14,11 +14,20 @@ interface MasterPlanRow {
   cells: Record<string, string>;
 }
 
+type MergedCell = {
+  id: string;
+  rowId: string;
+  colId: string;
+  rowSpan: number;
+  colSpan: number;
+};
+
 interface MasterPlanPart {
   id: string;
   name: string;
   columns: MasterPlanColumn[];
   rows: MasterPlanRow[];
+  merges?: MergedCell[];
 }
 
 interface MasterPlanSheet {
@@ -43,6 +52,7 @@ export default function MasterPlanPartPage() {
   const [sheets, setSheets] = useState<MasterPlanSheet[]>([]);
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{ rowId: string; colId: string } | null>(null);
 
   const isMasterPlanSheet = (sheet: { name: string }) => {
     const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -439,6 +449,177 @@ export default function MasterPlanPartPage() {
     }));
   };
 
+  const baseColIndexById = useMemo(() => {
+    const m = new Map<string, number>();
+    baseColumns.forEach((c, i) => m.set(c.id, i));
+    return m;
+  }, [baseColumns]);
+
+  const rowIndexById = useMemo(() => {
+    const m = new Map<string, number>();
+    (part?.rows || []).forEach((r, i) => m.set(r.id, i));
+    return m;
+  }, [part?.rows]);
+
+  const merges = useMemo(() => (part?.merges ? part.merges : []), [part?.merges]);
+
+  const mergeIndex = useMemo(() => {
+    const originByKey = new Map<string, MergedCell>();
+    const covered = new Set<string>();
+
+    for (const mg of merges) {
+      const rowIdx = rowIndexById.get(mg.rowId);
+      const colIdx = baseColIndexById.get(mg.colId);
+      if (rowIdx === undefined || colIdx === undefined) continue;
+      if (mg.rowSpan < 1 || mg.colSpan < 1) continue;
+
+      const originKey = `${mg.rowId}|${mg.colId}`;
+      originByKey.set(originKey, mg);
+
+      for (let dr = 0; dr < mg.rowSpan; dr += 1) {
+        for (let dc = 0; dc < mg.colSpan; dc += 1) {
+          if (dr === 0 && dc === 0) continue;
+          const r = part?.rows?.[rowIdx + dr];
+          const c = baseColumns[colIdx + dc];
+          if (!r || !c) continue;
+          covered.add(`${r.id}|${c.id}`);
+        }
+      }
+    }
+
+    return { originByKey, covered };
+  }, [baseColIndexById, baseColumns, merges, part?.rows, rowIndexById]);
+
+  const selectedKey = selectedCell ? `${selectedCell.rowId}|${selectedCell.colId}` : null;
+  const selectedMerge = selectedKey ? mergeIndex.originByKey.get(selectedKey) : undefined;
+  const canMergeSelected =
+    isEditMode &&
+    !!selectedCell &&
+    isBaseColumnId(selectedCell.colId) &&
+    !mergeIndex.covered.has(`${selectedCell.rowId}|${selectedCell.colId}`);
+
+  const mergeRight = () => {
+    if (!part) return;
+    if (!canMergeSelected) return;
+    if (!selectedCell) return;
+
+    const rowIdx = rowIndexById.get(selectedCell.rowId);
+    const colIdx = baseColIndexById.get(selectedCell.colId);
+    if (rowIdx === undefined || colIdx === undefined) return;
+
+    const currentRowSpan = selectedMerge?.rowSpan ?? 1;
+    const currentColSpan = selectedMerge?.colSpan ?? 1;
+    const targetColIdx = colIdx + currentColSpan;
+    if (targetColIdx >= baseColumns.length) return;
+
+    for (let dr = 0; dr < currentRowSpan; dr += 1) {
+      const r = part.rows[rowIdx + dr];
+      const c = baseColumns[targetColIdx];
+      if (!r || !c) return;
+      const key = `${r.id}|${c.id}`;
+      if (mergeIndex.covered.has(key)) return;
+      if (mergeIndex.originByKey.has(key)) return;
+    }
+
+    const next: MergedCell = selectedMerge
+      ? { ...selectedMerge, colSpan: currentColSpan + 1 }
+      : {
+          id: `merge_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          rowId: selectedCell.rowId,
+          colId: selectedCell.colId,
+          rowSpan: 1,
+          colSpan: 2,
+        };
+
+    const targetColId = baseColumns[targetColIdx].id;
+    updatePart(prev => {
+      const prevMerges = prev.merges ? prev.merges : [];
+      const nextMerges = selectedMerge
+        ? prevMerges.map(m => (m.id === selectedMerge.id ? next : m))
+        : [...prevMerges, next];
+
+      return {
+        ...prev,
+        merges: nextMerges,
+        rows: prev.rows.map((r, i) => {
+          if (i < rowIdx || i >= rowIdx + currentRowSpan) return r;
+          return {
+            ...r,
+            cells: {
+              ...r.cells,
+              [targetColId]: '',
+            },
+          };
+        }),
+      };
+    });
+  };
+
+  const mergeDown = () => {
+    if (!part) return;
+    if (!canMergeSelected) return;
+    if (!selectedCell) return;
+
+    const rowIdx = rowIndexById.get(selectedCell.rowId);
+    const colIdx = baseColIndexById.get(selectedCell.colId);
+    if (rowIdx === undefined || colIdx === undefined) return;
+
+    const currentRowSpan = selectedMerge?.rowSpan ?? 1;
+    const currentColSpan = selectedMerge?.colSpan ?? 1;
+    const targetRowIdx = rowIdx + currentRowSpan;
+    if (targetRowIdx >= part.rows.length) return;
+
+    for (let dc = 0; dc < currentColSpan; dc += 1) {
+      const r = part.rows[targetRowIdx];
+      const c = baseColumns[colIdx + dc];
+      if (!r || !c) return;
+      const key = `${r.id}|${c.id}`;
+      if (mergeIndex.covered.has(key)) return;
+      if (mergeIndex.originByKey.has(key)) return;
+    }
+
+    const next: MergedCell = selectedMerge
+      ? { ...selectedMerge, rowSpan: currentRowSpan + 1 }
+      : {
+          id: `merge_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          rowId: selectedCell.rowId,
+          colId: selectedCell.colId,
+          rowSpan: 2,
+          colSpan: 1,
+        };
+
+    updatePart(prev => {
+      const prevMerges = prev.merges ? prev.merges : [];
+      const nextMerges = selectedMerge
+        ? prevMerges.map(m => (m.id === selectedMerge.id ? next : m))
+        : [...prevMerges, next];
+
+      const targetRowId = prev.rows[targetRowIdx]?.id;
+      if (!targetRowId) return { ...prev, merges: nextMerges };
+
+      const clearCols = baseColumns.slice(colIdx, colIdx + currentColSpan).map(c => c.id);
+      return {
+        ...prev,
+        merges: nextMerges,
+        rows: prev.rows.map(r => {
+          if (r.id !== targetRowId) return r;
+          const nextCells = { ...r.cells };
+          for (const cId of clearCols) nextCells[cId] = '';
+          return { ...r, cells: nextCells };
+        }),
+      };
+    });
+  };
+
+  const unmerge = () => {
+    if (!part) return;
+    if (!selectedMerge) return;
+    updatePart(prev => ({
+      ...prev,
+      merges: (prev.merges || []).filter(m => m.id !== selectedMerge.id),
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-2 relative">
       <div className="w-full max-w-none">
@@ -482,6 +663,30 @@ export default function MasterPlanPartPage() {
                 className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 ➕ เพิ่มแถว
+              </button>
+              <button
+                type="button"
+                onClick={mergeRight}
+                disabled={!canMergeSelected}
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                MERGE ➡️
+              </button>
+              <button
+                type="button"
+                onClick={mergeDown}
+                disabled={!canMergeSelected}
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                MERGE ⬇️
+              </button>
+              <button
+                type="button"
+                onClick={unmerge}
+                disabled={!isEditMode || !selectedMerge}
+                className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                UNMERGE
               </button>
               <button
                 onClick={addColumn}
@@ -625,41 +830,70 @@ export default function MasterPlanPartPage() {
                         <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14">
                           {rowIndex + 1}
                         </td>
-                        {visibleColumns.map(col => (
-                          <td
-                            key={col.id}
-                            className={
-                              isBaseColumnId(col.id)
-                                ? 'px-2 py-2 border-r border-gray-800 align-top'
-                                : 'px-0 py-1 border-r border-gray-800 align-top w-[14px] min-w-[14px] max-w-[14px]'
-                            }
-                          >
-                            {col.type === 'textarea' ? (
-                              <textarea
-                                value={row.cells[col.id] ?? ''}
-                                disabled={!isEditMode}
-                                onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                rows={2}
+                        {visibleColumns.map(col => {
+                          const key = `${row.id}|${col.id}`;
+                          if (isBaseColumnId(col.id)) {
+                            if (mergeIndex.covered.has(key)) return null;
+                            const mg = mergeIndex.originByKey.get(key);
+                            const isSelected = selectedKey === key;
+                            return (
+                              <td
+                                key={col.id}
+                                rowSpan={mg?.rowSpan}
+                                colSpan={mg?.colSpan}
+                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                 className={
-                                  isBaseColumnId(col.id)
-                                    ? 'w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
-                                    : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
+                                  `px-2 py-2 border-r border-gray-800 align-top ${
+                                    isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                  }`
                                 }
-                              />
-                            ) : (
-                              <input
-                                value={row.cells[col.id] ?? ''}
-                                disabled={!isEditMode}
-                                onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                className={
-                                  isBaseColumnId(col.id)
-                                    ? 'w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
-                                    : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
-                                }
-                              />
-                            )}
-                          </td>
-                        ))}
+                              >
+                                {col.type === 'textarea' ? (
+                                  <textarea
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    rows={2}
+                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                  />
+                                ) : (
+                                  <input
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                  />
+                                )}
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td
+                              key={col.id}
+                              className="px-0 py-1 border-r border-gray-800 align-top w-[14px] min-w-[14px] max-w-[14px]"
+                            >
+                              {col.type === 'textarea' ? (
+                                <textarea
+                                  value={row.cells[col.id] ?? ''}
+                                  disabled={!isEditMode}
+                                  onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                  rows={2}
+                                  className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                />
+                              ) : (
+                                <input
+                                  value={row.cells[col.id] ?? ''}
+                                  disabled={!isEditMode}
+                                  onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                  className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                />
+                              )}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
 
