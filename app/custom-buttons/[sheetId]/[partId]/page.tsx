@@ -65,6 +65,13 @@ export default function MasterPlanPartPage() {
 
   const isHiddenColumnId = (id: string) => id === 'col_status' || id === 'col_remark';
 
+  const isTimelineColumnId = (id: string) => {
+    const m = /^col_extra_(\d+)$/.exec(id);
+    if (!m) return false;
+    const n = Number(m[1]);
+    return Number.isFinite(n) && n >= 1 && n <= 96;
+  };
+
   const getColumnWidthPx = (colId: string) => {
     if (colId === 'col_doc') return 140;
     if (colId === 'col_desc' || colId === 'col_desc2') return 150;
@@ -312,11 +319,14 @@ export default function MasterPlanPartPage() {
 
   const visibleColumns = useMemo(() => {
     if (!part) return [] as MasterPlanColumn[];
-    return part.columns.filter(c => !isHiddenColumnId(c.id));
+    return part.columns.filter(c => {
+      if (isHiddenColumnId(c.id)) return false;
+      return isBaseColumnId(c.id) || isTimelineColumnId(c.id);
+    });
   }, [part]);
 
   const timelineColumns = useMemo(() => {
-    return visibleColumns.filter(c => !isBaseColumnId(c.id));
+    return visibleColumns.filter(c => isTimelineColumnId(c.id));
   }, [visibleColumns]);
 
   const baseColumns = useMemo(() => {
@@ -530,6 +540,21 @@ export default function MasterPlanPartPage() {
                         ))}
                       </tr>
                     </thead>
+                    <tbody>
+                      {Array.from({ length: 3 }, (_, rowIdx) => (
+                        <tr key={`month_big_${rowIdx}`} className="bg-gray-900 border-b border-gray-800">
+                          <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 border-r border-gray-800 w-14" />
+                          <td colSpan={baseColumns.length} className="px-2 py-2 border-r border-gray-800" />
+                          {timelineMeta.monthGroups.map((g, idx) => (
+                            <td
+                              key={`month_big_cell_${rowIdx}_${idx}`}
+                              colSpan={g.span}
+                              className="px-0 py-3 border-r border-gray-800"
+                            />
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
                   </table>
                 )}
 
