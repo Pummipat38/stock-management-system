@@ -418,8 +418,8 @@ export default function MasterPlanPartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 relative">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white p-2 relative">
+      <div className="w-full max-w-none">
         <div className="mb-8 relative">
           <h1 className="text-3xl font-bold text-white mb-2">{sheet ? sheet.name : 'MODEL'} / {part ? part.name : 'PART'}</h1>
           <p className="text-gray-400">ตารางข้อมูล</p>
@@ -471,8 +471,8 @@ export default function MasterPlanPartPage() {
             </div>
 
             <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-              <div ref={scrollRef} className="overflow-x-auto">
-                <table className="w-full border-collapse">
+              <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-260px)]">
+                <table className="border-collapse w-max min-w-full">
                   <thead>
                     {timelineColumns.length > 0 && (
                       <>
