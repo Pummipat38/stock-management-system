@@ -488,7 +488,7 @@ export default function MasterPlanPartPage() {
                             <th
                               key={`year_${idx}_${g.label}`}
                               colSpan={g.span}
-                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center"
+                              className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
                             >
                               {g.label}
                             </th>
@@ -501,7 +501,7 @@ export default function MasterPlanPartPage() {
                             <th
                               key={`month_${idx}_${g.label}`}
                               colSpan={g.span}
-                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center"
+                              className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none"
                             >
                               {g.label}
                             </th>
@@ -513,7 +513,7 @@ export default function MasterPlanPartPage() {
                           {timelineMeta.weeks.map((w, idx) => (
                             <th
                               key={`week_${idx}_${w}`}
-                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center min-w-[60px]"
+                              className="px-0 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center w-[14px] min-w-[14px] max-w-[14px] leading-none"
                             >
                               {w}
                             </th>
@@ -553,15 +553,19 @@ export default function MasterPlanPartPage() {
                               className={
                                 isBaseColumnId(col.id)
                                   ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]'
-                                  : 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[60px]'
+                                  : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none'
                               }
                             >
-                              <input
-                                value={col.name}
-                                disabled={!isEditMode}
-                                onChange={e => updateColumnName(col.id, e.target.value)}
-                                className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
-                              />
+                              {isBaseColumnId(col.id) ? (
+                                <input
+                                  value={col.name}
+                                  disabled={!isEditMode}
+                                  onChange={e => updateColumnName(col.id, e.target.value)}
+                                  className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                />
+                              ) : (
+                                <div className="h-4" />
+                              )}
                             </th>
                           );
                         }
@@ -583,7 +587,14 @@ export default function MasterPlanPartPage() {
                           {rowIndex + 1}
                         </td>
                         {part.columns.map(col => (
-                          <td key={col.id} className="px-2 py-2 border-r border-gray-800 align-top">
+                          <td
+                            key={col.id}
+                            className={
+                              isBaseColumnId(col.id)
+                                ? 'px-2 py-2 border-r border-gray-800 align-top'
+                                : 'px-0 py-1 border-r border-gray-800 align-top w-[14px] min-w-[14px] max-w-[14px]'
+                            }
+                          >
                             {col.type === 'textarea' ? (
                               <textarea
                                 value={row.cells[col.id] ?? ''}
@@ -593,7 +604,7 @@ export default function MasterPlanPartPage() {
                                 className={
                                   isBaseColumnId(col.id)
                                     ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
-                                    : 'w-full min-w-[60px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
                                 }
                               />
                             ) : (
@@ -604,7 +615,7 @@ export default function MasterPlanPartPage() {
                                 className={
                                   isBaseColumnId(col.id)
                                     ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
-                                    : 'w-full min-w-[60px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    : 'w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none'
                                 }
                               />
                             )}
