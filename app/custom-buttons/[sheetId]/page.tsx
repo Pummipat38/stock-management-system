@@ -203,7 +203,6 @@ export default function MasterPlanSheetPage() {
   };
 
   const openCreatePartModal = () => {
-    if (!isEditMode) return;
     setPartModalMode('create');
     setPartModalPartId('');
     setPartModalNumber('');
@@ -223,7 +222,6 @@ export default function MasterPlanSheetPage() {
   const savePartFromModal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sheetId || !sheet) return;
-    if (!isEditMode) return;
 
     const partNumber = partModalNumber.trim();
     const partName = partModalName.trim();
@@ -327,21 +325,8 @@ export default function MasterPlanSheetPage() {
             <div className="mb-6 flex gap-4 items-center flex-wrap">
               <button
                 type="button"
-                onClick={() => setIsEditMode(v => !v)}
-                className={
-                  isEditMode
-                    ? 'px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
-                    : 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
-                }
-              >
-                {isEditMode ? '✅ DONE' : '✏️ EDIT'}
-              </button>
-
-              <button
-                type="button"
                 onClick={openCreatePartModal}
-                disabled={!isEditMode}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors shadow-lg"
               >
                 ➕ ADD PART
               </button>
@@ -379,6 +364,20 @@ export default function MasterPlanSheetPage() {
               ))}
 
               {parts.length === 0 && <div className="text-gray-400">ยังไม่มี Part number</div>}
+            </div>
+
+            <div className="mt-8">
+              <button
+                type="button"
+                onClick={() => setIsEditMode(v => !v)}
+                className={
+                  isEditMode
+                    ? 'px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
+                    : 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors shadow-lg'
+                }
+              >
+                {isEditMode ? '✅ DONE' : '✏️ EDIT'}
+              </button>
             </div>
           </>
         )}
