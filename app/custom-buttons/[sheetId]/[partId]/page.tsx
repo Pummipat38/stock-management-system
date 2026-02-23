@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 interface MasterPlanColumn {
@@ -65,9 +65,9 @@ export default function MasterPlanPartPage() {
     id === 'col_status' ||
     id === 'col_remark';
 
-  const timelineStart = { year: 2025, monthIndex: 6 };
+  const timelineStart = { year: 2025, monthIndex: 0 };
   const monthLabel = (monthIndex: number) =>
-    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'][monthIndex] || '';
+    ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'][monthIndex] || '';
 
   const getRequiredColumns = (): MasterPlanColumn[] => [
     { id: 'col_doc', name: 'DOCUMENT', type: 'text' },
@@ -78,16 +78,11 @@ export default function MasterPlanPartPage() {
     { id: 'col_finish', name: 'FINISH', type: 'text' },
     { id: 'col_status', name: 'STATUS', type: 'text' },
     { id: 'col_remark', name: 'REMARK', type: 'textarea' },
-    { id: 'col_extra_1', name: 'COL 1', type: 'text' },
-    { id: 'col_extra_2', name: 'COL 2', type: 'text' },
-    { id: 'col_extra_3', name: 'COL 3', type: 'text' },
-    { id: 'col_extra_4', name: 'COL 4', type: 'text' },
-    { id: 'col_extra_5', name: 'COL 5', type: 'text' },
-    { id: 'col_extra_6', name: 'COL 6', type: 'text' },
-    { id: 'col_extra_7', name: 'COL 7', type: 'text' },
-    { id: 'col_extra_8', name: 'COL 8', type: 'text' },
-    { id: 'col_extra_9', name: 'COL 9', type: 'text' },
-    { id: 'col_extra_10', name: 'COL 10', type: 'text' },
+    ...Array.from({ length: 96 }, (_, i) => ({
+      id: `col_extra_${i + 1}`,
+      name: `COL ${i + 1}`,
+      type: 'text' as const,
+    })),
   ];
 
   const migrateSheetToParts = (sheet: MasterPlanSheet): { sheet: MasterPlanSheet; changed: boolean } => {
@@ -319,6 +314,34 @@ export default function MasterPlanPartPage() {
     return part.columns.filter(c => isBaseColumnId(c.id));
   }, [part]);
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const didAutoScrollRef = useRef(false);
+
+  useEffect(() => {
+    if (!part) return;
+    if (didAutoScrollRef.current) return;
+    if (!scrollRef.current) return;
+    if (timelineColumns.length === 0) return;
+
+    let baseWidth = 0;
+    for (let i = 0; i < part.columns.length; i += 1) {
+      const col = part.columns[i];
+      const next = part.columns[i + 1];
+      if (!isBaseColumnId(col.id)) break;
+
+      if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
+        baseWidth += 360;
+        i += 1;
+        continue;
+      }
+
+      baseWidth += 180;
+    }
+
+    scrollRef.current.scrollLeft = Math.max(0, baseWidth - 60);
+    didAutoScrollRef.current = true;
+  }, [part, timelineColumns.length]);
+
   const timelineMeta = useMemo(() => {
     if (!part || timelineColumns.length === 0) {
       return {
@@ -448,7 +471,7 @@ export default function MasterPlanPartPage() {
             </div>
 
             <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-              <div className="overflow-x-auto">
+              <div ref={scrollRef} className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     {timelineColumns.length > 0 && (
@@ -490,7 +513,7 @@ export default function MasterPlanPartPage() {
                           {timelineMeta.weeks.map((w, idx) => (
                             <th
                               key={`week_${idx}_${w}`}
-                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center min-w-[180px]"
+                              className="px-2 py-1 text-xs font-semibold text-gray-100 border-r border-gray-700 text-center min-w-[60px]"
                             >
                               {w}
                             </th>
@@ -527,7 +550,11 @@ export default function MasterPlanPartPage() {
                           nodes.push(
                             <th
                               key={col.id}
-                              className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]"
+                              className={
+                                isBaseColumnId(col.id)
+                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[180px]'
+                                  : 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 min-w-[60px]'
+                              }
                             >
                               <input
                                 value={col.name}
@@ -563,14 +590,22 @@ export default function MasterPlanPartPage() {
                                 disabled={!isEditMode}
                                 onChange={e => updateCell(row.id, col.id, e.target.value)}
                                 rows={2}
-                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                className={
+                                  isBaseColumnId(col.id)
+                                    ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    : 'w-full min-w-[60px] bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                }
                               />
                             ) : (
                               <input
                                 value={row.cells[col.id] ?? ''}
                                 disabled={!isEditMode}
                                 onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                className="w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed"
+                                className={
+                                  isBaseColumnId(col.id)
+                                    ? 'w-full min-w-[180px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                    : 'w-full min-w-[60px] bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed'
+                                }
                               />
                             )}
                           </td>

@@ -48,16 +48,11 @@ export default function CustomButtonsPage() {
       { id: 'col_finish', name: 'FINISH', type: 'text' },
       { id: 'col_status', name: 'STATUS', type: 'text' },
       { id: 'col_remark', name: 'REMARK', type: 'textarea' },
-      { id: 'col_extra_1', name: 'COL 1', type: 'text' },
-      { id: 'col_extra_2', name: 'COL 2', type: 'text' },
-      { id: 'col_extra_3', name: 'COL 3', type: 'text' },
-      { id: 'col_extra_4', name: 'COL 4', type: 'text' },
-      { id: 'col_extra_5', name: 'COL 5', type: 'text' },
-      { id: 'col_extra_6', name: 'COL 6', type: 'text' },
-      { id: 'col_extra_7', name: 'COL 7', type: 'text' },
-      { id: 'col_extra_8', name: 'COL 8', type: 'text' },
-      { id: 'col_extra_9', name: 'COL 9', type: 'text' },
-      { id: 'col_extra_10', name: 'COL 10', type: 'text' },
+      ...Array.from({ length: 96 }, (_, i) => ({
+        id: `col_extra_${i + 1}`,
+        name: `COL ${i + 1}`,
+        type: 'text' as const,
+      })),
     ];
   };
 
