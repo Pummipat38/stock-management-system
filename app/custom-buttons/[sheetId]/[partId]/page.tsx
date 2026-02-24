@@ -921,33 +921,47 @@ export default function MasterPlanPartPage() {
                               </div>
                             )}
                           </td>
-                          {/* Timeline columns - individual cells grouped by month like header */}
-                          {timelineColumns.map(col => {
-                            const key = `${row.id}|${col.id}`;
+                          {/* Timeline columns - merged by month (4 weeks = 1 cell) */}
+                          {timelineMeta.monthGroups.map((monthGroup, monthIdx) => {
+                            // Get the 4 columns for this month
+                            const monthColumns = timelineColumns.slice(
+                              monthIdx * 4,
+                              (monthIdx + 1) * 4
+                            );
+                            
+                            // Use first column as representative for selection
+                            const firstCol = monthColumns[0];
+                            const key = `${row.id}|${firstCol?.id || ''}`;
                             if (mergeIndex.covered.has(key)) return null;
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
+                            
                             return (
                               <td
-                                key={col.id}
-                                rowSpan={mg?.rowSpan}
-                                colSpan={mg?.colSpan}
-                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                className={`px-0 py-1 border-r border-gray-800 align-middle w-[14px] min-w-[14px] max-w-[14px] text-center ${
+                                key={`timeline_month_${monthIdx}`}
+                                colSpan={4}
+                                onClick={() => setSelectedCell({ rowId: row.id, colId: firstCol?.id || '' })}
+                                className={`px-2 py-1 border-r border-gray-800 align-middle text-center ${
                                   isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
                                 }`}
                               >
                                 {isEditMode ? (
-                                  <input
-                                    value={row.cells[col.id] ?? ''}
+                                  <textarea
+                                    value={row.cells[firstCol?.id || ''] ?? ''}
                                     disabled={!isEditMode}
-                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: firstCol?.id || '' })}
+                                    onChange={e => {
+                                      // Update all 4 columns in this month with the same value
+                                      monthColumns.forEach(col => {
+                                        if (col.id) updateCell(row.id, col.id, e.target.value);
+                                      });
+                                    }}
+                                    rows={2}
+                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
                                   />
                                 ) : (
-                                  <div className="flex items-center justify-center h-full min-h-[1.5rem] text-[10px] text-gray-100 leading-none">
-                                    {row.cells[col.id]}
+                                  <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                    {row.cells[firstCol?.id || '']}
                                   </div>
                                 )}
                               </td>
