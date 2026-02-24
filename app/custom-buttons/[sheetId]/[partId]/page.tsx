@@ -795,10 +795,16 @@ export default function MasterPlanPartPage() {
                         <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
                           FINISH
                         </th>
-                        {/* Timeline columns (merged as one) */}
-                        <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle" colSpan={timelineColumns.length}>
-                          TIMELINE
-                        </th>
+                        {/* Timeline columns - grouped by month like header */}
+                        {timelineMeta.monthGroups.map((g, idx) => (
+                          <th
+                            key={`timeline_month_${idx}_${g.label}`}
+                            colSpan={g.span}
+                            className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none align-middle"
+                          >
+                            {g.label}
+                          </th>
+                        ))}
                       </>
                     </tr>
                   </thead>
@@ -915,39 +921,45 @@ export default function MasterPlanPartPage() {
                               </div>
                             )}
                           </td>
-                          {/* Timeline columns (merged as one) */}
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            colSpan={timelineColumns.length}
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: timelineColumns[0]?.id || '' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells[timelineColumns[0]?.id || ''] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: timelineColumns[0]?.id || '' })}
-                                onChange={e => {
-                                  // Update all timeline columns with the same value
-                                  timelineColumns.forEach(col => {
-                                    updateCell(row.id, col.id, e.target.value);
-                                  });
-                                }}
-                                rows={2}
-                                className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                              />
-                            ) : (
-                              <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
-                                {row.cells[timelineColumns[0]?.id || '']}
-                              </div>
-                            )}
-                          </td>
+                          {/* Timeline columns - individual cells grouped by month like header */}
+                          {timelineColumns.map(col => {
+                            const key = `${row.id}|${col.id}`;
+                            if (mergeIndex.covered.has(key)) return null;
+                            const mg = mergeIndex.originByKey.get(key);
+                            const isSelected = selectedKey === key;
+                            return (
+                              <td
+                                key={col.id}
+                                rowSpan={mg?.rowSpan}
+                                colSpan={mg?.colSpan}
+                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                className={`px-0 py-1 border-r border-gray-800 align-middle w-[14px] min-w-[14px] max-w-[14px] text-center ${
+                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                }`}
+                              >
+                                {isEditMode ? (
+                                  <input
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                  />
+                                ) : (
+                                  <div className="flex items-center justify-center h-full min-h-[1.5rem] text-[10px] text-gray-100 leading-none">
+                                    {row.cells[col.id]}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
                         </>
                       </tr>
                     ))}
 
                     {part.rows.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-10 text-center align-middle text-gray-400">
+                        <td colSpan={(baseColumns.length + 1)} className="px-6 py-10 text-center align-middle text-gray-400">
                           ยังไม่มีข้อมูล
                         </td>
                       </tr>
