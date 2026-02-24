@@ -66,7 +66,6 @@ export default function MasterPlanPartPage() {
   };
 
   const isBaseColumnId = (id: string) =>
-    id === 'col_doc' ||
     id === 'col_desc' ||
     id === 'col_desc2' ||
     id === 'col_meeting' ||
@@ -83,7 +82,6 @@ export default function MasterPlanPartPage() {
   };
 
   const getColumnWidthPx = (colId: string) => {
-    if (colId === 'col_doc') return 140;
     if (colId === 'col_desc' || colId === 'col_desc2') return 150;
     if (colId === 'col_meeting') return 120;
     if (colId === 'col_start' || colId === 'col_finish') return 100;
@@ -95,7 +93,6 @@ export default function MasterPlanPartPage() {
     ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'][monthIndex] || '';
 
   const getRequiredColumns = (): MasterPlanColumn[] => [
-    { id: 'col_doc', name: 'DOCUMENT', type: 'text' },
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_meeting', name: 'MEETING', type: 'text' },
@@ -171,13 +168,16 @@ export default function MasterPlanPartPage() {
     let nextColumns = prev.columns;
     if (!prevHasDesc2) {
       const descIndex = nextColumns.findIndex(c => c.id === 'col_desc');
-      const insertIndex = descIndex >= 0 ? descIndex + 1 : 1;
+      const insertIndex = descIndex >= 0 ? descIndex + 1 : 0;
       nextColumns = [
         ...nextColumns.slice(0, insertIndex),
         { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
         ...nextColumns.slice(insertIndex),
       ];
     }
+
+    // Remove col_doc if exists (since we're replacing it with DESCRIPTION columns)
+    nextColumns = nextColumns.filter(c => c.id !== 'col_doc');
 
     const nextById = new Set(nextColumns.map(c => c.id));
     const missingRequired = required.filter(c => !nextById.has(c.id));
@@ -801,12 +801,19 @@ export default function MasterPlanPartPage() {
                               }
                             >
                               {isBaseColumnId(col.id) ? (
-                                <input
-                                  value={col.name}
-                                  disabled={!isEditMode}
-                                  onChange={e => updateColumnName(col.id, e.target.value)}
-                                  className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                />
+                                col.id === 'col_meeting' ? (
+                                  <div className="flex flex-col items-center justify-center h-full">
+                                    <span className="text-xs font-semibold text-gray-100">MONTH</span>
+                                    <span className="text-xs font-semibold text-gray-100">WEEK</span>
+                                  </div>
+                                ) : (
+                                  <input
+                                    value={col.name}
+                                    disabled={!isEditMode}
+                                    onChange={e => updateColumnName(col.id, e.target.value)}
+                                    className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                                  />
+                                )
                               ) : (
                                 <div className="h-4" />
                               )}
