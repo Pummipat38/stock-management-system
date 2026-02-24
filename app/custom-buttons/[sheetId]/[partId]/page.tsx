@@ -509,29 +509,55 @@ export default function MasterPlanPartPage() {
 
     const currentRowSpan = selectedMerge?.rowSpan ?? 1;
     const currentColSpan = selectedMerge?.colSpan ?? 1;
-    const targetColIdx = colIdx + currentColSpan;
-    if (targetColIdx >= visibleColumns.length) return;
+    
+    // Special handling for timeline columns (merged by month)
+    const isTimelineCol = selectedCell.colId.startsWith('col_extra_');
+    if (isTimelineCol) {
+      // Find which month group this column belongs to
+      const monthIndex = Math.floor(colIdx / 4);
+      const targetMonthIndex = monthIndex + (currentColSpan / 4);
+      
+      if (targetMonthIndex >= timelineMeta.monthGroups.length) return;
+      
+      // Check if target month is available for merge
+      const targetStartIdx = targetMonthIndex * 4;
+      const targetEndIdx = Math.min(targetStartIdx + 4, timelineColumns.length);
+      
+      for (let dr = 0; dr < currentRowSpan; dr += 1) {
+        for (let dc = targetStartIdx; dc < targetEndIdx; dc += 1) {
+          const r = part.rows[rowIdx + dr];
+          const c = timelineColumns[dc];
+          if (!r || !c) return;
+          const key = `${r.id}|${c.id}`;
+          if (mergeIndex.covered.has(key)) return;
+          if (mergeIndex.originByKey.has(key)) return;
+        }
+      }
+    } else {
+      // Normal handling for non-timeline columns
+      const targetColIdx = colIdx + currentColSpan;
+      if (targetColIdx >= visibleColumns.length) return;
 
-    for (let dr = 0; dr < currentRowSpan; dr += 1) {
-      const r = part.rows[rowIdx + dr];
-      const c = visibleColumns[targetColIdx];
-      if (!r || !c) return;
-      const key = `${r.id}|${c.id}`;
-      if (mergeIndex.covered.has(key)) return;
-      if (mergeIndex.originByKey.has(key)) return;
+      for (let dr = 0; dr < currentRowSpan; dr += 1) {
+        const r = part.rows[rowIdx + dr];
+        const c = visibleColumns[targetColIdx];
+        if (!r || !c) return;
+        const key = `${r.id}|${c.id}`;
+        if (mergeIndex.covered.has(key)) return;
+        if (mergeIndex.originByKey.has(key)) return;
+      }
     }
 
     const next: MergedCell = selectedMerge
-      ? { ...selectedMerge, colSpan: currentColSpan + 1 }
+      ? { ...selectedMerge, colSpan: currentColSpan + (isTimelineCol ? 4 : 1) }
       : {
           id: `merge_${Date.now()}_${Math.random().toString(16).slice(2)}`,
           rowId: selectedCell.rowId,
           colId: selectedCell.colId,
           rowSpan: 1,
-          colSpan: 2,
+          colSpan: isTimelineCol ? 4 : 1,
         };
 
-    const targetColId = visibleColumns[targetColIdx].id;
     updatePart(prev => {
       const prevMerges = prev.merges ? prev.merges : [];
       const nextMerges = selectedMerge
@@ -541,16 +567,6 @@ export default function MasterPlanPartPage() {
       return {
         ...prev,
         merges: nextMerges,
-        rows: prev.rows.map((r, i) => {
-          if (i < rowIdx || i >= rowIdx + currentRowSpan) return r;
-          return {
-            ...r,
-            cells: {
-              ...r.cells,
-              [targetColId]: '',
-            },
-          };
-        }),
       };
     });
   };
@@ -828,13 +844,14 @@ export default function MasterPlanPartPage() {
                         <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
                           FINISH
                         </th>
-                        {/* Timeline columns - individual cells */}
-                        {timelineColumns.map(col => (
+                        {/* Timeline columns - grouped by month like header */}
+                        {timelineMeta.monthGroups.map((g, idx) => (
                           <th
-                            key={col.id}
+                            key={`timeline_month_${idx}_${g.label}`}
+                            colSpan={g.span}
                             className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none align-middle"
                           >
-                            {col.name}
+                            {g.label}
                           </th>
                         ))}
                       </>
@@ -973,44 +990,87 @@ export default function MasterPlanPartPage() {
                               </div>
                             )}
                           </td>
-                          {/* Timeline columns - individual cells with proper merge support */}
-                          {timelineColumns.map(col => {
-                            const key = `${row.id}|${col.id}`;
-                            if (mergeIndex.covered.has(key)) return null;
-                            const mg = mergeIndex.originByKey.get(key);
-                            const isSelected = selectedKey === key;
+                          {/* Timeline columns - merged by month (4 weeks = 1 cell) */}
+                          {(() => {
+                            const cells: React.ReactNode[] = [];
+                            let monthIdx = 0;
                             
-                            return (
-                              <td
-                                key={col.id}
-                                rowSpan={mg?.rowSpan}
-                                colSpan={mg?.colSpan}
-                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                className={`px-2 py-1 border-r border-gray-800 align-middle text-center ${
-                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
-                                }`}
-                              >
-                                {isEditMode ? (
-                                  <textarea
-                                    value={row.cells[col.id] ?? ''}
-                                    disabled={!isEditMode}
-                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    rows={2}
-                                    className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                      textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                    }`}
-                                  />
-                                ) : (
-                                  <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                    textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                                  }`}>
-                                    {row.cells[col.id]}
-                                  </div>
-                                )}
-                              </td>
-                            );
-                          })}
+                            for (let i = 0; i < timelineColumns.length; i += 4) {
+                              const monthColumns = timelineColumns.slice(i, i + 4);
+                              const firstCol = monthColumns[0];
+                              
+                              if (!firstCol) continue;
+                              
+                              // Check if any of the 4 columns in this month are covered by merge
+                              let isCovered = false;
+                              for (const col of monthColumns) {
+                                const key = `${row.id}|${col.id}`;
+                                if (mergeIndex.covered.has(key)) {
+                                  isCovered = true;
+                                  break;
+                                }
+                              }
+                              
+                              if (isCovered) {
+                                monthIdx++;
+                                continue;
+                              }
+                              
+                              // Check if this month has merge origin
+                              let mergeOrigin: { rowSpan: number; colSpan: number } | undefined;
+                              for (const col of monthColumns) {
+                                const key = `${row.id}|${col.id}`;
+                                const mg = mergeIndex.originByKey.get(key);
+                                if (mg) {
+                                  mergeOrigin = mg;
+                                  break;
+                                }
+                              }
+                              
+                              const key = `${row.id}|${firstCol.id}`;
+                              const isSelected = selectedKey === key;
+                              
+                              cells.push(
+                                <td
+                                  key={`timeline_month_${monthIdx}`}
+                                  colSpan={mergeOrigin?.colSpan || 4}
+                                  rowSpan={mergeOrigin?.rowSpan}
+                                  onClick={() => setSelectedCell({ rowId: row.id, colId: firstCol.id })}
+                                  className={`px-2 py-1 border-r border-gray-800 align-middle text-center ${
+                                    isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                  }`}
+                                >
+                                  {isEditMode ? (
+                                    <textarea
+                                      value={row.cells[firstCol.id] ?? ''}
+                                      disabled={!isEditMode}
+                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: firstCol.id })}
+                                      onChange={e => {
+                                        // Update all 4 columns in this month with the same value
+                                        monthColumns.forEach(col => {
+                                          updateCell(row.id, col.id, e.target.value);
+                                        });
+                                      }}
+                                      rows={2}
+                                      className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
+                                        textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                                      }`}
+                                    />
+                                  ) : (
+                                    <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
+                                      textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
+                                    }`}>
+                                      {row.cells[firstCol.id]}
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                              
+                              monthIdx++;
+                            }
+                            
+                            return cells;
+                          })()}
                         </>
                       </tr>
                     ))}
