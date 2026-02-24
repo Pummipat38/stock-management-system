@@ -769,7 +769,7 @@ export default function MasterPlanPartPage() {
                   <colgroup>{colGroupNodes}</colgroup>
                   <thead>
                     <tr className="bg-gray-800 border-b border-gray-700">
-                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14 text-center">
+                      <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14 text-center align-middle">
                         NO.
                       </th>
                       {(() => {
@@ -782,7 +782,7 @@ export default function MasterPlanPartPage() {
                               <th
                                 key={`desc_group_${col.id}_${next.id}`}
                                 colSpan={2}
-                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center"
+                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle"
                               >
                                 DESCRIPTION
                               </th>
@@ -796,8 +796,8 @@ export default function MasterPlanPartPage() {
                               key={col.id}
                               className={
                                 isBaseColumnId(col.id)
-                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center'
-                                  : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none'
+                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle'
+                                  : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none align-middle'
                               }
                             >
                               {isBaseColumnId(col.id) ? (
@@ -827,7 +827,7 @@ export default function MasterPlanPartPage() {
                             : 'bg-gray-900 border-b border-gray-800'
                         }
                       >
-                        <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14 text-center">
+                        <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14 text-center align-middle">
                           {rowIndex + 1}
                         </td>
                         {visibleColumns.map(col => {
@@ -843,28 +843,34 @@ export default function MasterPlanPartPage() {
                                 colSpan={mg?.colSpan}
                                 onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                 className={
-                                  `px-2 py-2 border-r border-gray-800 align-top text-center ${
+                                  `px-2 py-2 border-r border-gray-800 align-middle text-center ${
                                     isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
                                   }`
                                 }
                               >
-                                {col.type === 'textarea' ? (
-                                  <textarea
-                                    value={row.cells[col.id] ?? ''}
-                                    disabled={!isEditMode}
-                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    rows={2}
-                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                  />
+                                {isEditMode ? (
+                                  col.type === 'textarea' ? (
+                                    <textarea
+                                      value={row.cells[col.id] ?? ''}
+                                      disabled={!isEditMode}
+                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                      rows={2}
+                                      className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                                    />
+                                  ) : (
+                                    <input
+                                      value={row.cells[col.id] ?? ''}
+                                      disabled={!isEditMode}
+                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                      className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                                    />
+                                  )
                                 ) : (
-                                  <input
-                                    value={row.cells[col.id] ?? ''}
-                                    disabled={!isEditMode}
-                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                  />
+                                  <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                    {row.cells[col.id]}
+                                  </div>
                                 )}
                               </td>
                             );
@@ -873,23 +879,29 @@ export default function MasterPlanPartPage() {
                           return (
                             <td
                               key={col.id}
-                              className="px-0 py-1 border-r border-gray-800 align-top w-[14px] min-w-[14px] max-w-[14px]"
+                              className="px-0 py-1 border-r border-gray-800 align-middle w-[14px] min-w-[14px] max-w-[14px]"
                             >
-                              {col.type === 'textarea' ? (
-                                <textarea
-                                  value={row.cells[col.id] ?? ''}
-                                  disabled={!isEditMode}
-                                  onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                  rows={2}
-                                  className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
-                                />
+                              {isEditMode ? (
+                                col.type === 'textarea' ? (
+                                  <textarea
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    rows={2}
+                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                  />
+                                ) : (
+                                  <input
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                  />
+                                )
                               ) : (
-                                <input
-                                  value={row.cells[col.id] ?? ''}
-                                  disabled={!isEditMode}
-                                  onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                  className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
-                                />
+                                <div className="flex items-center justify-center h-full min-h-[1.5rem] text-[10px] text-gray-100 leading-none">
+                                  {row.cells[col.id]}
+                                </div>
                               )}
                             </td>
                           );
@@ -899,7 +911,7 @@ export default function MasterPlanPartPage() {
 
                     {part.rows.length === 0 && (
                       <tr>
-                        <td colSpan={visibleColumns.length + 1} className="px-6 py-10 text-center text-gray-400">
+                        <td colSpan={visibleColumns.length + 1} className="px-6 py-10 text-center align-middle text-gray-400">
                           ยังไม่มีข้อมูล
                         </td>
                       </tr>
