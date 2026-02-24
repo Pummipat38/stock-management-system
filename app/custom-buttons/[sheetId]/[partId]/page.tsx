@@ -531,7 +531,7 @@ export default function MasterPlanPartPage() {
           colSpan: 2,
         };
 
-    const targetColId = baseColumns[targetColIdx].id;
+    const targetColId = visibleColumns[targetColIdx].id;
     updatePart(prev => {
       const prevMerges = prev.merges ? prev.merges : [];
       const nextMerges = selectedMerge
@@ -828,14 +828,13 @@ export default function MasterPlanPartPage() {
                         <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
                           FINISH
                         </th>
-                        {/* Timeline columns - grouped by month like header */}
-                        {timelineMeta.monthGroups.map((g, idx) => (
+                        {/* Timeline columns - individual cells */}
+                        {timelineColumns.map(col => (
                           <th
-                            key={`timeline_month_${idx}_${g.label}`}
-                            colSpan={g.span}
+                            key={col.id}
                             className="px-1 py-0.5 text-[10px] font-semibold text-gray-100 border-r border-gray-700 text-center leading-none align-middle"
                           >
-                            {g.label}
+                            {col.name}
                           </th>
                         ))}
                       </>
@@ -974,87 +973,44 @@ export default function MasterPlanPartPage() {
                               </div>
                             )}
                           </td>
-                          {/* Timeline columns - merged by month (4 weeks = 1 cell) */}
-                          {(() => {
-                            const cells: React.ReactNode[] = [];
-                            let monthIdx = 0;
+                          {/* Timeline columns - individual cells with proper merge support */}
+                          {timelineColumns.map(col => {
+                            const key = `${row.id}|${col.id}`;
+                            if (mergeIndex.covered.has(key)) return null;
+                            const mg = mergeIndex.originByKey.get(key);
+                            const isSelected = selectedKey === key;
                             
-                            for (let i = 0; i < timelineColumns.length; i += 4) {
-                              const monthColumns = timelineColumns.slice(i, i + 4);
-                              const firstCol = monthColumns[0];
-                              
-                              if (!firstCol) continue;
-                              
-                              // Check if any of the 4 columns in this month are covered by merge
-                              let isCovered = false;
-                              for (const col of monthColumns) {
-                                const key = `${row.id}|${col.id}`;
-                                if (mergeIndex.covered.has(key)) {
-                                  isCovered = true;
-                                  break;
-                                }
-                              }
-                              
-                              if (isCovered) {
-                                monthIdx++;
-                                continue;
-                              }
-                              
-                              // Check if this month has merge origin
-                              let mergeOrigin: { rowSpan: number; colSpan: number } | undefined;
-                              for (const col of monthColumns) {
-                                const key = `${row.id}|${col.id}`;
-                                const mg = mergeIndex.originByKey.get(key);
-                                if (mg) {
-                                  mergeOrigin = mg;
-                                  break;
-                                }
-                              }
-                              
-                              const key = `${row.id}|${firstCol.id}`;
-                              const isSelected = selectedKey === key;
-                              
-                              cells.push(
-                                <td
-                                  key={`timeline_month_${monthIdx}`}
-                                  colSpan={mergeOrigin?.colSpan || 4}
-                                  rowSpan={mergeOrigin?.rowSpan}
-                                  onClick={() => setSelectedCell({ rowId: row.id, colId: firstCol.id })}
-                                  className={`px-2 py-1 border-r border-gray-800 align-middle text-center ${
-                                    isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
-                                  }`}
-                                >
-                                  {isEditMode ? (
-                                    <textarea
-                                      value={row.cells[firstCol.id] ?? ''}
-                                      disabled={!isEditMode}
-                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: firstCol.id })}
-                                      onChange={e => {
-                                        // Update all 4 columns in this month with the same value
-                                        monthColumns.forEach(col => {
-                                          updateCell(row.id, col.id, e.target.value);
-                                        });
-                                      }}
-                                      rows={2}
-                                      className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                        textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                      }`}
-                                    />
-                                  ) : (
-                                    <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                      textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                                    }`}>
-                                      {row.cells[firstCol.id]}
-                                    </div>
-                                  )}
-                                </td>
-                              );
-                              
-                              monthIdx++;
-                            }
-                            
-                            return cells;
-                          })()}
+                            return (
+                              <td
+                                key={col.id}
+                                rowSpan={mg?.rowSpan}
+                                colSpan={mg?.colSpan}
+                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                className={`px-2 py-1 border-r border-gray-800 align-middle text-center ${
+                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                }`}
+                              >
+                                {isEditMode ? (
+                                  <textarea
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    rows={2}
+                                    className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
+                                      textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                                    }`}
+                                  />
+                                ) : (
+                                  <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
+                                    textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
+                                  }`}>
+                                    {row.cells[col.id]}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
                         </>
                       </tr>
                     ))}
