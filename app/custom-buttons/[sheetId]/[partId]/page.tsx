@@ -871,125 +871,43 @@ export default function MasterPlanPartPage() {
                           {rowIndex + 1}
                         </td>
                         <>
-                          {/* DESCRIPTION (2 separate columns) */}
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_desc' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells['col_desc'] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_desc' })}
-                                onChange={e => updateCell(row.id, 'col_desc', e.target.value)}
-                                rows={2}
-                                className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                  textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                          {baseColumns.map(col => {
+                            const key = `${row.id}|${col.id}`;
+                            if (mergeIndex.covered.has(key)) return null;
+                            const mg = mergeIndex.originByKey.get(key);
+                            const isSelected = selectedKey === key;
+                            
+                            return (
+                              <td
+                                key={col.id}
+                                rowSpan={mg?.rowSpan}
+                                colSpan={mg?.colSpan}
+                                onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                className={`px-2 py-2 border-r border-gray-800 align-middle text-center ${
+                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
                                 }`}
-                              />
-                            ) : (
-                              <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                              }`}>
-                                {row.cells['col_desc']}
-                              </div>
-                            )}
-                          </td>
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_desc2' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells['col_desc2'] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_desc2' })}
-                                onChange={e => updateCell(row.id, 'col_desc2', e.target.value)}
-                                rows={2}
-                                className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                  textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                }`}
-                              />
-                            ) : (
-                              <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                              }`}>
-                                {row.cells['col_desc2']}
-                              </div>
-                            )}
-                          </td>
-                          {/* MONTH WEEK */}
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_meeting' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells['col_meeting'] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_meeting' })}
-                                onChange={e => updateCell(row.id, 'col_meeting', e.target.value)}
-                                rows={2}
-                                className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                  textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                }`}
-                              />
-                            ) : (
-                              <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                              }`}>
-                                {row.cells['col_meeting']}
-                              </div>
-                            )}
-                          </td>
-                          {/* START */}
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_start' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells['col_start'] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_start' })}
-                                onChange={e => updateCell(row.id, 'col_start', e.target.value)}
-                                rows={2}
-                                className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                  textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                }`}
-                              />
-                            ) : (
-                              <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                              }`}>
-                                {row.cells['col_start']}
-                              </div>
-                            )}
-                          </td>
-                          {/* FINISH */}
-                          <td
-                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
-                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_finish' })}
-                          >
-                            {isEditMode ? (
-                              <textarea
-                                value={row.cells['col_finish'] ?? ''}
-                                disabled={!isEditMode}
-                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_finish' })}
-                                onChange={e => updateCell(row.id, 'col_finish', e.target.value)}
-                                rows={2}
-                                className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
-                                  textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                }`}
-                              />
-                            ) : (
-                              <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
-                                textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                              }`}>
-                                {row.cells['col_finish']}
-                              </div>
-                            )}
-                          </td>
+                              >
+                                {isEditMode ? (
+                                  <textarea
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    rows={2}
+                                    className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
+                                      textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                                    }`}
+                                  />
+                                ) : (
+                                  <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
+                                    textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
+                                  }`}>
+                                    {row.cells[col.id]}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
                           {/* Timeline columns - merged by month (4 weeks = 1 cell) */}
                           {(() => {
                             const cells: React.ReactNode[] = [];
