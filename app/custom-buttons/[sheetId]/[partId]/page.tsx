@@ -95,9 +95,9 @@ export default function MasterPlanPartPage() {
   const getRequiredColumns = (): MasterPlanColumn[] => [
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
-    { id: 'col_meeting', name: 'MEETING', type: 'text' },
-    { id: 'col_start', name: 'START', type: 'text' },
-    { id: 'col_finish', name: 'FINISH', type: 'text' },
+    { id: 'col_meeting', name: 'MEETING', type: 'textarea' },
+    { id: 'col_start', name: 'START', type: 'textarea' },
+    { id: 'col_finish', name: 'FINISH', type: 'textarea' },
     ...Array.from({ length: 96 }, (_, i) => ({
       id: `col_extra_${i + 1}`,
       name: `COL ${i + 1}`,
@@ -772,56 +772,36 @@ export default function MasterPlanPartPage() {
                       <th className="sticky left-0 bg-gray-800 z-20 px-3 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 w-14 text-center align-middle">
                         NO.
                       </th>
-                      {(() => {
-                        const nodes: React.ReactNode[] = [];
-                        for (let i = 0; i < visibleColumns.length; i += 1) {
-                          const col = visibleColumns[i];
-                          const next = visibleColumns[i + 1];
-                          if (isDescriptionColumn(col) && next && isDescriptionColumn(next)) {
-                            nodes.push(
-                              <th
-                                key={`desc_group_${col.id}_${next.id}`}
-                                colSpan={2}
-                                className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle"
-                              >
-                                DESCRIPTION
-                              </th>
-                            );
-                            i += 1;
-                            continue;
-                          }
-
-                          nodes.push(
-                            <th
-                              key={col.id}
-                              className={
-                                isBaseColumnId(col.id)
-                                  ? 'px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle'
-                                  : 'px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none align-middle'
-                              }
-                            >
-                              {isBaseColumnId(col.id) ? (
-                                col.id === 'col_meeting' ? (
-                                  <div className="flex flex-col items-center justify-center h-full">
-                                    <span className="text-xs font-semibold text-gray-100">MONTH</span>
-                                    <span className="text-xs font-semibold text-gray-100">WEEK</span>
-                                  </div>
-                                ) : (
-                                  <input
-                                    value={col.name}
-                                    disabled={!isEditMode}
-                                    onChange={e => updateColumnName(col.id, e.target.value)}
-                                    className="w-full bg-transparent text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                  />
-                                )
-                              ) : (
-                                <div className="h-4" />
-                              )}
-                            </th>
-                          );
-                        }
-                        return nodes;
-                      })()}
+                      <>
+                        {/* DESCRIPTION (merged 2 columns) */}
+                        <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle" colSpan={2}>
+                          DESCRIPTION
+                        </th>
+                        {/* MONTH WEEK */}
+                        <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <span className="text-xs font-semibold text-gray-100">MONTH</span>
+                            <span className="text-xs font-semibold text-gray-100">WEEK</span>
+                          </div>
+                        </th>
+                        {/* START */}
+                        <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
+                          START
+                        </th>
+                        {/* FINISH */}
+                        <th className="px-2 py-2 text-xs font-semibold text-gray-200 border-r border-gray-700 text-center align-middle">
+                          FINISH
+                        </th>
+                        {/* Timeline columns */}
+                        {timelineColumns.map(col => (
+                          <th
+                            key={col.id}
+                            className="px-0 py-1 text-[10px] font-semibold text-gray-200 border-r border-gray-700 w-[14px] min-w-[14px] max-w-[14px] text-center leading-none align-middle"
+                          >
+                            <div className="h-4" />
+                          </th>
+                        ))}
+                      </>
                     </tr>
                   </thead>
                   <tbody>
@@ -837,9 +817,94 @@ export default function MasterPlanPartPage() {
                         <td className="sticky left-0 bg-gray-900 z-10 px-3 py-2 text-xs text-gray-400 border-r border-gray-800 w-14 text-center align-middle">
                           {rowIndex + 1}
                         </td>
-                        {visibleColumns.map(col => {
-                          const key = `${row.id}|${col.id}`;
-                          if (isBaseColumnId(col.id)) {
+                        <>
+                          {/* DESCRIPTION (merged 2 columns) */}
+                          <td
+                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
+                            colSpan={2}
+                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_desc' })}
+                          >
+                            {isEditMode ? (
+                              <textarea
+                                value={row.cells['col_desc'] ?? ''}
+                                disabled={!isEditMode}
+                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_desc' })}
+                                onChange={e => {
+                                  updateCell(row.id, 'col_desc', e.target.value);
+                                  updateCell(row.id, 'col_desc2', e.target.value);
+                                }}
+                                rows={2}
+                                className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                {row.cells['col_desc']}
+                              </div>
+                            )}
+                          </td>
+                          {/* MONTH WEEK */}
+                          <td
+                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
+                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_meeting' })}
+                          >
+                            {isEditMode ? (
+                              <textarea
+                                value={row.cells['col_meeting'] ?? ''}
+                                disabled={!isEditMode}
+                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_meeting' })}
+                                onChange={e => updateCell(row.id, 'col_meeting', e.target.value)}
+                                rows={2}
+                                className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                {row.cells['col_meeting']}
+                              </div>
+                            )}
+                          </td>
+                          {/* START */}
+                          <td
+                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
+                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_start' })}
+                          >
+                            {isEditMode ? (
+                              <textarea
+                                value={row.cells['col_start'] ?? ''}
+                                disabled={!isEditMode}
+                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_start' })}
+                                onChange={e => updateCell(row.id, 'col_start', e.target.value)}
+                                rows={2}
+                                className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                {row.cells['col_start']}
+                              </div>
+                            )}
+                          </td>
+                          {/* FINISH */}
+                          <td
+                            className="px-2 py-2 border-r border-gray-800 align-middle text-center"
+                            onClick={() => setSelectedCell({ rowId: row.id, colId: 'col_finish' })}
+                          >
+                            {isEditMode ? (
+                              <textarea
+                                value={row.cells['col_finish'] ?? ''}
+                                disabled={!isEditMode}
+                                onFocus={() => setSelectedCell({ rowId: row.id, colId: 'col_finish' })}
+                                onChange={e => updateCell(row.id, 'col_finish', e.target.value)}
+                                rows={2}
+                                className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                {row.cells['col_finish']}
+                              </div>
+                            )}
+                          </td>
+                          {/* Timeline columns */}
+                          {timelineColumns.map(col => {
+                            const key = `${row.id}|${col.id}`;
                             if (mergeIndex.covered.has(key)) return null;
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
@@ -849,76 +914,33 @@ export default function MasterPlanPartPage() {
                                 rowSpan={mg?.rowSpan}
                                 colSpan={mg?.colSpan}
                                 onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                className={
-                                  `px-2 py-2 border-r border-gray-800 align-middle text-center ${
-                                    isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
-                                  }`
-                                }
+                                className={`px-0 py-1 border-r border-gray-800 align-middle w-[14px] min-w-[14px] max-w-[14px] text-center ${
+                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                }`}
                               >
                                 {isEditMode ? (
-                                  col.type === 'textarea' ? (
-                                    <textarea
-                                      value={row.cells[col.id] ?? ''}
-                                      disabled={!isEditMode}
-                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                      rows={2}
-                                      className="w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                    />
-                                  ) : (
-                                    <input
-                                      value={row.cells[col.id] ?? ''}
-                                      disabled={!isEditMode}
-                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                      className="w-full bg-transparent text-sm text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center"
-                                    />
-                                  )
+                                  <input
+                                    value={row.cells[col.id] ?? ''}
+                                    disabled={!isEditMode}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
+                                  />
                                 ) : (
-                                  <div className="flex items-center justify-center h-full min-h-[2rem] text-sm text-gray-100">
+                                  <div className="flex items-center justify-center h-full min-h-[1.5rem] text-[10px] text-gray-100 leading-none">
                                     {row.cells[col.id]}
                                   </div>
                                 )}
                               </td>
                             );
-                          }
-
-                          return (
-                            <td
-                              key={col.id}
-                              className="px-0 py-1 border-r border-gray-800 align-middle w-[14px] min-w-[14px] max-w-[14px]"
-                            >
-                              {isEditMode ? (
-                                col.type === 'textarea' ? (
-                                  <textarea
-                                    value={row.cells[col.id] ?? ''}
-                                    disabled={!isEditMode}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    rows={2}
-                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
-                                  />
-                                ) : (
-                                  <input
-                                    value={row.cells[col.id] ?? ''}
-                                    disabled={!isEditMode}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    className="w-full w-[14px] min-w-[14px] max-w-[14px] bg-transparent text-[10px] text-gray-100 focus:outline-none disabled:text-gray-300 disabled:cursor-not-allowed text-center leading-none"
-                                  />
-                                )
-                              ) : (
-                                <div className="flex items-center justify-center h-full min-h-[1.5rem] text-[10px] text-gray-100 leading-none">
-                                  {row.cells[col.id]}
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
+                          })}
+                        </>
                       </tr>
                     ))}
 
                     {part.rows.length === 0 && (
                       <tr>
-                        <td colSpan={visibleColumns.length + 1} className="px-6 py-10 text-center align-middle text-gray-400">
+                        <td colSpan={(timelineColumns.length + 5)} className="px-6 py-10 text-center align-middle text-gray-400">
                           ยังไม่มีข้อมูล
                         </td>
                       </tr>
