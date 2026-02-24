@@ -450,11 +450,11 @@ export default function MasterPlanPartPage() {
     }));
   };
 
-  const baseColIndexById = useMemo(() => {
+  const visibleColIndexById = useMemo(() => {
     const m = new Map<string, number>();
-    baseColumns.forEach((c, i) => m.set(c.id, i));
+    visibleColumns.forEach((c, i) => m.set(c.id, i));
     return m;
-  }, [baseColumns]);
+  }, [visibleColumns]);
 
   const rowIndexById = useMemo(() => {
     const m = new Map<string, number>();
@@ -470,7 +470,7 @@ export default function MasterPlanPartPage() {
 
     for (const mg of merges) {
       const rowIdx = rowIndexById.get(mg.rowId);
-      const colIdx = baseColIndexById.get(mg.colId);
+      const colIdx = visibleColIndexById.get(mg.colId);
       if (rowIdx === undefined || colIdx === undefined) continue;
       if (mg.rowSpan < 1 || mg.colSpan < 1) continue;
 
@@ -481,7 +481,7 @@ export default function MasterPlanPartPage() {
         for (let dc = 0; dc < mg.colSpan; dc += 1) {
           if (dr === 0 && dc === 0) continue;
           const r = part?.rows?.[rowIdx + dr];
-          const c = baseColumns[colIdx + dc];
+          const c = visibleColumns[colIdx + dc];
           if (!r || !c) continue;
           covered.add(`${r.id}|${c.id}`);
         }
@@ -489,14 +489,13 @@ export default function MasterPlanPartPage() {
     }
 
     return { originByKey, covered };
-  }, [baseColIndexById, baseColumns, merges, part?.rows, rowIndexById]);
+  }, [visibleColIndexById, visibleColumns, merges, part?.rows, rowIndexById]);
 
   const selectedKey = selectedCell ? `${selectedCell.rowId}|${selectedCell.colId}` : null;
   const selectedMerge = selectedKey ? mergeIndex.originByKey.get(selectedKey) : undefined;
   const canMergeSelected =
     isEditMode &&
     !!selectedCell &&
-    isBaseColumnId(selectedCell.colId) &&
     !mergeIndex.covered.has(`${selectedCell.rowId}|${selectedCell.colId}`);
 
   const mergeRight = () => {
@@ -505,17 +504,17 @@ export default function MasterPlanPartPage() {
     if (!selectedCell) return;
 
     const rowIdx = rowIndexById.get(selectedCell.rowId);
-    const colIdx = baseColIndexById.get(selectedCell.colId);
+    const colIdx = visibleColIndexById.get(selectedCell.colId);
     if (rowIdx === undefined || colIdx === undefined) return;
 
     const currentRowSpan = selectedMerge?.rowSpan ?? 1;
     const currentColSpan = selectedMerge?.colSpan ?? 1;
     const targetColIdx = colIdx + currentColSpan;
-    if (targetColIdx >= baseColumns.length) return;
+    if (targetColIdx >= visibleColumns.length) return;
 
     for (let dr = 0; dr < currentRowSpan; dr += 1) {
       const r = part.rows[rowIdx + dr];
-      const c = baseColumns[targetColIdx];
+      const c = visibleColumns[targetColIdx];
       if (!r || !c) return;
       const key = `${r.id}|${c.id}`;
       if (mergeIndex.covered.has(key)) return;
@@ -562,7 +561,7 @@ export default function MasterPlanPartPage() {
     if (!selectedCell) return;
 
     const rowIdx = rowIndexById.get(selectedCell.rowId);
-    const colIdx = baseColIndexById.get(selectedCell.colId);
+    const colIdx = visibleColIndexById.get(selectedCell.colId);
     if (rowIdx === undefined || colIdx === undefined) return;
 
     const currentRowSpan = selectedMerge?.rowSpan ?? 1;
@@ -572,7 +571,7 @@ export default function MasterPlanPartPage() {
 
     for (let dc = 0; dc < currentColSpan; dc += 1) {
       const r = part.rows[targetRowIdx];
-      const c = baseColumns[colIdx + dc];
+      const c = visibleColumns[colIdx + dc];
       if (!r || !c) return;
       const key = `${r.id}|${c.id}`;
       if (mergeIndex.covered.has(key)) return;
