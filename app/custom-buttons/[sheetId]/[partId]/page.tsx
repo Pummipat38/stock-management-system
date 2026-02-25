@@ -866,37 +866,6 @@ export default function MasterPlanPartPage() {
                           {baseColumns.map(col => {
                             const key = `${row.id}|${col.id}`;
                             
-                            // For DESCRIPTION columns, always render separately (ignore merge)
-                            if (col.id === 'col_desc' || col.id === 'col_desc2') {
-                              return (
-                                <td
-                                  key={col.id}
-                                  onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                  className={`px-2 py-2 border-r border-white/10 align-middle text-center ${
-                                    selectedKey === key ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
-                                  }`}
-                                >
-                                  {isEditMode ? (
-                                    <textarea
-                                      value={row.cells[col.id] ?? ''}
-                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                      rows={2}
-                                      className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none ${
-                                        textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                      }`}
-                                    />
-                                  ) : (
-                                    <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
-                                      textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                                    }`}>
-                                      {row.cells[col.id]}
-                                    </div>
-                                  )}
-                                </td>
-                              );
-                            }
-                            
                             // Skip covered cells (merged into another cell)
                             if (mergeIndex.covered.has(key)) return null;
                             
