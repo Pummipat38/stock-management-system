@@ -258,39 +258,41 @@ export default function CustomButtonsPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="mb-6 flex gap-4">
+        <div className="mb-6 flex gap-4 items-center flex-wrap">
           <button
             onClick={openCreateSheetModal}
             className="px-8 py-4 bg-indigo-700 hover:bg-indigo-600 text-white rounded-xl text-xl font-bold transition-colors flex items-center gap-3 shadow-lg"
           >
             ➕ ADD MODEL
           </button>
+          
+          {/* ปุ่มลบ Model ที่เลือก */}
+          {selectedSheetId && (
+            <button
+              onClick={() => {
+                const sheet = masterPlanSheets.find(s => s.id === selectedSheetId);
+                if (sheet) deleteSheet(sheet.id, sheet.name);
+              }}
+              className="px-8 py-4 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xl font-bold transition-colors flex items-center gap-3 shadow-lg"
+            >
+              🗑 DELETE MODEL
+            </button>
+          )}
         </div>
 
         <div className="mb-4 flex flex-wrap gap-4">
           {masterPlanSheets.filter(s => !isMasterPlanSheet(s)).map(sheet => (
-            <div key={sheet.id} className="flex gap-2 items-center">
-              {/* ปุ่มลบ Model */}
-              <button
-                onClick={() => deleteSheet(sheet.id, sheet.name)}
-                className="px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-lg font-bold shadow-lg transition-colors"
-                title="ลบ Model"
-              >
-                🗑 DELETE
-              </button>
-              
-              {/* ปุ่ม Model */}
-              <button
-                onClick={() => openSheetTable(sheet.id)}
-                className={
-                  sheet.id === selectedSheetId
-                    ? 'px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
-                    : 'px-6 py-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
-                }
-              >
-                {sheet.name}
-              </button>
-            </div>
+            <button
+              key={sheet.id}
+              onClick={() => openSheetTable(sheet.id)}
+              className={
+                sheet.id === selectedSheetId
+                  ? 'px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
+                  : 'px-6 py-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
+              }
+            >
+              {sheet.name}
+            </button>
           ))}
         </div>
 
