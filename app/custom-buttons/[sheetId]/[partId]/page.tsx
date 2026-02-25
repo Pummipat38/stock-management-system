@@ -754,13 +754,26 @@ export default function MasterPlanPartPage() {
                     <thead>
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
                         <th
-                          rowSpan={2}
+                          rowSpan={3}
                           className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14"
                         />
                         <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
+                            colSpan={g.span}
+                            className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center leading-none"
+                          >
+                            {g.label}
+                          </th>
+                        ))}
+                      </tr>
+
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        {timelineMeta.monthGroups.map((g, idx) => (
+                          <th
+                            key={`month_${idx}_${g.label}`}
                             colSpan={g.span}
                             className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center leading-none"
                           >
@@ -809,8 +822,11 @@ export default function MasterPlanPartPage() {
                         NO.
                       </th>
                       <>
-                        {/* DESCRIPTION (merged header only) */}
-                        <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                        {/* DESCRIPTION (2 separate columns) */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          DESCRIPTION
+                        </th>
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           DESCRIPTION
                         </th>
                         {/* MONTH WEEK */}
@@ -828,15 +844,13 @@ export default function MasterPlanPartPage() {
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           FINISH
                         </th>
-                        {/* Timeline columns - month header */}
+                        {/* Timeline columns - empty headers */}
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`timeline_month_${idx}_${g.label}`}
                             colSpan={g.span}
                             className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center leading-none align-middle bg-white/10 backdrop-blur-sm"
-                          >
-                            {g.label}
-                          </th>
+                          />
                         ))}
                       </>
                     </tr>
@@ -851,45 +865,13 @@ export default function MasterPlanPartPage() {
                           {rowIndex + 1}
                         </td>
                         <>
-                          {/* Render all base columns - DESCRIPTION always separate */}
+                          {/* Render all base columns with merge support */}
                           {baseColumns.map(col => {
                             const key = `${row.id}|${col.id}`;
-                            const isDesc = col.id === 'col_desc' || col.id === 'col_desc2';
                             
-                            // DESCRIPTION columns: always show separately (never merge)
-                            if (isDesc) {
-                              const isSelected = selectedKey === key;
-                              return (
-                                <td
-                                  key={col.id}
-                                  onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                  className={`px-2 py-2 border-r border-white/10 align-middle text-center ${
-                                    isSelected ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
-                                  }`}
-                                >
-                                  {isEditMode ? (
-                                    <textarea
-                                      value={row.cells[col.id] ?? ''}
-                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                      rows={2}
-                                      className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none ${
-                                        textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                      }`}
-                                    />
-                                  ) : (
-                                    <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
-                                      textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                                    }`}>
-                                      {row.cells[col.id]}
-                                    </div>
-                                  )}
-                                </td>
-                              );
-                            }
-                            
-                            // Other columns: respect merges
+                            // Skip covered cells (merged into another cell)
                             if (mergeIndex.covered.has(key)) return null;
+                            
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
                             
