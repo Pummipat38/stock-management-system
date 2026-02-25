@@ -44,6 +44,7 @@ export default function MasterPlanSheetPage() {
   const [sheets, setSheets] = useState<MasterPlanSheet[]>([]);
   const [selectedSheetId, setSelectedSheetId] = useState<string>('');
   const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedPartId, setSelectedPartId] = useState<string>('');
   const [isPartModalOpen, setIsPartModalOpen] = useState(false);
   const [partModalMode, setPartModalMode] = useState<'create' | 'edit'>('create');
   const [partModalPartId, setPartModalPartId] = useState<string>('');
@@ -354,6 +355,11 @@ export default function MasterPlanSheetPage() {
         parts: prevParts.filter(x => x.id !== p.id),
       };
     });
+    
+    // ล้าง selectedPartId ถ้าลบ Part ที่เลือกอยู่
+    if (selectedPartId === p.id) {
+      setSelectedPartId('');
+    }
   };
 
   const openPart = (part: MasterPlanPart) => {
@@ -394,38 +400,47 @@ export default function MasterPlanSheetPage() {
               >
                 ➕ ADD PART
               </button>
+              
+              {/* ปุ่ม DELETE - แสดงเมื่อมี Part ถูกเลือก */}
+              {selectedPartId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const part = parts.find(p => p.id === selectedPartId);
+                    if (part) deletePart(part);
+                  }}
+                  className="px-6 py-3 bg-red-700 hover:bg-red-800 text-white rounded-lg font-semibold transition-colors shadow-lg"
+                >
+                  🗑 DELETE
+                </button>
+              )}
+              
+              {/* ปุ่ม EDIT - แสดงเมื่อมี Part ถูกเลือก */}
+              {selectedPartId && isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const part = parts.find(p => p.id === selectedPartId);
+                    if (part) openEditPartModal(part);
+                  }}
+                  className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg font-semibold transition-colors shadow-lg"
+                >
+                  ✏️ EDIT
+                </button>
+              )}
             </div>
 
             <div className="flex flex-col gap-4 items-start">
               {parts.map((p, index) => (
                 <div key={p.id} className="flex gap-4 w-full max-w-[900px] items-center">
-                  {/* ปุ่มลบ - แสดงตลอดเวลา */}
-                  <button
-                    type="button"
-                    onClick={() => deletePart(p)}
-                    className="px-6 py-4 bg-red-700 hover:bg-red-800 text-white rounded-xl font-bold shadow-lg transition-colors text-lg"
-                    title="ลบ Part"
-                  >
-                    🗑 DELETE
-                  </button>
-                  
-                  {/* ปุ่มแก้ไข - แสดงเฉพาะ Edit Mode */}
-                  {isEditMode && (
-                    <button
-                      type="button"
-                      onClick={() => openEditPartModal(p)}
-                      className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl font-bold shadow-lg transition-colors text-lg"
-                      title="แก้ไข Part"
-                    >
-                      ✏️ EDIT
-                    </button>
-                  )}
-                  
                   {/* ปุ่ม Part - ใหญ่ขึ้น และมีสีแตกต่างกัน */}
                   <button
                     type="button"
-                    onClick={() => openPart(p)}
-                    className={`px-8 py-5 ${getPartColor(index)} text-white rounded-xl font-bold shadow-lg transition-colors text-left w-full text-xl`}
+                    onClick={() => {
+                      setSelectedPartId(p.id);
+                      openPart(p);
+                    }}
+                    className={`px-8 py-5 ${getPartColor(index)} text-white rounded-xl font-bold shadow-lg transition-colors text-left w-full text-xl ${selectedPartId === p.id ? 'ring-4 ring-white/50' : ''}`}
                   >
                     {partDisplayText(p)}
                   </button>
