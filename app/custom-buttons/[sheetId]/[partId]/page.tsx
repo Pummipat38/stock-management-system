@@ -199,32 +199,14 @@ export default function MasterPlanPartPage() {
 
     const nextRows = prev.rows.map(ensureCells);
 
-    // Ensure default merges exist for description columns
-    const merges = prev.merges || [];
-    const hasDescMerge = merges.some(m => m.colId === 'col_desc' && m.rowSpan === 15);
-    let nextMerges = merges;
-    
-    if (!hasDescMerge && nextRows.length > 0) {
-      // Create default merge for description columns across all rows
-      const defaultMerge: MergedCell = {
-        id: `merge_desc_default_${Date.now()}`,
-        rowId: nextRows[0].id,
-        colId: 'col_desc',
-        rowSpan: nextRows.length,
-        colSpan: 2, // Merge col_desc and col_desc2
-      };
-      nextMerges = [...merges, defaultMerge];
-    }
-
     const changed =
       nextColumns.length !== prev.columns.length ||
       nextColumns.some((c, idx) => prev.columns[idx]?.id !== c.id) ||
-      nextRows.some((r, idx) => r.cells !== prev.rows[idx]?.cells) ||
-      nextMerges.length !== (prev.merges || []).length;
+      nextRows.some((r, idx) => r.cells !== prev.rows[idx]?.cells);
 
     return {
       changed,
-      part: changed ? { ...prev, columns: nextColumns, rows: nextRows, merges: nextMerges } : prev,
+      part: changed ? { ...prev, columns: nextColumns, rows: nextRows } : prev,
     };
   };
 
@@ -764,35 +746,35 @@ export default function MasterPlanPartPage() {
               </div>
             </div>
 
-            <div className="bg-black border border-gray-600 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
               <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-260px)]">
                 {timelineColumns.length > 0 && (
                   <table className="border-collapse w-max min-w-full table-fixed">
                     <colgroup>{colGroupNodes}</colgroup>
                     <thead>
-                      <tr className="bg-black border-b border-gray-600">
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
                         <th
                           rowSpan={2}
-                          className="sticky left-0 bg-black z-30 px-3 py-2 text-xs font-semibold text-white border-r border-gray-600 w-14"
+                          className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14"
                         />
-                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-gray-600" />
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
                             colSpan={g.span}
-                            className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-gray-600 text-center leading-none"
+                            className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center leading-none"
                           >
                             {g.label}
                           </th>
                         ))}
                       </tr>
 
-                      <tr className="bg-black border-b border-gray-600">
-                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-gray-600" />
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
                             key={`week_${idx}_${w}`}
-                            className="px-0 py-0.5 text-[10px] font-semibold text-white border-r border-gray-600 text-center w-[14px] min-w-[14px] max-w-[14px] leading-none"
+                            className="px-0 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center w-[14px] min-w-[14px] max-w-[14px] leading-none"
                           >
                             {w}
                           </th>
@@ -801,14 +783,14 @@ export default function MasterPlanPartPage() {
                     </thead>
                     <tbody>
                       {Array.from({ length: 3 }, (_, rowIdx) => (
-                        <tr key={`month_big_${rowIdx}`} className="bg-black border-b border-gray-800">
-                          <td className="sticky left-0 bg-black z-10 px-3 py-2 border-r border-gray-800 w-14" />
-                          <td colSpan={baseColumns.length} className="px-2 py-2 border-r border-gray-800" />
+                        <tr key={`month_big_${rowIdx}`} className="bg-white/5 backdrop-blur-sm border-b border-white/10">
+                          <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14" />
+                          <td colSpan={baseColumns.length} className="px-2 py-2 border-r border-white/10" />
                           {timelineMeta.monthGroups.map((g, idx) => (
                             <td
                               key={`month_big_cell_${rowIdx}_${idx}`}
                               colSpan={g.span}
-                              className="px-0 py-3 border-r border-gray-800"
+                              className="px-0 py-3 border-r border-white/10"
                             />
                           ))}
                         </tr>
@@ -822,39 +804,36 @@ export default function MasterPlanPartPage() {
                 <table className="border-collapse w-max min-w-full table-fixed">
                   <colgroup>{colGroupNodes}</colgroup>
                   <thead>
-                    <tr className="bg-black border-b border-gray-600">
-                      <th className="sticky left-0 bg-black z-20 px-3 py-2 text-xs font-semibold text-white border-r border-gray-600 w-14 text-center align-middle">
+                    <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                      <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-20 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle">
                         NO.
                       </th>
                       <>
-                        {/* DESCRIPTION (2 separate columns) */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-gray-600 text-center align-middle">
-                          DESCRIPTION
-                        </th>
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-gray-600 text-center align-middle">
+                        {/* DESCRIPTION (merged header only) */}
+                        <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           DESCRIPTION
                         </th>
                         {/* MONTH WEEK */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-gray-600 text-center align-middle">
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           <div className="flex flex-col items-center justify-center h-full">
                             <span className="text-xs font-semibold text-white">MONTH</span>
                             <span className="text-xs font-semibold text-white">WEEK</span>
                           </div>
                         </th>
                         {/* START */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-gray-600 text-center align-middle">
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           START
                         </th>
                         {/* FINISH */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-gray-600 text-center align-middle">
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           FINISH
                         </th>
-                        {/* Timeline columns - hidden header (merged cells will show) */}
+                        {/* Timeline columns - month header */}
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`timeline_month_${idx}_${g.label}`}
                             colSpan={g.span}
-                            className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-gray-600 text-center leading-none align-middle bg-black"
+                            className="px-1 py-0.5 text-[10px] font-semibold text-white border-r border-white/20 text-center leading-none align-middle bg-white/10 backdrop-blur-sm"
                           >
                             {g.label}
                           </th>
@@ -866,9 +845,9 @@ export default function MasterPlanPartPage() {
                     {part.rows.map((row, rowIndex) => (
                       <tr
                         key={row.id}
-                        className="bg-black border-b border-gray-800"
+                        className="bg-white/5 backdrop-blur-sm border-b border-white/10"
                       >
-                        <td className="sticky left-0 bg-black z-10 px-3 py-2 text-xs text-white border-r border-gray-800 w-14 text-center align-middle">
+                        <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 text-xs text-white border-r border-white/20 w-14 text-center align-middle">
                           {rowIndex + 1}
                         </td>
                         <>
@@ -884,8 +863,8 @@ export default function MasterPlanPartPage() {
                                 rowSpan={mg?.rowSpan}
                                 colSpan={mg?.colSpan}
                                 onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                className={`px-2 py-2 border-r border-gray-800 align-middle text-center ${
-                                  isSelected ? 'bg-white/10 outline outline-2 outline-purple-400' : ''
+                                className={`px-2 py-2 border-r border-white/10 align-middle text-center ${
+                                  isSelected ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
                                 }`}
                               >
                                 {isEditMode ? (
@@ -895,12 +874,12 @@ export default function MasterPlanPartPage() {
                                     onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                     onChange={e => updateCell(row.id, col.id, e.target.value)}
                                     rows={2}
-                                    className={`w-full bg-transparent text-sm text-gray-100 focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
+                                    className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none disabled:text-gray-300 disabled:cursor-not-allowed ${
                                       textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
                                     }`}
                                   />
                                 ) : (
-                                  <div className={`flex h-full min-h-[2rem] text-sm text-gray-100 items-center ${
+                                  <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
                                     textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
                                   }`}>
                                     {row.cells[col.id]}
