@@ -826,20 +826,26 @@ export default function MasterPlanPartPage() {
                         <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           DESCRIPTION
                         </th>
-                        {/* MONTH WEEK - PLAN/ACTUAL */}
+                        {/* MONTH WEEK */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <span className="text-xs font-semibold text-white">MONTH</span>
+                            <span className="text-xs font-semibold text-white">WEEK</span>
+                          </div>
+                        </th>
+                        {/* START - PLAN/ACTUAL */}
                         <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           <div className="flex flex-col h-full">
                             <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
                             <div className="flex-1 py-1">ACTUAL</div>
                           </div>
                         </th>
-                        {/* START */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          START
-                        </th>
-                        {/* FINISH */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          FINISH
+                        {/* FINISH - PLAN/ACTUAL */}
+                        <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          <div className="flex flex-col h-full">
+                            <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
+                            <div className="flex-1 py-1">ACTUAL</div>
+                          </div>
                         </th>
                         {/* Timeline columns - empty headers */}
                         {timelineMeta.monthGroups.map((g, idx) => (
@@ -872,8 +878,8 @@ export default function MasterPlanPartPage() {
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
                             
-                            // Special rendering for MEETING (MONTH WEEK) with PLAN/ACTUAL split
-                            if (col.id === 'col_meeting') {
+                            // Special rendering for START and FINISH with PLAN/ACTUAL split
+                            if (col.id === 'col_start' || col.id === 'col_finish') {
                               const actualColId = `${col.id}_actual`;
                               return (
                                 <td
