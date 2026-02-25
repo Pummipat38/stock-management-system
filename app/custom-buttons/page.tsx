@@ -200,6 +200,15 @@ export default function CustomButtonsPage() {
     router.push(`/custom-buttons/${sheetId}`);
   };
 
+  const deleteSheet = (sheetId: string, sheetName: string) => {
+    const ok = window.confirm(`ต้องการลบ Model นี้ใช่ไหม?\n\n${sheetName}`);
+    if (!ok) return;
+    setMasterPlanSheets(prev => prev.filter(s => s.id !== sheetId));
+    if (selectedSheetId === sheetId) {
+      setSelectedSheetId('');
+    }
+  };
+
   const createSheet = (e: React.FormEvent) => {
     e.preventDefault();
     const name = newSheetName.trim();
@@ -258,19 +267,30 @@ export default function CustomButtonsPage() {
           </button>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-3">
+        <div className="mb-4 flex flex-wrap gap-4">
           {masterPlanSheets.filter(s => !isMasterPlanSheet(s)).map(sheet => (
-            <button
-              key={sheet.id}
-              onClick={() => openSheetTable(sheet.id)}
-              className={
-                sheet.id === selectedSheetId
-                  ? 'px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-lg transition-colors'
-                  : 'px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors'
-              }
-            >
-              {sheet.name}
-            </button>
+            <div key={sheet.id} className="flex gap-2 items-center">
+              {/* ปุ่มลบ Model */}
+              <button
+                onClick={() => deleteSheet(sheet.id, sheet.name)}
+                className="px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-lg font-bold shadow-lg transition-colors"
+                title="ลบ Model"
+              >
+                🗑 DELETE
+              </button>
+              
+              {/* ปุ่ม Model */}
+              <button
+                onClick={() => openSheetTable(sheet.id)}
+                className={
+                  sheet.id === selectedSheetId
+                    ? 'px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
+                    : 'px-6 py-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold shadow-lg transition-colors text-lg'
+                }
+              >
+                {sheet.name}
+              </button>
+            </div>
           ))}
         </div>
 
