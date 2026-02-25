@@ -131,6 +131,43 @@ export default function MasterPlanSheetPage() {
     })),
   ];
 
+  const upgradePartColumns = (part: MasterPlanPart): { part: MasterPlanPart; changed: boolean } => {
+    const requiredCols = getRequiredColumns();
+    const currentCols = part.columns || [];
+    
+    // Check if columns match required structure
+    const hasAllRequired = requiredCols.every(req => 
+      currentCols.some(c => c.id === req.id)
+    );
+    
+    if (hasAllRequired && currentCols.length === requiredCols.length) {
+      return { part, changed: false };
+    }
+
+    // Create a map of existing cells
+    const existingCells = part.rows?.[0]?.cells || {};
+
+    // Build new columns and migrate cell data
+    const newColumns: MasterPlanColumn[] = requiredCols.map(req => {
+      const existing = currentCols.find(c => c.id === req.id);
+      return existing || req;
+    });
+
+    // Upgrade rows with new columns
+    const newRows = (part.rows || []).map(row => {
+      const newCells: Record<string, string> = {};
+      for (const col of newColumns) {
+        newCells[col.id] = existingCells[col.id] || '';
+      }
+      return { ...row, cells: newCells };
+    });
+
+    return {
+      part: { ...part, columns: newColumns, rows: newRows },
+      changed: true,
+    };
+  };
+
   const isMasterPlanSheet = (sheet: { name: string }) => {
     const normalized = (sheet.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
     return normalized === 'master plan' || normalized === 'masterplan';
@@ -175,6 +212,26 @@ export default function MasterPlanSheetPage() {
     if (!sheet) return [] as MasterPlanPart[];
     return Array.isArray(sheet.parts) ? sheet.parts : [];
   }, [sheet]);
+
+  // Auto-upgrade all parts to have consistent columns
+  useEffect(() => {
+    if (!sheetId || !sheet) return;
+    
+    let anyChanged = false;
+    const upgradedParts = parts.map(p => {
+      const result = upgradePartColumns(p);
+      if (result.changed) anyChanged = true;
+      return result.part;
+    });
+    
+    if (anyChanged) {
+      updateSheet(sheetId, prev => ({
+        ...prev,
+        parts: upgradedParts,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetId, sheet?.id]);
 
   const persistSheets = (nextSheets: MasterPlanSheet[], nextSelectedId?: string) => {
     setSheets(nextSheets);
