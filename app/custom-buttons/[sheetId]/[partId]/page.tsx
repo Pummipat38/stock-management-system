@@ -853,15 +853,17 @@ export default function MasterPlanPartPage() {
                         <>
                           {baseColumns.map(col => {
                             const key = `${row.id}|${col.id}`;
-                            if (mergeIndex.covered.has(key)) return null;
+                            const isDesc = col.id === 'col_desc' || col.id === 'col_desc2';
+                            // Description columns should always show separately (no merge)
+                            if (!isDesc && mergeIndex.covered.has(key)) return null;
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
                             
                             return (
                               <td
                                 key={col.id}
-                                rowSpan={mg?.rowSpan}
-                                colSpan={mg?.colSpan}
+                                rowSpan={isDesc ? undefined : mg?.rowSpan}
+                                colSpan={isDesc ? undefined : mg?.colSpan}
                                 onClick={() => setSelectedCell({ rowId: row.id, colId: col.id })}
                                 className={`px-2 py-2 border-r border-white/10 align-middle text-center ${
                                   isSelected ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
