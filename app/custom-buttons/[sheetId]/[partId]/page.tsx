@@ -851,13 +851,13 @@ export default function MasterPlanPartPage() {
                           {rowIndex + 1}
                         </td>
                         <>
+                          {/* Render all base columns - DESCRIPTION always separate */}
                           {baseColumns.map(col => {
                             const key = `${row.id}|${col.id}`;
                             const isDesc = col.id === 'col_desc' || col.id === 'col_desc2';
-                            // In EDIT mode: show all columns separately (no merge)
-                            // In VIEW mode: respect merges
-                            if (isEditMode) {
-                              // Show all columns, no merging in edit mode
+                            
+                            // DESCRIPTION columns: always show separately (never merge)
+                            if (isDesc) {
                               const isSelected = selectedKey === key;
                               return (
                                 <td
@@ -867,19 +867,28 @@ export default function MasterPlanPartPage() {
                                     isSelected ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
                                   }`}
                                 >
-                                  <textarea
-                                    value={row.cells[col.id] ?? ''}
-                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
-                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
-                                    rows={2}
-                                    className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none ${
-                                      textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
-                                    }`}
-                                  />
+                                  {isEditMode ? (
+                                    <textarea
+                                      value={row.cells[col.id] ?? ''}
+                                      onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                      onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                      rows={2}
+                                      className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none ${
+                                        textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                                      }`}
+                                    />
+                                  ) : (
+                                    <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
+                                      textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
+                                    }`}>
+                                      {row.cells[col.id]}
+                                    </div>
+                                  )}
                                 </td>
                               );
                             }
-                            // VIEW mode: respect merges
+                            
+                            // Other columns: respect merges
                             if (mergeIndex.covered.has(key)) return null;
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
@@ -894,11 +903,23 @@ export default function MasterPlanPartPage() {
                                   isSelected ? 'bg-white/20 outline outline-2 outline-purple-400' : ''
                                 }`}
                               >
-                                <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
-                                  textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
-                                }`}>
-                                  {row.cells[col.id]}
-                                </div>
+                                {isEditMode ? (
+                                  <textarea
+                                    value={row.cells[col.id] ?? ''}
+                                    onFocus={() => setSelectedCell({ rowId: row.id, colId: col.id })}
+                                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                                    rows={2}
+                                    className={`w-full bg-transparent text-sm text-white focus:outline-none resize-none ${
+                                      textAlign === 'left' ? 'text-left' : textAlign === 'right' ? 'text-right' : 'text-center'
+                                    }`}
+                                  />
+                                ) : (
+                                  <div className={`flex h-full min-h-[2rem] text-sm text-white items-center ${
+                                    textAlign === 'left' ? 'justify-start' : textAlign === 'right' ? 'justify-end' : 'justify-center'
+                                  }`}>
+                                    {row.cells[col.id]}
+                                  </div>
+                                )}
                               </td>
                             );
                           })}
