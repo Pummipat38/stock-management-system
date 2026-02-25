@@ -64,6 +64,20 @@ export default function MasterPlanSheetPage() {
     return p.name;
   };
 
+  const getPartColor = (index: number) => {
+    const colors = [
+      'bg-blue-600 hover:bg-blue-700',
+      'bg-green-600 hover:bg-green-700',
+      'bg-purple-600 hover:bg-purple-700',
+      'bg-orange-600 hover:bg-orange-700',
+      'bg-pink-600 hover:bg-pink-700',
+      'bg-cyan-600 hover:bg-cyan-700',
+      'bg-red-600 hover:bg-red-700',
+      'bg-yellow-600 hover:bg-yellow-700',
+    ];
+    return colors[index % colors.length];
+  };
+
   const migrateSheetToParts = (sheet: MasterPlanSheet): { sheet: MasterPlanSheet; changed: boolean } => {
     if (Array.isArray(sheet.parts) && sheet.parts.length > 0) {
       return { sheet, changed: false };
@@ -382,38 +396,43 @@ export default function MasterPlanSheetPage() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-3 items-start">
-              {parts.map(p => (
-                <div key={p.id} className="flex gap-3 w-full max-w-[720px] items-center">
+            <div className="flex flex-col gap-4 items-start">
+              {parts.map((p, index) => (
+                <div key={p.id} className="flex gap-4 w-full max-w-[900px] items-center">
+                  {/* ปุ่มลบ - แสดงตลอดเวลา */}
+                  <button
+                    type="button"
+                    onClick={() => deletePart(p)}
+                    className="px-6 py-4 bg-red-700 hover:bg-red-800 text-white rounded-xl font-bold shadow-lg transition-colors text-lg"
+                    title="ลบ Part"
+                  >
+                    🗑 DELETE
+                  </button>
+                  
+                  {/* ปุ่มแก้ไข - แสดงเฉพาะ Edit Mode */}
                   {isEditMode && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => deletePart(p)}
-                        className="px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-lg font-semibold shadow-lg transition-colors"
-                      >
-                        🗑
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openEditPartModal(p)}
-                        className="px-4 py-3 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg font-semibold shadow-lg transition-colors"
-                      >
-                        ✏️
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      onClick={() => openEditPartModal(p)}
+                      className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl font-bold shadow-lg transition-colors text-lg"
+                      title="แก้ไข Part"
+                    >
+                      ✏️ EDIT
+                    </button>
                   )}
+                  
+                  {/* ปุ่ม Part - ใหญ่ขึ้น และมีสีแตกต่างกัน */}
                   <button
                     type="button"
                     onClick={() => openPart(p)}
-                    className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-lg transition-colors text-left w-full"
+                    className={`px-8 py-5 ${getPartColor(index)} text-white rounded-xl font-bold shadow-lg transition-colors text-left w-full text-xl`}
                   >
                     {partDisplayText(p)}
                   </button>
                 </div>
               ))}
 
-              {parts.length === 0 && <div className="text-gray-400">ยังไม่มี Part number</div>}
+              {parts.length === 0 && <div className="text-gray-400 text-xl">ยังไม่มี Part number</div>}
             </div>
 
             <div className="mt-8">
