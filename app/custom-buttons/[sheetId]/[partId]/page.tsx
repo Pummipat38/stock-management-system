@@ -758,12 +758,16 @@ export default function MasterPlanPartPage() {
                   <table className="border-collapse w-max min-w-full table-fixed">
                     <colgroup>{colGroupNodes}</colgroup>
                     <thead>
-                      {/* แถวที่ 1 - NO. */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th rowSpan={3} className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle">
+                        <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle">
                           NO.
                         </th>
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">CUSTOMER</th>
+                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-30 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-32 text-left align-middle">
+                          
+                        </th>
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          
+                        </th>
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
@@ -775,9 +779,10 @@ export default function MasterPlanPartPage() {
                         ))}
                       </tr>
 
-                      {/* แถวที่ 2 - MODEL */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">MODEL</th>
+                        <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-20 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14" />
+                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-20 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-32" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`month_${idx}_${g.label}`}
@@ -789,9 +794,10 @@ export default function MasterPlanPartPage() {
                         ))}
                       </tr>
 
-                      {/* แถวที่ 3 - PART NAME */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">PART NAME</th>
+                        <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-20 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14" />
+                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-20 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-32" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
                             key={`week_${idx}_${w}`}
@@ -801,91 +807,33 @@ export default function MasterPlanPartPage() {
                           </th>
                         ))}
                       </tr>
-
-                      {/* แถวที่ 4 - PART NO. */}
-                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">PART NO.</th>
-                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
-                      </tr>
-
-                      {/* แถวที่ 5 - VOLUME */}
-                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">VOLUME</th>
-                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
-                      </tr>
-
-                      {/* แถวที่ 6 - DESCRIPTION */}
-                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
-                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">DESCRIPTION</th>
-                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
-                      </tr>
                     </thead>
                     <tbody>
-                      {/* แถวที่ 1 - CUSTOMER */}
-                      {Array.from({ length: 1 }, (_, rowIdx) => (
-                        <tr key={`row_customer_${rowIdx}`} className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                          <td rowSpan={6} className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14 text-center text-white text-xs">1</td>
-                          <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="CUSTOMER" />
+                      {(
+                        [
+                          'CUSTOMER',
+                          'MODEL',
+                          'PART NAME',
+                          'PART NO.',
+                          'VOLUME',
+                          'DESCRIPTION',
+                        ] as const
+                      ).map((label, idx) => (
+                        <tr key={`meta_row_${label}`} className="bg-white/5 backdrop-blur-sm border-b border-white/10">
+                          <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14 text-center text-white text-xs">
+                            {idx === 0 ? '1' : ''}
                           </td>
-                          {timelineMeta.monthGroups.map((g, idx) => (
-                            <td key={`customer_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
+                          <td className="sticky left-14 bg-white/10 backdrop-blur-sm z-10 px-2 py-2 border-r border-white/20 w-32 text-white text-xs font-semibold">
+                            {label}
+                          </td>
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {timelineMeta.monthGroups.map((g, mIdx) => (
+                            <td key={`meta_cell_${label}_${mIdx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
                           ))}
                         </tr>
                       ))}
-
-                      {/* แถวที่ 2 - MODEL */}
-                      <tr className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                        <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                          <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="MODEL" />
-                        </td>
-                        {timelineMeta.monthGroups.map((g, idx) => (
-                          <td key={`model_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
-                        ))}
-                      </tr>
-
-                      {/* แถวที่ 3 - PART NAME */}
-                      <tr className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                        <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                          <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="PART NAME" />
-                        </td>
-                        {timelineMeta.monthGroups.map((g, idx) => (
-                          <td key={`partname_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
-                        ))}
-                      </tr>
-
-                      {/* แถวที่ 4 - PART NO. */}
-                      <tr className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                        <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                          <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="PART NO." />
-                        </td>
-                        {timelineMeta.monthGroups.map((g, idx) => (
-                          <td key={`partno_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
-                        ))}
-                      </tr>
-
-                      {/* แถวที่ 5 - VOLUME */}
-                      <tr className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                        <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                          <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="VOLUME" />
-                        </td>
-                        {timelineMeta.monthGroups.map((g, idx) => (
-                          <td key={`volume_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
-                        ))}
-                      </tr>
-
-                      {/* แถวที่ 6 - DESCRIPTION */}
-                      <tr className="bg-white/5 backdrop-blur-sm border-b border-white/10">
-                        <td colSpan={6} className="px-2 py-2 border-r border-white/10">
-                          <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="DESCRIPTION" />
-                        </td>
-                        {timelineMeta.monthGroups.map((g, idx) => (
-                          <td key={`desc_cell_${idx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
-                        ))}
-                      </tr>
                     </tbody>
                   </table>
                 )}
