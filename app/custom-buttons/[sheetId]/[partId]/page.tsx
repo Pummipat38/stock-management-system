@@ -87,8 +87,7 @@ export default function MasterPlanPartPage() {
     if (colId === 'col_model') return 120;
     if (colId === 'col_part_name') return 150;
     if (colId === 'col_part_no') return 120;
-    if (colId === 'col_volume_year') return 100;
-    if (colId === 'col_volume_month') return 100;
+    if (colId === 'col_volume') return 100;
     if (colId === 'col_desc' || colId === 'col_desc2') return 150;
     if (colId === 'col_meeting') return 120;
     if (colId === 'col_start' || colId === 'col_finish') return 100;
@@ -104,8 +103,7 @@ export default function MasterPlanPartPage() {
     { id: 'col_model', name: 'MODEL', type: 'textarea' },
     { id: 'col_part_name', name: 'PART NAME', type: 'textarea' },
     { id: 'col_part_no', name: 'PART NO.', type: 'textarea' },
-    { id: 'col_volume_year', name: 'VOLUME: YEAR', type: 'textarea' },
-    { id: 'col_volume_month', name: 'VOLUME: MONTH', type: 'textarea' },
+    { id: 'col_volume', name: 'VOLUME', type: 'textarea' },
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_meeting', name: 'MEETING', type: 'textarea' },
@@ -850,13 +848,9 @@ export default function MasterPlanPartPage() {
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           PART NO.
                         </th>
-                        {/* VOLUME: YEAR */}
+                        {/* VOLUME */}
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          VOLUME: YEAR
-                        </th>
-                        {/* VOLUME: MONTH */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          VOLUME: MONTH
+                          VOLUME
                         </th>
                         {/* DESCRIPTION (merged header) */}
                         <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
