@@ -88,9 +88,9 @@ export default function MasterPlanPartPage() {
     if (colId === 'col_part_name') return 150;
     if (colId === 'col_part_no') return 120;
     if (colId === 'col_volume') return 100;
-    if (colId === 'col_desc' || colId === 'col_desc2') return 150;
-    if (colId === 'col_meeting') return 120;
-    if (colId === 'col_start' || colId === 'col_finish') return 100;
+    if (colId === 'col_desc' || colId === 'col_desc2') return 220;
+    if (colId === 'col_meeting') return 160;
+    if (colId === 'col_start' || colId === 'col_finish') return 120;
     return 14;
   };
 
