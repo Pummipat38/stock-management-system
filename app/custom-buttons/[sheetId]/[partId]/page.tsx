@@ -99,11 +99,6 @@ export default function MasterPlanPartPage() {
     ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'][monthIndex] || '';
 
   const getRequiredColumns = (): MasterPlanColumn[] => [
-    { id: 'col_customer', name: 'CUSTOMER', type: 'textarea' },
-    { id: 'col_model', name: 'MODEL', type: 'textarea' },
-    { id: 'col_part_name', name: 'PART NAME', type: 'textarea' },
-    { id: 'col_part_no', name: 'PART NO.', type: 'textarea' },
-    { id: 'col_volume', name: 'VOLUME', type: 'textarea' },
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_meeting', name: 'MEETING', type: 'textarea' },
@@ -763,11 +758,16 @@ export default function MasterPlanPartPage() {
                     <colgroup>{colGroupNodes}</colgroup>
                     <thead>
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th
-                          rowSpan={3}
-                          className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14"
-                        />
-                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center">
+                        NO.
+                      </th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">CUSTOMER</th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">MODEL</th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">PART NAME</th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">PART NO.</th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">VOLUME</th>
+                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">DESCRIPTION</th>
+                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
@@ -780,7 +780,7 @@ export default function MasterPlanPartPage() {
                       </tr>
 
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`month_${idx}_${g.label}`}
@@ -793,7 +793,7 @@ export default function MasterPlanPartPage() {
                       </tr>
 
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={baseColumns.length} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
                             key={`week_${idx}_${w}`}
@@ -808,7 +808,7 @@ export default function MasterPlanPartPage() {
                       {Array.from({ length: 3 }, (_, rowIdx) => (
                         <tr key={`month_big_${rowIdx}`} className="bg-white/5 backdrop-blur-sm border-b border-white/10">
                           <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14" />
-                          <td colSpan={baseColumns.length} className="px-2 py-2 border-r border-white/10" />
+                          <td colSpan={7} className="px-2 py-2 border-r border-white/10" />
                           {timelineMeta.monthGroups.map((g, idx) => (
                             <td
                               key={`month_big_cell_${rowIdx}_${idx}`}
@@ -832,26 +832,6 @@ export default function MasterPlanPartPage() {
                         NO.
                       </th>
                       <>
-                        {/* CUSTOMER */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          CUSTOMER
-                        </th>
-                        {/* MODEL */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          MODEL
-                        </th>
-                        {/* PART NAME */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          PART NAME
-                        </th>
-                        {/* PART NO. */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          PART NO.
-                        </th>
-                        {/* VOLUME */}
-                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          VOLUME
-                        </th>
                         {/* DESCRIPTION (merged header) */}
                         <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           DESCRIPTION
