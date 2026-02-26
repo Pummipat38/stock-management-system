@@ -762,11 +762,20 @@ export default function MasterPlanPartPage() {
                         <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle">
                           NO.
                         </th>
-                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-30 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-44 text-left align-middle">
-                          
+                        <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          DESCRIPTION
+                        </th>
+                        <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          <div className="flex flex-col h-full">
+                            <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
+                            <div className="flex-1 py-1">ACTUAL</div>
+                          </div>
                         </th>
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          
+                          START
+                        </th>
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          FINISH
                         </th>
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
@@ -781,7 +790,9 @@ export default function MasterPlanPartPage() {
 
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
                         <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-20 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14" />
-                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-20 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-44" />
+                        <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
@@ -796,7 +807,9 @@ export default function MasterPlanPartPage() {
 
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
                         <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-20 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14" />
-                        <th className="sticky left-14 bg-white/10 backdrop-blur-sm z-20 px-2 py-2 text-xs font-semibold text-white border-r border-white/20 w-44" />
+                        <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20" />
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
@@ -823,12 +836,15 @@ export default function MasterPlanPartPage() {
                           <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14 text-center text-white text-xs">
                             {idx === 0 ? '1' : ''}
                           </td>
-                          <td className="sticky left-14 bg-white/10 backdrop-blur-sm z-10 px-2 py-2 border-r border-white/20 w-44 text-white text-xs font-semibold">
-                            {label}
+                          <td colSpan={2} className="px-2 py-2 border-r border-white/10">
+                            <div className="flex items-center gap-2">
+                              <div className="min-w-28 text-white text-xs font-semibold">{label}</div>
+                              <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                            </div>
                           </td>
-                          <td className="px-2 py-2 border-r border-white/10">
-                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
-                          </td>
+                          <td className="px-0 py-0 border-r border-white/10" />
+                          <td className="px-2 py-2 border-r border-white/10" />
+                          <td className="px-2 py-2 border-r border-white/10" />
                           {timelineMeta.monthGroups.map((g, mIdx) => (
                             <td key={`meta_cell_${label}_${mIdx}`} colSpan={g.span} className="px-0 py-3 border-r border-white/10" />
                           ))}
