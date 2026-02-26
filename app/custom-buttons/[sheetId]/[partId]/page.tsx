@@ -386,6 +386,7 @@ export default function MasterPlanPartPage() {
         yearGroups: [] as { label: string; span: number }[],
         monthGroups: [] as { label: string; span: number }[],
         weeks: [] as number[],
+        totalWeeks: 0,
       };
     }
 
@@ -426,7 +427,7 @@ export default function MasterPlanPartPage() {
     }
 
     const weeks = labels.map(l => l.week);
-    return { yearGroups, monthGroups: monthGroups.map(({ label, span }) => ({ label, span })), weeks };
+    return { yearGroups, monthGroups: monthGroups.map(({ label, span }) => ({ label, span })), weeks, totalWeeks: timelineColumns.length };
   }, [part, timelineColumns]);
 
   const updateColumnName = (colId: string, name: string) => {
@@ -803,18 +804,21 @@ export default function MasterPlanPartPage() {
 
                       {/* แถวที่ 4 - PART NO. */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
                         <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">PART NO.</th>
                         <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                       </tr>
 
                       {/* แถวที่ 5 - VOLUME */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
                         <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">VOLUME</th>
                         <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                       </tr>
 
                       {/* แถวที่ 6 - DESCRIPTION */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th className="px-0 py-1 text-xs font-semibold text-white border-r border-white/20 w-14" />
                         <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">DESCRIPTION</th>
                         <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                       </tr>
