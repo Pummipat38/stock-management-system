@@ -757,17 +757,12 @@ export default function MasterPlanPartPage() {
                   <table className="border-collapse w-max min-w-full table-fixed">
                     <colgroup>{colGroupNodes}</colgroup>
                     <thead>
+                      {/* แถวที่ 1 - NO. */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center">
-                        NO.
-                      </th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">CUSTOMER</th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">MODEL</th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">PART NAME</th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">PART NO.</th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">VOLUME</th>
-                      <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center">DESCRIPTION</th>
-                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th rowSpan={3} className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle">
+                          NO.
+                        </th>
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">CUSTOMER</th>
                         {timelineMeta.yearGroups.map((g, idx) => (
                           <th
                             key={`year_${idx}_${g.label}`}
@@ -779,8 +774,9 @@ export default function MasterPlanPartPage() {
                         ))}
                       </tr>
 
+                      {/* แถวที่ 2 - MODEL */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">MODEL</th>
                         {timelineMeta.monthGroups.map((g, idx) => (
                           <th
                             key={`month_${idx}_${g.label}`}
@@ -792,8 +788,9 @@ export default function MasterPlanPartPage() {
                         ))}
                       </tr>
 
+                      {/* แถวที่ 3 - PART NAME */}
                       <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-                        <th colSpan={7} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">PART NAME</th>
                         {timelineMeta.weeks.map((w, idx) => (
                           <th
                             key={`week_${idx}_${w}`}
@@ -802,6 +799,25 @@ export default function MasterPlanPartPage() {
                             {w}
                           </th>
                         ))}
+                      </tr>
+
+                      {/* แถวที่ 4 - PART NO. */}
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th rowSpan={3} className="sticky left-0 bg-white/10 backdrop-blur-sm z-30 px-3 py-2 text-xs font-semibold text-white border-r border-white/20 w-14 text-center align-middle" />
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">PART NO.</th>
+                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                      </tr>
+
+                      {/* แถวที่ 5 - VOLUME */}
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">VOLUME</th>
+                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
+                      </tr>
+
+                      {/* แถวที่ 6 - DESCRIPTION */}
+                      <tr className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+                        <th colSpan={6} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20 text-center">DESCRIPTION</th>
+                        <th colSpan={timelineMeta.totalWeeks} className="px-2 py-1 text-xs font-semibold text-white border-r border-white/20" />
                       </tr>
                     </thead>
                     <tbody>
