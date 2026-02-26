@@ -808,7 +808,30 @@ export default function MasterPlanPartPage() {
                       {Array.from({ length: 3 }, (_, rowIdx) => (
                         <tr key={`month_big_${rowIdx}`} className="bg-white/5 backdrop-blur-sm border-b border-white/10">
                           <td className="sticky left-0 bg-white/10 backdrop-blur-sm z-10 px-3 py-2 border-r border-white/20 w-14" />
-                          <td colSpan={7} className="px-2 py-2 border-r border-white/10" />
+                          {/* CUSTOMER */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {/* MODEL */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {/* PART NAME */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {/* PART NO. */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {/* VOLUME */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
+                          {/* DESCRIPTION */}
+                          <td className="px-2 py-2 border-r border-white/10">
+                            <textarea className="w-full bg-transparent text-white text-xs resize-none outline-none" rows={1} placeholder="" />
+                          </td>
                           {timelineMeta.monthGroups.map((g, idx) => (
                             <td
                               key={`month_big_cell_${rowIdx}_${idx}`}
