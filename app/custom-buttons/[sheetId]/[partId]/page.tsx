@@ -83,6 +83,12 @@ export default function MasterPlanPartPage() {
   };
 
   const getColumnWidthPx = (colId: string) => {
+    if (colId === 'col_customer') return 120;
+    if (colId === 'col_model') return 120;
+    if (colId === 'col_part_name') return 150;
+    if (colId === 'col_part_no') return 120;
+    if (colId === 'col_volume_year') return 100;
+    if (colId === 'col_volume_month') return 100;
     if (colId === 'col_desc' || colId === 'col_desc2') return 150;
     if (colId === 'col_meeting') return 120;
     if (colId === 'col_start' || colId === 'col_finish') return 100;
@@ -94,6 +100,12 @@ export default function MasterPlanPartPage() {
     ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'][monthIndex] || '';
 
   const getRequiredColumns = (): MasterPlanColumn[] => [
+    { id: 'col_customer', name: 'CUSTOMER', type: 'textarea' },
+    { id: 'col_model', name: 'MODEL', type: 'textarea' },
+    { id: 'col_part_name', name: 'PART NAME', type: 'textarea' },
+    { id: 'col_part_no', name: 'PART NO.', type: 'textarea' },
+    { id: 'col_volume_year', name: 'VOLUME: YEAR', type: 'textarea' },
+    { id: 'col_volume_month', name: 'VOLUME: MONTH', type: 'textarea' },
     { id: 'col_desc', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_desc2', name: 'DESCRIPTION', type: 'textarea' },
     { id: 'col_meeting', name: 'MEETING', type: 'textarea' },
@@ -822,30 +834,48 @@ export default function MasterPlanPartPage() {
                         NO.
                       </th>
                       <>
+                        {/* CUSTOMER */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          CUSTOMER
+                        </th>
+                        {/* MODEL */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          MODEL
+                        </th>
+                        {/* PART NAME */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          PART NAME
+                        </th>
+                        {/* PART NO. */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          PART NO.
+                        </th>
+                        {/* VOLUME: YEAR */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          VOLUME: YEAR
+                        </th>
+                        {/* VOLUME: MONTH */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          VOLUME: MONTH
+                        </th>
                         {/* DESCRIPTION (merged header) */}
                         <th colSpan={2} className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
                           DESCRIPTION
                         </th>
-                        {/* MONTH WEEK */}
+                        {/* MONTH WEEK - PLAN/ACTUAL */}
+                        <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          <div className="flex flex-col h-full">
+                            <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
+                            <div className="flex-1 py-1">ACTUAL</div>
+                          </div>
+                        </th>
+                        {/* START */}
                         <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          <div className="flex flex-col items-center justify-center h-full">
-                            <span className="text-xs font-semibold text-white">MONTH</span>
-                            <span className="text-xs font-semibold text-white">WEEK</span>
-                          </div>
+                          START
                         </th>
-                        {/* START - PLAN/ACTUAL */}
-                        <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          <div className="flex flex-col h-full">
-                            <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
-                            <div className="flex-1 py-1">ACTUAL</div>
-                          </div>
-                        </th>
-                        {/* FINISH - PLAN/ACTUAL */}
-                        <th className="px-0 py-0 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
-                          <div className="flex flex-col h-full">
-                            <div className="flex-1 border-b border-white/10 py-1">PLAN</div>
-                            <div className="flex-1 py-1">ACTUAL</div>
-                          </div>
+                        {/* FINISH */}
+                        <th className="px-2 py-2 text-xs font-semibold text-white border-r border-white/20 text-center align-middle">
+                          FINISH
                         </th>
                         {/* Timeline columns - empty headers */}
                         {timelineMeta.monthGroups.map((g, idx) => (
@@ -878,8 +908,8 @@ export default function MasterPlanPartPage() {
                             const mg = mergeIndex.originByKey.get(key);
                             const isSelected = selectedKey === key;
                             
-                            // Special rendering for START and FINISH with PLAN/ACTUAL split
-                            if (col.id === 'col_start' || col.id === 'col_finish') {
+                            // Special rendering for MONTH WEEK (col_meeting) with PLAN/ACTUAL split
+                            if (col.id === 'col_meeting') {
                               const actualColId = `${col.id}_actual`;
                               return (
                                 <td
