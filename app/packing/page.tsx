@@ -606,7 +606,7 @@ function DueDeliveryPage() {
     '520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px';
 
   const internationalGridTemplateColumnsPending =
-    '520px_140px_140px_180px_150px_260px_110px_160px_130px_500px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px';
+    '520px_140px_140px_180px_150px_260px_110px_160px_130px_600px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px';
 
   const syncDueHorizontalScroll = (source: 'table' | 'bar') => {
     if (dueXSyncingRef.current) return;
@@ -2119,22 +2119,22 @@ function DueDeliveryPage() {
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
                 <div
-                  className={`${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3596px]' : 'min-w-[3546px]'} ${
+                  className={`${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3696px]' : 'min-w-[3546px]'} ${
                     isInternationalType ? 'w-max' : ''
                   }`}
                 >
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid ${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3596px]' : 'min-w-[3546px]'} ${
+                        className={`grid ${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3696px]' : 'min-w-[3546px]'} ${
                           isSelectMode
                             ? isInternationalType
                               ? 'grid-cols-[60px_520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                               : 'grid-cols-[60px_520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                             : listMode === 'pending'
                               ? isInternationalType
-                                ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_500px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                                : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_500px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_600px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_600px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                               : isInternationalType
                                 ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                                 : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
@@ -2200,15 +2200,15 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid ${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3596px]' : 'min-w-[3546px]'} ${
+                              className={`grid ${isSelectMode ? 'min-w-[3650px]' : listMode === 'pending' ? 'min-w-[3696px]' : 'min-w-[3546px]'} ${
                                 isSelectMode
                                   ? isInternationalType
                                     ? 'grid-cols-[60px_520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                                     : 'grid-cols-[60px_520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                                   : listMode === 'pending'
                                     ? isInternationalType
-                                      ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_500px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                                      : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_500px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                      ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_600px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                      : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_600px_80px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                                     : isInternationalType
                                       ? 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                                       : 'grid-cols-[520px_140px_140px_180px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
