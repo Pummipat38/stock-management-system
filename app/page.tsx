@@ -1,7 +1,13 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link'
 import { Briefcase, Shirt, Car, BarChart3, History } from 'lucide-react'
 
 export default function Home() {
+  redirect('/dashboard');
+
+  // Legacy landing (unreachable) - kept for reference
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _LegacyHome() {
   const menuItems = [
     {
       href: '/products',
@@ -81,4 +87,5 @@ export default function Home() {
       </div>
     </main>
   )
+  }
 }
