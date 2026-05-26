@@ -2116,25 +2116,21 @@ function DueDeliveryPage() {
                 className="overflow-auto pb-2 max-h-[max(240px,calc(100vh-420px))]"
               >
                 <div
-                  className={`${isSelectMode ? 'min-w-[3580px]' : listMode === 'delivered' ? 'min-w-[3476px]' : 'min-w-[2276px]'} ${
+                  className={`${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                     isInternationalType ? 'w-max' : ''
                   }`}
                 >
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
                     <div className="sticky top-0 z-50 bg-neutral-900 px-2 py-2 border-b border-white/20 shadow-md shadow-black/50">
                       <div
-                        className={`grid ${isSelectMode ? 'min-w-[3580px]' : listMode === 'delivered' ? 'min-w-[3476px]' : 'min-w-[2276px]'} ${
+                        className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                           isSelectMode
                             ? isInternationalType
                               ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                               : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
-                            : listMode === 'delivered'
-                              ? isInternationalType
-                                ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                                : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                              : isInternationalType
-                                ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_96px]'
-                                : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_96px]'
+                            : isInternationalType
+                              ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                              : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                         } items-stretch gap-0 text-white text-xs font-semibold uppercase tracking-wide text-center w-max min-h-[64px]`}
                         style={
                           isInternationalType
@@ -2164,33 +2160,19 @@ function DueDeliveryPage() {
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part No.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part Name</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG REV</span>
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG NO.</span>
-                        )}
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG NO.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Event</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Supplier</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">ISSUE PR Date</span>
-                        )}
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">ISSUE PR Date</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PR / PO</span>
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">เลขที่ใบเบิก</span>
-                        )}
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PUCHASE</span>
-                        )}
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice In</span>
-                        )}
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice Out</span>
-                        )}
-                        {listMode === 'delivered' && (
-                          <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DATE OUT</span>
-                        )}
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">เลขที่ใบเบิก</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PUCHASE</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice In</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice Out</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DATE OUT</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Action</span>
                       </div>
                     </div>
@@ -2209,18 +2191,14 @@ function DueDeliveryPage() {
                             className={index === 0 ? '' : 'border-t border-white/20'}
                           >
                             <div
-                              className={`grid ${isSelectMode ? 'min-w-[3580px]' : listMode === 'delivered' ? 'min-w-[3476px]' : 'min-w-[2276px]'} ${
+                              className={`grid ${isSelectMode ? 'min-w-[3580px]' : 'min-w-[3476px]'} ${
                                 isSelectMode
                                   ? isInternationalType
                                     ? 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
                                     : 'grid-cols-[60px_520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_140px]'
-                                  : listMode === 'delivered'
-                                    ? isInternationalType
-                                      ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                                      : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
-                                    : isInternationalType
-                                      ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_96px]'
-                                      : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_96px]'
+                                  : isInternationalType
+                                    ? 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
+                                    : 'grid-cols-[520px_140px_140px_110px_150px_260px_110px_160px_130px_320px_150px_120px_150px_120px_130px_110px_110px_110px_110px_110px_96px]'
                               } items-stretch gap-0 ${getDueRowColor(index)} text-xs font-semibold leading-tight w-max min-h-[52px]`}
                               style={
                                 isInternationalType
@@ -2295,9 +2273,7 @@ function DueDeliveryPage() {
                               {record.partName}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionLevel || '-'}</div>
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionNumber || '-'}</div>
-                            )}
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionNumber || '-'}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.event || ''}>
                               {record.event || '-'}
                             </div>
@@ -2312,43 +2288,31 @@ function DueDeliveryPage() {
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
                             </div>
-                            {listMode === 'delivered' && (
-                              <div
-                                className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
-                                title={record.issuePrDate || ''}
-                              >
-                                {record.issuePrDate ? formatDueDate(record.issuePrDate) : '-'}
-                              </div>
-                            )}
+                            <div
+                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
+                              title={record.issuePrDate || ''}
+                            >
+                              {record.issuePrDate ? formatDueDate(record.issuePrDate) : '-'}
+                            </div>
                             <div
                               className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
                               title={record.customerPo || record.prPo || ''}
                             >
                               {record.customerPo || record.prPo || '-'}
                             </div>
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
-                                {record.withdrawalNumber || '-'}
-                              </div>
-                            )}
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.purchase || ''}>
-                                {record.purchase || '-'}
-                              </div>
-                            )}
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceIn || ''}>
-                                {record.invoiceIn || '-'}
-                              </div>
-                            )}
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceOut || ''}>
-                                {record.invoiceOut || '-'}
-                              </div>
-                            )}
-                            {listMode === 'delivered' && (
-                              <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
-                            )}
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
+                              {record.withdrawalNumber || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.purchase || ''}>
+                              {record.purchase || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceIn || ''}>
+                              {record.invoiceIn || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceOut || ''}>
+                              {record.invoiceOut || '-'}
+                            </div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
                             <div className="px-1 py-1 flex items-center justify-start text-center border-l border-white/20 overflow-hidden">
                               <div className="flex items-center justify-start gap-2">
                                 {listMode === 'pending' ? (
