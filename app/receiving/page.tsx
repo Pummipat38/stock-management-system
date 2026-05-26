@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { StockItem } from '@/types/stock';
 
 interface ReceivingFormData {
@@ -121,6 +121,33 @@ export default function ReceivingPage() {
       }
     ]
   });
+
+  // Build autocomplete suggestion lists from previously entered stock items
+  const fieldSuggestions = useMemo(() => {
+    const fields = ['myobNumber', 'model', 'partNumber', 'partName', 'revision', 'poNumber', 'supplier', 'customer'];
+    const map: Record<string, string[]> = {};
+    fields.forEach(f => {
+      const set = new Set<string>();
+      stockItems.forEach(item => {
+        const v = String((item as unknown as Record<string, unknown>)[f] ?? '').trim();
+        if (v) set.add(v);
+      });
+      map[f] = Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }));
+    });
+    return map;
+  }, [stockItems]);
+
+  const renderSuggestionDatalists = () => (
+    <>
+      {Object.entries(fieldSuggestions).map(([field, options]) => (
+        <datalist key={field} id={`dl-${field}`}>
+          {options.map(opt => (
+            <option key={opt} value={opt} />
+          ))}
+        </datalist>
+      ))}
+    </>
+  );
 
   const fetchStockItems = async () => {
     try {
@@ -358,6 +385,7 @@ export default function ReceivingPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
+      {renderSuggestionDatalists()}
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-72 h-72 bg-gray-800/20 rounded-full blur-3xl animate-pulse"></div>
@@ -731,6 +759,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="myobNumber"
+                      list="dl-myobNumber"
                       value={formData.myobNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -744,6 +773,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="model"
+                      list="dl-model"
                       value={formData.model}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -757,6 +787,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="partNumber"
+                      list="dl-partNumber"
                       value={formData.partNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -770,6 +801,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="partName"
+                      list="dl-partName"
                       value={formData.partName}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -783,6 +815,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="revision"
+                      list="dl-revision"
                       value={formData.revision}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -829,6 +862,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="poNumber"
+                      list="dl-poNumber"
                       value={formData.poNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -842,6 +876,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="supplier"
+                      list="dl-supplier"
                       value={formData.supplier}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -854,6 +889,7 @@ export default function ReceivingPage() {
                     <input
                       type="text"
                       name="customer"
+                      list="dl-customer"
                       value={formData.customer}
                       onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
@@ -991,6 +1027,7 @@ export default function ReceivingPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">เลข Purchase *</label>
                     <input
                       type="text"
+                      list="dl-poNumber"
                       value={bulkFormData.poNumber}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, poNumber: e.target.value }))}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -1014,6 +1051,7 @@ export default function ReceivingPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">Supplier</label>
                     <input
                       type="text"
+                      list="dl-supplier"
                       value={bulkFormData.supplier || ''}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, supplier: e.target.value }))}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -1025,6 +1063,7 @@ export default function ReceivingPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">Customer</label>
                     <input
                       type="text"
+                      list="dl-customer"
                       value={bulkFormData.customer || ''}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, customer: e.target.value }))}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -1099,6 +1138,7 @@ export default function ReceivingPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                           <input
                             type="text"
+                            list="dl-myobNumber"
                             value={part.myobNumber}
                             onChange={(e) => {
                               const newParts = [...bulkFormData.parts];
@@ -1115,6 +1155,7 @@ export default function ReceivingPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">Model *</label>
                           <input
                             type="text"
+                            list="dl-model"
                             value={part.model}
                             onChange={(e) => {
                               const newParts = [...bulkFormData.parts];
@@ -1131,6 +1172,7 @@ export default function ReceivingPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">Part Number *</label>
                           <input
                             type="text"
+                            list="dl-partNumber"
                             value={part.partNumber}
                             onChange={(e) => {
                               const newParts = [...bulkFormData.parts];
@@ -1147,6 +1189,7 @@ export default function ReceivingPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">Part Name *</label>
                           <input
                             type="text"
+                            list="dl-partName"
                             value={part.partName}
                             onChange={(e) => {
                               const newParts = [...bulkFormData.parts];
@@ -1163,6 +1206,7 @@ export default function ReceivingPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">Revision</label>
                           <input
                             type="text"
+                            list="dl-revision"
                             value={part.revision}
                             onChange={(e) => {
                               const newParts = [...bulkFormData.parts];

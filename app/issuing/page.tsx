@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { StockItem } from '@/types/stock';
 
 interface IssuingFormData {
@@ -83,6 +83,33 @@ export default function IssuingPage() {
       if (partCompare !== 0) return partCompare;
       return a.model.localeCompare(b.model, 'en', { numeric: true, sensitivity: 'base' });
     });
+
+  // Build autocomplete suggestion lists from previously entered stock items
+  const fieldSuggestions = useMemo(() => {
+    const fields = ['supplier', 'customer', 'event', 'invoiceNumber', 'withdrawalNumber'];
+    const map: Record<string, string[]> = {};
+    fields.forEach(f => {
+      const set = new Set<string>();
+      stockItems.forEach(item => {
+        const v = String((item as unknown as Record<string, unknown>)[f] ?? '').trim();
+        if (v) set.add(v);
+      });
+      map[f] = Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }));
+    });
+    return map;
+  }, [stockItems]);
+
+  const renderSuggestionDatalists = () => (
+    <>
+      {Object.entries(fieldSuggestions).map(([field, options]) => (
+        <datalist key={field} id={`dl-${field}`}>
+          {options.map(opt => (
+            <option key={opt} value={opt} />
+          ))}
+        </datalist>
+      ))}
+    </>
+  );
 
   const renderRemarksLines = (remarks?: string) => {
     const parts = (remarks || '')
@@ -1043,6 +1070,7 @@ export default function IssuingPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
+      {renderSuggestionDatalists()}
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-72 h-72 bg-gray-800/20 rounded-full blur-3xl animate-pulse"></div>
@@ -1333,6 +1361,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="invoiceNumber"
+                        list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -1368,6 +1397,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="event"
+                        list="dl-event"
                         value={formData.event || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -1380,6 +1410,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="supplier"
+                        list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -1392,6 +1423,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="customer"
+                        list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -1404,6 +1436,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="withdrawalNumber"
+                        list="dl-withdrawalNumber"
                         value={formData.withdrawalNumber || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -1429,6 +1462,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="invoiceNumber"
+                        list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -1471,6 +1505,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="supplier"
+                        list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -1483,6 +1518,7 @@ export default function IssuingPage() {
                       <input
                         type="text"
                         name="customer"
+                        list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -1876,6 +1912,7 @@ export default function IssuingPage() {
                       </label>
                       <input
                         type="text"
+                        list="dl-invoiceNumber"
                         value={part.invoiceNumber}
                         onChange={(e) => updateBulkPart(index, 'invoiceNumber', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
@@ -1908,6 +1945,7 @@ export default function IssuingPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Event</label>
                       <input
                         type="text"
+                        list="dl-event"
                         value={part.event}
                         onChange={(e) => updateBulkPart(index, 'event', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
@@ -1918,6 +1956,7 @@ export default function IssuingPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
                       <input
                         type="text"
+                        list="dl-supplier"
                         value={part.supplier}
                         onChange={(e) => updateBulkPart(index, 'supplier', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
@@ -1928,6 +1967,7 @@ export default function IssuingPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
                       <input
                         type="text"
+                        list="dl-customer"
                         value={part.customer}
                         onChange={(e) => updateBulkPart(index, 'customer', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
@@ -1938,6 +1978,7 @@ export default function IssuingPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">เลขใบเบิก</label>
                       <input
                         type="text"
+                        list="dl-withdrawalNumber"
                         value={part.withdrawalNumber}
                         onChange={(e) => updateBulkPart(index, 'withdrawalNumber', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"

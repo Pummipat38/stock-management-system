@@ -1272,6 +1272,38 @@ function DueDeliveryPage() {
       });
   }, [filteredRecords, selectedType, listMode]);
 
+  // Build autocomplete suggestion lists from previously entered records
+  const fieldSuggestions = useMemo(() => {
+    const fields: (keyof DueRecord)[] = [
+      'supplier', 'customer', 'event', 'model', 'partName', 'partNumber',
+      'myobNumber', 'customerPo', 'productRequestNo', 'sampleRequestSheet',
+      'prPo', 'revisionLevel', 'revisionNumber', 'withdrawalNumber',
+      'purchase', 'invoiceIn', 'invoiceOut',
+    ];
+    const map: Record<string, string[]> = {};
+    fields.forEach(f => {
+      const set = new Set<string>();
+      records.forEach(r => {
+        const v = String((r as unknown as Record<string, unknown>)[f] ?? '').trim();
+        if (v) set.add(v);
+      });
+      map[f] = Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }));
+    });
+    return map;
+  }, [records]);
+
+  const renderSuggestionDatalists = () => (
+    <>
+      {Object.entries(fieldSuggestions).map(([field, options]) => (
+        <datalist key={field} id={`dl-${field}`}>
+          {options.map(opt => (
+            <option key={opt} value={opt} />
+          ))}
+        </datalist>
+      ))}
+    </>
+  );
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -1946,6 +1978,7 @@ function DueDeliveryPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
+      {renderSuggestionDatalists()}
       <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
       <div className="absolute inset-0">
         <div className="absolute top-12 left-16 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
@@ -2449,6 +2482,7 @@ function DueDeliveryPage() {
                       <label className="block text-sm mb-1">Supplier</label>
                       <input
                         name="supplier"
+                        list="dl-supplier"
                         value={deliverFormData.supplier}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
@@ -2458,6 +2492,7 @@ function DueDeliveryPage() {
                       <label className="block text-sm mb-1">Customer</label>
                       <input
                         name="customer"
+                        list="dl-customer"
                         value={deliverFormData.customer}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
@@ -2467,6 +2502,7 @@ function DueDeliveryPage() {
                       <label className="block text-sm mb-1">เลขPO customer</label>
                       <input
                         name="customerPo"
+                        list="dl-customerPo"
                         value={deliverFormData.customerPo}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
@@ -2476,6 +2512,7 @@ function DueDeliveryPage() {
                       <label className="block text-sm mb-1">invoice out</label>
                       <input
                         name="invoiceNumber"
+                        list="dl-invoiceOut"
                         value={deliverFormData.invoiceNumber}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
@@ -2485,6 +2522,7 @@ function DueDeliveryPage() {
                       <label className="block text-sm mb-1">เลขใบเบิก</label>
                       <input
                         name="withdrawalNumber"
+                        list="dl-withdrawalNumber"
                         value={deliverFormData.withdrawalNumber}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
@@ -2610,6 +2648,7 @@ function DueDeliveryPage() {
                   <label className="block text-white/80 mb-2">Customer *</label>
                   <input
                     name="customer"
+                    list="dl-customer"
                     value={formData.customer}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2620,6 +2659,7 @@ function DueDeliveryPage() {
                   <label className="block text-white/80 mb-2">Product request no.</label>
                   <input
                     name="productRequestNo"
+                    list="dl-productRequestNo"
                     value={formData.productRequestNo}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2630,6 +2670,7 @@ function DueDeliveryPage() {
                   <input
                     type="text"
                     name="sampleRequestSheet"
+                    list="dl-sampleRequestSheet"
                     value={formData.sampleRequestSheet}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2732,6 +2773,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">MODEL *</label>
                       <input
                         name="model"
+                        list="dl-model"
                         value={formData.model}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2743,6 +2785,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">PART NO. *</label>
                       <input
                         name="partNumber"
+                        list="dl-partNumber"
                         value={formData.partNumber}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2754,6 +2797,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">PART NAME *</label>
                       <input
                         name="partName"
+                        list="dl-partName"
                         value={formData.partName}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2765,6 +2809,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">DWG REV *</label>
                       <input
                         name="revisionLevel"
+                        list="dl-revisionLevel"
                         value={formData.revisionLevel}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2776,6 +2821,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">DWG NO. *</label>
                       <input
                         name="revisionNumber"
+                        list="dl-revisionNumber"
                         value={formData.revisionNumber}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2787,6 +2833,7 @@ function DueDeliveryPage() {
                       <label className="block text-white/80 mb-2">MYOB *</label>
                       <input
                         name="myobNumber"
+                        list="dl-myobNumber"
                         value={formData.myobNumber}
                         onChange={handleInputChange}
                         className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2813,6 +2860,7 @@ function DueDeliveryPage() {
                   <label className="block text-white/80 mb-2">EVENT *</label>
                   <input
                     name="event"
+                    list="dl-event"
                     value={formData.event}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2824,6 +2872,7 @@ function DueDeliveryPage() {
                   <label className="block text-white/80 mb-2">Supplier</label>
                   <input
                     name="supplier"
+                    list="dl-supplier"
                     value={formData.supplier}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -2845,6 +2894,7 @@ function DueDeliveryPage() {
                   <label className="block text-white/80 mb-2">PR / PO *</label>
                   <input
                     name="customerPo"
+                    list="dl-customerPo"
                     value={formData.customerPo}
                     onChange={handleInputChange}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
