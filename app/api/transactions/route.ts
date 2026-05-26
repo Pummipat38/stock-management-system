@@ -36,8 +36,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    // ส่ง empty array แทนการส่ง error object
-    return NextResponse.json([]);
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { error: 'Failed to fetch transactions', details: details.slice(0, 800) },
+      { status: 503 }
+    );
   }
 }
 

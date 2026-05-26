@@ -47,6 +47,21 @@ export default function HistoryPage() {
   const fetchData = async () => {
     try {
       const response = await fetch('/api/stock');
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        let message = 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้';
+        try {
+          const parsed = JSON.parse(text) as { error?: string; details?: string };
+          message = parsed?.details ? `${parsed.error || 'Error'}: ${parsed.details}` : parsed?.error || message;
+        } catch {
+          message = text || message;
+        }
+        alert(message);
+        setItems([]);
+        setSummary([]);
+        return;
+      }
+
       const data = await response.json();
       setItems(data);
       

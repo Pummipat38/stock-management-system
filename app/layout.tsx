@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import PwaRegister from '@/components/PwaRegister'
+import ClearMasterPlanStorage from '@/components/ClearMasterPlanStorage'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <ClearMasterPlanStorage />
         <PwaRegister />
         <div className="relative min-h-screen">
           <div className="fixed inset-0 flex items-end justify-center pointer-events-none pb-12 z-30">

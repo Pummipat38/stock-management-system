@@ -509,6 +509,57 @@ export default function ReceivingPage() {
               </button>
             </div>
 
+            {/* ทดสอบเพิ่มช่องค้นหา */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <label className="block text-sm font-medium text-gray-700 mb-2">🔍 ค้นหารหัสสินค้า:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="พิมพ์รหัสสินค้า..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const searchValue = e.currentTarget.value.trim();
+                      if (searchValue) {
+                        const foundItem = stockItems.find(item => 
+                          item.partNumber.toLowerCase().includes(searchValue.toLowerCase())
+                        );
+                        if (foundItem) {
+                          setDetailGroupKey(getGroupKey(foundItem));
+                          e.currentTarget.value = '';
+                        } else {
+                          alert('ไม่พบรหัสสินค้านี้');
+                        }
+                      }
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const inputs = document.querySelectorAll('input[placeholder="พิมพ์รหัสสินค้า..."]');
+                    if (inputs.length > 0) {
+                      const input = inputs[0] as HTMLInputElement;
+                      const searchValue = input.value.trim();
+                      if (searchValue) {
+                        const foundItem = stockItems.find(item => 
+                          item.partNumber.toLowerCase().includes(searchValue.toLowerCase())
+                        );
+                        if (foundItem) {
+                          setDetailGroupKey(getGroupKey(foundItem));
+                          input.value = '';
+                        } else {
+                          alert('ไม่พบรหัสสินค้านี้');
+                        }
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  ค้นหา
+                </button>
+              </div>
+            </div>
+
             {(() => {
               const items = stockItems
                 .filter(item => getGroupKey(item) === detailGroupKey && item.receivedQty > 0)

@@ -74,8 +74,11 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching stock items:', error);
-    // ส่ง empty array แทนการส่ง error object
-    return NextResponse.json([]);
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { error: 'Failed to fetch stock items', details: details.slice(0, 800) },
+      { status: 503 }
+    );
   }
 }
 

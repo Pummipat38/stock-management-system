@@ -32,7 +32,16 @@ export default function StockPage() {
         const data = await response.json();
         setStockItems(data);
       } else {
-        console.error('Failed to fetch stock items');
+        const text = await response.text().catch(() => '');
+        let message = 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้';
+        try {
+          const parsed = JSON.parse(text) as { error?: string; details?: string };
+          message = parsed?.details ? `${parsed.error || 'Error'}: ${parsed.details}` : parsed?.error || message;
+        } catch {
+          message = text || message;
+        }
+        console.error('Failed to fetch stock items:', message);
+        alert(message);
       }
     } catch (error) {
       console.error('Error fetching stock items:', error);

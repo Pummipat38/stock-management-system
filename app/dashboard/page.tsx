@@ -168,13 +168,6 @@ export default function Dashboard() {
       href: '/reports',
       delay: 'delay-600'
     },
-    {
-      title: 'MASTER PLAN',
-      subtitle: '(DOCUMENT & STATUSPART)',
-      icon: '📝',
-      href: '/custom-buttons',
-      delay: 'delay-700'
-    },
   ];
 
   return (

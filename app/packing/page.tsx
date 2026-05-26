@@ -1218,6 +1218,44 @@ function DueDeliveryPage() {
       return Number.isNaN(altParsed) ? Number.POSITIVE_INFINITY : altParsed;
     };
 
+    const normalizeKey = (value: unknown) => {
+      const text = String(value ?? '').trim();
+      if (!text || text === '-') return '';
+      return text;
+    };
+
+    const compareTokens = (a: string, b: string) => {
+      const aParts = a.match(/\d+|\D+/g) ?? [];
+      const bParts = b.match(/\d+|\D+/g) ?? [];
+      const len = Math.max(aParts.length, bParts.length);
+      for (let i = 0; i < len; i++) {
+        const ap = aParts[i] ?? '';
+        const bp = bParts[i] ?? '';
+        const aNum = /^\d+$/.test(ap);
+        const bNum = /^\d+$/.test(bp);
+        if (aNum && bNum) {
+          const diff = Number(ap) - Number(bp);
+          if (diff !== 0) return diff;
+          continue;
+        }
+        if (aNum !== bNum) {
+          return aNum ? -1 : 1;
+        }
+        const diff = ap.localeCompare(bp, undefined, { sensitivity: 'base' });
+        if (diff !== 0) return diff;
+      }
+      return 0;
+    };
+
+    const compareSortKey = (a: unknown, b: unknown) => {
+      const ak = normalizeKey(a);
+      const bk = normalizeKey(b);
+      if (!ak && !bk) return 0;
+      if (!ak) return 1;
+      if (!bk) return -1;
+      return compareTokens(ak, bk);
+    };
+
     return filteredRecords
       .filter(record => {
         const isMatchType = record.deliveryType === selectedType;
@@ -1225,7 +1263,13 @@ function DueDeliveryPage() {
         return isMatchType && isMatchStatus;
       })
       .slice()
-      .sort((a, b) => parseDueDate(a.dueDate) - parseDueDate(b.dueDate));
+      .sort((a, b) => {
+        const prDiff = compareSortKey(a.productRequestNo, b.productRequestNo);
+        if (prDiff !== 0) return prDiff;
+        const sheetDiff = compareSortKey(a.sampleRequestSheet, b.sampleRequestSheet);
+        if (sheetDiff !== 0) return sheetDiff;
+        return parseDueDate(a.dueDate) - parseDueDate(b.dueDate);
+      });
   }, [filteredRecords, selectedType, listMode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

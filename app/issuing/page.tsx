@@ -229,6 +229,22 @@ export default function IssuingPage() {
   const fetchStockItems = async () => {
     try {
       const response = await fetch('/api/stock');
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        let message = 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้';
+        try {
+          const parsed = JSON.parse(text) as { error?: string; details?: string };
+          message = parsed?.details ? `${parsed.error || 'Error'}: ${parsed.details}` : parsed?.error || message;
+        } catch {
+          message = text || message;
+        }
+        alert(message);
+        setStockItems([]);
+        setFilteredItems([]);
+        setAvailableItems([]);
+        return;
+      }
+
       const data = await response.json();
       setStockItems(data);
       setFilteredItems(data);
@@ -1089,9 +1105,13 @@ export default function IssuingPage() {
               setIsDeleteMode(prev => !prev);
               setSelectedDeleteKeys([]);
             }}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto border border-white/30"
+            className={`${
+              isDeleteMode 
+                ? 'bg-yellow-500 hover:bg-yellow-600 text-black' 
+                : 'bg-red-600 hover:bg-red-700 text-white'
+            } px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto`}
           >
-            ⚙️ ตัวเลือก
+            {isDeleteMode ? '✕ ยกเลิก' : '🗑️ ลบ'}
           </button>
           <button
             type="button"
@@ -1537,17 +1557,17 @@ export default function IssuingPage() {
             <table className="w-full divide-y divide-gray-200" style={{minWidth: '1400px', tableLayout: 'fixed'}}>
               <thead className="bg-white/5">
                 <tr>
-                  {isDeleteMode && (
-                    <th className="px-3 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '60px'}}>
-                      เลือก
-                    </th>
-                  )}
                   <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '80px'}}>MYOB</th>
                   <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '100px'}}>MODEL</th>
                   <th className="px-6 py-3 text-left text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '120px'}}>PART NUMBER</th>
                   <th className="px-6 py-3 text-left text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '160px'}}>PART NAME</th>
                   <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '120px'}}>CUSTOMER</th>
                   <th className="px-3 py-3 text-center text-sm text-white/70 uppercase tracking-wider" style={{width: '80px'}}>จัดการ</th>
+                  {isDeleteMode && (
+                    <th className="px-3 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider" style={{width: '60px'}}>
+                      เลือก
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -1635,16 +1655,6 @@ export default function IssuingPage() {
 
                       return (
                         <tr key={`${partKey}-${index}`} className={`hover:bg-white/5 transition-colors ${isNewPart ? 'border-t-2 border-blue-400/50' : ''}`}>
-                          {isDeleteMode && (
-                            <td className="px-3 py-4 whitespace-nowrap text-center" style={{width: '60px'}}>
-                              <input
-                                type="checkbox"
-                                checked={selectedDeleteKeys.includes(partKey)}
-                                onChange={() => toggleDeleteSelection(partKey)}
-                                className="h-4 w-4 text-red-600 border-gray-300 rounded"
-                              />
-                            </td>
-                          )}
                           <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center" style={{width: '80px'}}>
                             <div className={`truncate ${partColor}`}>{representative.myobNumber}</div>
                           </td>
@@ -1672,16 +1682,6 @@ export default function IssuingPage() {
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-center" style={{width: '80px'}}>
                             <div className="flex space-x-1 justify-center">
-                              <button
-                                onClick={() => {
-                                  setDetailGroupKey(partKey);
-                                  setIsDetailOpen(true);
-                                }}
-                                className="text-yellow-300 hover:text-yellow-200 transition-colors text-2xl"
-                                title="ดูรายละเอียด"
-                              >
-                                🔍
-                              </button>
                               {(isEditAllowed(representative) || allowEditOlder) && (
                                 <button
                                   onClick={() => handleEditIssue(representative)}
@@ -1693,18 +1693,28 @@ export default function IssuingPage() {
                               )}
                             </div>
                           </td>
+                          {isDeleteMode && (
+                            <td className="px-3 py-4 whitespace-nowrap text-center" style={{width: '60px'}}>
+                              <input
+                                type="checkbox"
+                                checked={selectedDeleteKeys.includes(partKey)}
+                                onChange={() => toggleDeleteSelection(partKey)}
+                                className="h-5 w-5 text-red-600 border-gray-300 rounded cursor-pointer"
+                              />
+                            </td>
+                          )}
                         </tr>
                       );
                     }),
                   ...emptyRows.map((_, index) => (
                     <tr key={`empty-${index}`} className="h-16">
-                      {isDeleteMode && <td className="px-4 py-4 w-16">&nbsp;</td>}
                       <td className="px-4 py-4 w-20">&nbsp;</td>
                       <td className="px-4 py-4 w-24">&nbsp;</td>
                       <td className="px-4 py-4 w-32">&nbsp;</td>
                       <td className="px-4 py-4 w-40">&nbsp;</td>
                       <td className="px-4 py-4 w-24">&nbsp;</td>
                       <td className="px-4 py-4 w-20">&nbsp;</td>
+                      {isDeleteMode && <td className="px-4 py-4 w-16">&nbsp;</td>}
                     </tr>
                   ))
                 ];
@@ -1987,10 +1997,10 @@ export default function IssuingPage() {
 
       {isDetailOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-800">🔍 รายละเอียดรับเข้า/จ่ายออก</h2>
+                <h2 className="text-2xl font-bold text-gray-800">🔍 รายละเอียดรับเข้า/จ่ายออก</h2>
                 {(() => {
                   const headerItem = detailGroupItems[0];
                   const modelsText = Array.from(
@@ -2009,7 +2019,7 @@ export default function IssuingPage() {
                   if (!headerItem) return null;
 
                   return (
-                    <div className="mt-1 text-sm text-gray-600">
+                    <div className="mt-2 text-sm text-gray-600">
                       <div>
                         <span className="font-semibold">MYOB:</span> {headerItem.myobNumber || '-'}
                         <span className="mx-2 text-gray-300">|</span>
@@ -2026,10 +2036,59 @@ export default function IssuingPage() {
               </div>
               <button
                 onClick={() => setIsDetailOpen(false)}
-                className="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50"
+                className="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 text-lg"
               >
                 ปิด
               </button>
+            </div>
+
+            {/* ช่องค้นหารหัสสินค้า - ทำให้ใหญ่และเด่น */}
+            <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl shadow-lg">
+              <div className="flex items-center gap-4">
+                <label className="text-lg font-bold text-blue-800">🔍 รหัสสินค้า:</label>
+                <input
+                  type="text"
+                  placeholder="พิมพ์รหัสสินค้าที่ต้องการค้นหา..."
+                  className="flex-1 px-4 py-3 text-lg border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const searchValue = e.currentTarget.value.trim();
+                      if (searchValue) {
+                        const foundItem = stockItems.find(item => 
+                          item.partNumber.toLowerCase().includes(searchValue.toLowerCase())
+                        );
+                        if (foundItem) {
+                          setDetailGroupKey(getGroupKey(foundItem));
+                          e.currentTarget.value = '';
+                        } else {
+                          alert('ไม่พบรหัสสินค้านี้');
+                        }
+                      }
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const input = document.querySelector('input[placeholder="พิมพ์รหัสสินค้าที่ต้องการค้นหา..."]') as HTMLInputElement;
+                    const searchValue = input?.value.trim();
+                    if (searchValue) {
+                      const foundItem = stockItems.find(item => 
+                        item.partNumber.toLowerCase().includes(searchValue.toLowerCase())
+                      );
+                      if (foundItem) {
+                        setDetailGroupKey(getGroupKey(foundItem));
+                        if (input) input.value = '';
+                      } else {
+                        alert('ไม่พบรหัสสินค้านี้');
+                      }
+                    }
+                  }}
+                  className="px-8 py-3 bg-blue-600 text-white text-lg font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  ค้นหา
+                </button>
+              </div>
+              <p className="mt-3 text-sm text-blue-700 font-medium">💡 พิมพ์รหัสสินค้าแล้วกด Enter หรือคลิกปุ่มค้นหา เพื่อดูรายละเอียดสินค้าชิ้นอื่น</p>
             </div>
 
             <div className="space-y-6">
