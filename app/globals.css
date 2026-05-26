@@ -140,16 +140,3 @@ html {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   background-size: 200% 100%;
 }
-
-/* Datalist autocomplete dropdown styling */
-datalist {
-  position: absolute;
-  z-index: 1000;
-}
-
-datalist option {
-  background: white;
-  color: #1f2937;
-  padding: 8px 12px;
-  cursor: pointer;
-}

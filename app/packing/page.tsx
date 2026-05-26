@@ -3583,7 +3583,7 @@ function PackingLegacy() {
                         name="supplier"
                         value={formData.supplier}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3595,7 +3595,7 @@ function PackingLegacy() {
                         name="model"
                         value={formData.model}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3607,7 +3607,7 @@ function PackingLegacy() {
                         name="partNumber"
                         value={formData.partNumber}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3619,7 +3619,7 @@ function PackingLegacy() {
                         name="partName"
                         value={formData.partName}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3636,7 +3636,7 @@ function PackingLegacy() {
                         type="file"
                         accept="image/*"
                         onChange={handleImageUpload}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB)</p>
                     </div>
@@ -3683,7 +3683,7 @@ function PackingLegacy() {
                         value={formData.qtyPerBox}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3697,7 +3697,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.001"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3725,7 +3725,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.001"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="รวมน้ำหนักกล่องเปล่า"
                         required
                       />
@@ -3737,7 +3737,7 @@ function PackingLegacy() {
                         name="boxType"
                         value={formData.boxType}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       >
                         <option value="">เลือกชนิดกล่อง</option>
@@ -3758,7 +3758,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3772,7 +3772,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3786,7 +3786,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3805,7 +3805,7 @@ function PackingLegacy() {
                         value={formData.boxesPerPallet}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3819,7 +3819,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.001"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="ระบุน้ำหนักต่อพาเลท"
                         required
                       />
@@ -3847,7 +3847,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3861,7 +3861,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3875,7 +3875,7 @@ function PackingLegacy() {
                         onChange={handleChange}
                         min="0"
                         step="0.1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       />
                     </div>
@@ -3894,7 +3894,7 @@ function PackingLegacy() {
                         name="truckSize1"
                         value={formData.truckSize1}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         required
                       >
                         <option value="">เลือกขนาดรถ</option>
@@ -3916,7 +3916,7 @@ function PackingLegacy() {
                         value={formData.palletsPerTruck}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="จำนวนพาเลทจริง"
                         required
                       />
@@ -3930,7 +3930,7 @@ function PackingLegacy() {
                         value={formData.totalPiecesPerTruck}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="ชิ้นงานรวมจริง"
                         required
                       />
@@ -3945,7 +3945,7 @@ function PackingLegacy() {
                         name="truckSize2"
                         value={formData.truckSize2 || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                       >
                         <option value="">เลือกขนาดรถ</option>
                         <option value="รถกระบะ">รถกระบะ</option>
@@ -3966,7 +3966,7 @@ function PackingLegacy() {
                         value={formData.maxPalletsPerTruck}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="ความจุสูงสุด"
                       />
                     </div>
@@ -3979,7 +3979,7 @@ function PackingLegacy() {
                         value={formData.maxPiecesPerTruck}
                         onChange={handleChange}
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="ความจุสูงสุด"
                       />
                     </div>
@@ -3994,7 +3994,7 @@ function PackingLegacy() {
                         value={formData.remarks || ''}
                         onChange={handleChange}
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         placeholder="ใส่หมายเหตุเพิ่มเติม..."
                       />
                     </div>

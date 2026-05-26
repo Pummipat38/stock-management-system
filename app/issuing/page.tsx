@@ -1348,7 +1348,7 @@ export default function IssuingPage() {
                         onChange={handleChange}
                         min="0"
                         max={selectedItem && !editingItem ? getBalance(selectedItem) : undefined}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         required
                       />
                       {selectedItem && !editingItem && (
@@ -1364,7 +1364,7 @@ export default function IssuingPage() {
                         list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         required
                       />
                     </div>
@@ -1376,7 +1376,7 @@ export default function IssuingPage() {
                         name="issueDate"
                         value={formData.issueDate}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         required
                       />
                     </div>
@@ -1388,7 +1388,7 @@ export default function IssuingPage() {
                         name="dueDate"
                         value={formData.dueDate || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                       />
                     </div>
 
@@ -1400,7 +1400,7 @@ export default function IssuingPage() {
                         list="dl-event"
                         value={formData.event || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="ชื่อ Event หรือโครงการ"
                       />
                     </div>
@@ -1413,7 +1413,7 @@ export default function IssuingPage() {
                         list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="ชื่อผู้จำหน่าย/ซัพพลายเออร์"
                       />
                     </div>
@@ -1426,7 +1426,7 @@ export default function IssuingPage() {
                         list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="ชื่อลูกค้า"
                       />
                     </div>
@@ -1439,7 +1439,7 @@ export default function IssuingPage() {
                         list="dl-withdrawalNumber"
                         value={formData.withdrawalNumber || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="หมายเลขใบเบิกสินค้า"
                       />
                     </div>
@@ -1465,7 +1465,7 @@ export default function IssuingPage() {
                         list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         placeholder="หมายเลข Invoice"
                       />
                     </div>
@@ -1479,7 +1479,7 @@ export default function IssuingPage() {
                         onChange={handleChange}
                         min="0"
                         max={selectedItem && !editingItem ? getBalance(selectedItem) : undefined}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         required
                         placeholder="จำนวนชิ้น"
                       />
@@ -1495,7 +1495,7 @@ export default function IssuingPage() {
                         name="issueDate"
                         value={formData.issueDate}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         required
                       />
                     </div>
@@ -1508,7 +1508,7 @@ export default function IssuingPage() {
                         list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         placeholder="ชื่อผู้จำหน่าย/ซัพพลายเออร์"
                       />
                     </div>
@@ -1521,7 +1521,7 @@ export default function IssuingPage() {
                         list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         placeholder="ชื่อลูกค้า"
                       />
                     </div>
@@ -1915,7 +1915,7 @@ export default function IssuingPage() {
                         list="dl-invoiceNumber"
                         value={part.invoiceNumber}
                         onChange={(e) => updateBulkPart(index, 'invoiceNumber', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                         required={!part.isNGItem}
                       />
                     </div>
@@ -1926,7 +1926,7 @@ export default function IssuingPage() {
                         type="date"
                         value={part.issueDate}
                         onChange={(e) => updateBulkPart(index, 'issueDate', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                         required
                       />
                     </div>
@@ -1937,7 +1937,7 @@ export default function IssuingPage() {
                         type="date"
                         value={part.dueDate}
                         onChange={(e) => updateBulkPart(index, 'dueDate', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
 
@@ -1948,7 +1948,7 @@ export default function IssuingPage() {
                         list="dl-event"
                         value={part.event}
                         onChange={(e) => updateBulkPart(index, 'event', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
 
@@ -1959,7 +1959,7 @@ export default function IssuingPage() {
                         list="dl-supplier"
                         value={part.supplier}
                         onChange={(e) => updateBulkPart(index, 'supplier', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
 
@@ -1970,7 +1970,7 @@ export default function IssuingPage() {
                         list="dl-customer"
                         value={part.customer}
                         onChange={(e) => updateBulkPart(index, 'customer', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
 
@@ -1981,7 +1981,7 @@ export default function IssuingPage() {
                         list="dl-withdrawalNumber"
                         value={part.withdrawalNumber}
                         onChange={(e) => updateBulkPart(index, 'withdrawalNumber', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
 
@@ -1991,7 +1991,7 @@ export default function IssuingPage() {
                         value={part.remarks}
                         onChange={(e) => updateBulkPart(index, 'remarks', e.target.value)}
                         rows={2}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                       />
                     </div>
                   </div>
