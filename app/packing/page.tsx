@@ -2160,19 +2160,19 @@ function DueDeliveryPage() {
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part No.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Part Name</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG REV</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DWG NO.</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>DWG NO.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Event</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Supplier</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">ISSUE PR Date</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>ISSUE PR Date</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PR / PO</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">เลขที่ใบเบิก</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">PUCHASE</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice In</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Invoice Out</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">DATE OUT</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>เลขที่ใบเบิก</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>PUCHASE</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>Invoice In</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>Invoice Out</span>
+                        <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>DATE OUT</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Action</span>
                       </div>
                     </div>
@@ -2273,7 +2273,7 @@ function DueDeliveryPage() {
                               {record.partName}
                             </div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionLevel || '-'}</div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.revisionNumber || '-'}</div>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 ${listMode !== 'delivered' ? 'hidden' : ''}`}>{record.revisionNumber || '-'}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.event || ''}>
                               {record.event || '-'}
                             </div>
@@ -2289,7 +2289,7 @@ function DueDeliveryPage() {
                               {record.myobNumber || '-'}
                             </div>
                             <div
-                              className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis"
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`}
                               title={record.issuePrDate || ''}
                             >
                               {record.issuePrDate ? formatDueDate(record.issuePrDate) : '-'}
@@ -2300,19 +2300,19 @@ function DueDeliveryPage() {
                             >
                               {record.customerPo || record.prPo || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.withdrawalNumber || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.withdrawalNumber || ''}>
                               {record.withdrawalNumber || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.purchase || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.purchase || ''}>
                               {record.purchase || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceIn || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceIn || ''}>
                               {record.invoiceIn || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.invoiceOut || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceOut || ''}>
                               {record.invoiceOut || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 ${listMode !== 'delivered' ? 'hidden' : ''}`}>{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
                             <div className="px-1 py-1 flex items-center justify-start text-center border-l border-white/20 overflow-hidden">
                               <div className="flex items-center justify-start gap-2">
                                 {listMode === 'pending' ? (
