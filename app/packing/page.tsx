@@ -3575,7 +3575,7 @@ function PackingLegacy() {
                 {/* ข้อมูลพื้นฐาน */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 ข้อมูลสินค้า</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Supplier *</label>
                       <input
@@ -3629,7 +3629,7 @@ function PackingLegacy() {
                 {/* รูปชิ้นงาน */}
                 <div className="bg-purple-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">🖼️ รูปชิ้นงาน</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">อัปโหลดรูปชิ้นงาน</label>
                       <input

@@ -1338,7 +1338,7 @@ export default function IssuingPage() {
               {!formData.isNGItem && (
                 <div className="bg-orange-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">📤 ข้อมูลการจ่ายออก</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนที่จ่ายออก *</label>
                       <input
@@ -1456,7 +1456,7 @@ export default function IssuingPage() {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-800">🚫 ข้อมูลงาน NG</h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">เลข INVOICE (ถ้ามี)</label>
                       <input
@@ -1905,7 +1905,7 @@ export default function IssuingPage() {
                 {/* Individual Part Details */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h5 className="text-md font-semibold text-gray-800 mb-3">📋 ข้อมูลสำหรับ Part นี้</h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         INVOICE {!part.isNGItem ? '*' : '(ถ้ามี)'}

@@ -609,7 +609,7 @@ export default function ReceivingPage() {
               return (
                 <div className="space-y-4">
                   {headerItem && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-xs text-gray-500">MYOB</div>
                         <div className="text-lg font-semibold text-gray-800">{headerItem.myobNumber}</div>
@@ -753,7 +753,7 @@ export default function ReceivingPage() {
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   📋 ข้อมูลสินค้า
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                     <input
@@ -844,7 +844,7 @@ export default function ReceivingPage() {
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   📦 ข้อมูลการรับเข้า
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">วันที่รับเข้า *</label>
                     <input
@@ -1022,7 +1022,7 @@ export default function ReceivingPage() {
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   ข้อมูลทั่วไป (ใช้ร่วมกันทุก Part)
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">เลข Purchase *</label>
                     <input
@@ -1133,7 +1133,7 @@ export default function ReceivingPage() {
                         📋 Part #{index + 1}
                       </h4>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                           <input
