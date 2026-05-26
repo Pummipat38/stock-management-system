@@ -1454,11 +1454,24 @@ function DueDeliveryPage() {
       const deliveredAtValue = deliverFormData.issueDate
         ? new Date(deliverFormData.issueDate).toISOString()
         : now;
+      // Auto-fill PUCHASE / INVOICE IN from the latest record for the same part
+      const findLatestForPart = (field: 'purchase' | 'invoiceIn') => {
+        const candidates = records
+          .filter(r =>
+            r.myobNumber === deliverRecord.myobNumber &&
+            r.partNumber === deliverRecord.partNumber &&
+            (r[field] || '').trim() !== ''
+          )
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        return candidates[0]?.[field] || '';
+      };
+      const autoPurchase = (deliverRecord.purchase || '').trim() || findLatestForPart('purchase');
+      const autoInvoiceIn = (deliverRecord.invoiceIn || '').trim() || findLatestForPart('invoiceIn');
       const updatedRecord: DueRecord = {
         ...deliverRecord,
         supplier: deliverFormData.supplier || deliverRecord.supplier,
-        purchase: deliverFormData.purchase || deliverRecord.purchase,
-        invoiceIn: deliverFormData.invoiceIn || deliverRecord.invoiceIn,
+        purchase: autoPurchase,
+        invoiceIn: autoInvoiceIn,
         invoiceOut: deliverFormData.invoiceNumber || deliverRecord.invoiceOut,
         withdrawalNumber: deliverFormData.withdrawalNumber || deliverRecord.withdrawalNumber,
         dueSupplierToRk: deliverFormData.dueSupplierToRk || deliverRecord.dueSupplierToRk,
@@ -2442,15 +2455,6 @@ function DueDeliveryPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">PUCHASE</label>
-                      <input
-                        name="purchase"
-                        value={deliverFormData.purchase}
-                        onChange={handleDeliverInputChange}
-                        className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
-                      />
-                    </div>
-                    <div>
                       <label className="block text-sm mb-1">Customer</label>
                       <input
                         name="customer"
@@ -2464,15 +2468,6 @@ function DueDeliveryPage() {
                       <input
                         name="customerPo"
                         value={deliverFormData.customerPo}
-                        onChange={handleDeliverInputChange}
-                        className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm mb-1">INVOICE IN</label>
-                      <input
-                        name="invoiceIn"
-                        value={deliverFormData.invoiceIn}
                         onChange={handleDeliverInputChange}
                         className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white"
                       />
