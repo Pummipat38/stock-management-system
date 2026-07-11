@@ -1782,15 +1782,28 @@ export default function IssuingPage() {
         
         {/* Bulk Issuing Form Modal */}
         {isBulkFormOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">
-        📦 บันทึกการจ่ายออกหลาย Part
-      </h2>
-      
-      <form onSubmit={handleBulkSubmit} className="space-y-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">🧾 ใส่เลข Invoice ให้ทุก Part (ถ้ามี)</h3>
+  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            📦 บันทึกการจ่ายออกหลาย Part
+          </h2>
+          <button
+            onClick={() => setIsBulkFormOpen(false)}
+            className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form onSubmit={handleBulkSubmit} className="p-6 space-y-4">
+        <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
+          <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">🧾 ใส่เลข Invoice ให้ทุก Part (ถ้ามี)</h3>
           <input
             type="text"
             value={bulkSharedInvoice}
@@ -1805,55 +1818,55 @@ export default function IssuingPage() {
                 }))
               }));
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             placeholder="เช่น INV-2026-001"
           />
-          <p className="text-xs text-gray-500 mt-2">กรอกครั้งเดียว ระบบจะใส่ให้ทุก Part อัตโนมัติ (ยังแก้แต่ละ Part แยกได้)</p>
+          <p className="text-xs text-gray-400 mt-2">กรอกครั้งเดียว ระบบจะใส่ให้ทุก Part อัตโนมัติ (ยังแก้แต่ละ Part แยกได้)</p>
         </div>
         {/* Parts List */}
-        <div className="bg-green-50 p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">🔧 รายการ Parts</h3>
+        <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">🔧 รายการ Parts</h3>
             <button
               type="button"
               onClick={addBulkPart}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
             >
               + เพิ่ม Part
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {bulkFormData.parts.map((part, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg border border-gray-200">
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-lg font-medium text-gray-700">Part #{index + 1}</h4>
+              <div key={index} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="text-lg font-medium text-white flex items-center gap-2">Part #{index + 1}</h4>
                   {bulkFormData.parts.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeBulkPart(index)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      className="text-red-400 hover:text-red-300 text-sm font-medium px-2 py-1 rounded-lg hover:bg-red-500/10 transition-colors"
                     >
                       ลบ
                     </button>
                   )}
                 </div>
-                
+
                 {/* Part Selection and Quantity */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">เลือก Part *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">เลือก Part *</label>
                     <select
                       value={part.stockItemId}
                       onChange={(e) => updateBulkPart(index, 'stockItemId', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                       required
                     >
-                      <option value="">-- เลือก Part --</option>
+                      <option value="" className="bg-gray-700">-- เลือก Part --</option>
                       {sortedAvailableItems.filter(item => getBalance(item) > 0).map((item) => {
                         const availableQty = getBalance(item);
                         return (
-                          <option key={item.id} value={item.id}>
+                          <option key={item.id} value={item.id} className="bg-gray-700">
                             {item.myobNumber} | {item.partNumber} | {item.partName} | {item.model} (คงเหลือ: {availableQty})
                           </option>
                         );
@@ -1862,22 +1875,22 @@ export default function IssuingPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนที่จ่าย *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">จำนวนที่จ่าย *</label>
                     <input
                       type="number"
                       value={part.issuedQty}
                       onChange={(e) => updateBulkPart(index, 'issuedQty', Number(e.target.value))}
                       min="1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">ประเภทงาน *</label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center">
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">ประเภทงาน *</label>
+                  <div className="flex flex-wrap gap-4">
+                    <label className="flex items-center cursor-pointer">
                       <input
                         type="radio"
                         name={`bulkIsNGItem-${index}`}
@@ -1887,27 +1900,27 @@ export default function IssuingPage() {
                           updateBulkPart(index, 'isNGItem', false);
                           updateBulkPart(index, 'ngProblem', '');
                         }}
-                        className="mr-2"
+                        className="mr-2 accent-emerald-500"
                       />
-                      <span className="text-sm text-gray-700">งานตัดออกปกติ</span>
+                      <span className="text-sm text-gray-300">งานตัดออกปกติ</span>
                     </label>
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
                       <input
                         type="radio"
                         name={`bulkIsNGItem-${index}`}
                         value="true"
                         checked={part.isNGItem === true}
                         onChange={() => updateBulkPart(index, 'isNGItem', true)}
-                        className="mr-2"
+                        className="mr-2 accent-red-500"
                       />
-                      <span className="text-sm text-red-700 font-medium">งานตัดออกเป็นงาน NG</span>
+                      <span className="text-sm text-red-400 font-medium">งานตัดออกเป็นงาน NG</span>
                     </label>
                   </div>
                 </div>
 
                 {/* Show available quantity for selected part */}
                 {part.stockItemId && (
-                  <div className="mt-2 text-sm text-gray-600">
+                  <div className="mt-2 text-sm text-gray-400">
                     {(() => {
                       const selectedItem = availableItems.find(item => item.id === part.stockItemId);
                       if (selectedItem) {
@@ -1920,11 +1933,11 @@ export default function IssuingPage() {
                 )}
 
                 {/* Individual Part Details */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h5 className="text-md font-semibold text-gray-800 mb-3">📋 ข้อมูลสำหรับ Part นี้</h5>
-                  <div className="grid grid-cols-1 gap-4">
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mt-3">
+                  <h5 className="text-md font-semibold text-white mb-3 flex items-center gap-2">📋 ข้อมูลสำหรับ Part นี้</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         INVOICE {!part.isNGItem ? '*' : '(ถ้ามี)'}
                       </label>
                       <input
@@ -1932,95 +1945,95 @@ export default function IssuingPage() {
                         list="dl-invoiceNumber"
                         value={part.invoiceNumber}
                         onChange={(e) => updateBulkPart(index, 'invoiceNumber', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         required={!part.isNGItem}
                       />
                     </div>
             
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">วันที่จ่าย *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">วันที่จ่าย *</label>
                       <input
                         type="date"
                         value={part.issueDate}
                         onChange={(e) => updateBulkPart(index, 'issueDate', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">due ที่ต้องจัดส่ง</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">due ที่ต้องจัดส่ง</label>
                       <input
                         type="date"
                         value={part.dueDate}
                         onChange={(e) => updateBulkPart(index, 'dueDate', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Event</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Event</label>
                       <input
                         type="text"
                         list="dl-event"
                         value={part.event}
                         onChange={(e) => updateBulkPart(index, 'event', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Supplier</label>
                       <input
                         type="text"
                         list="dl-supplier"
                         value={part.supplier}
                         onChange={(e) => updateBulkPart(index, 'supplier', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Customer</label>
                       <input
                         type="text"
                         list="dl-customer"
                         value={part.customer}
                         onChange={(e) => updateBulkPart(index, 'customer', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">เลขใบเบิก</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">เลขใบเบิก</label>
                       <input
                         type="text"
                         list="dl-withdrawalNumber"
                         value={part.withdrawalNumber}
                         onChange={(e) => updateBulkPart(index, 'withdrawalNumber', e.target.value)}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">หมายเหตุ</label>
                       <textarea
                         value={part.remarks}
                         onChange={(e) => updateBulkPart(index, 'remarks', e.target.value)}
                         rows={2}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
 
                   {part.isNGItem && (
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-red-700 mb-1">ปัญหาของชิ้นงาน (NG) *</label>
+                      <label className="block text-sm font-medium text-red-300 mb-2">ปัญหาของชิ้นงาน (NG) *</label>
                       <textarea
                         value={part.ngProblem || ''}
                         onChange={(e) => updateBulkPart(index, 'ngProblem', e.target.value)}
                         rows={3}
-                        className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
                         required={part.isNGItem}
                         placeholder="อธิบายปัญหาที่พบในชิ้นงาน..."
                       />
@@ -2033,17 +2046,17 @@ export default function IssuingPage() {
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
           <button
             type="button"
             onClick={() => setIsBulkFormOpen(false)}
-            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
           >
             ยกเลิก
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
           >
             บันทึกทั้งหมด
           </button>
