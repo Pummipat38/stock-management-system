@@ -728,7 +728,7 @@ export default function ReceivingPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+            <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   {editingItem ? '✏️ แก้ไขข้อมูลการรับเข้า' : '📥 บันทึกการรับเข้าใหม่'}
@@ -749,7 +749,7 @@ export default function ReceivingPage() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* ข้อมูลพื้นฐาน */}
-              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="bg-violet-900/20 border border-violet-500/30 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   📋 ข้อมูลสินค้า
                 </h3>
@@ -762,7 +762,7 @@ export default function ReceivingPage() {
                       list="dl-myobNumber"
                       value={formData.myobNumber}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอกเลข MYOB"
                       required
                     />
@@ -776,7 +776,7 @@ export default function ReceivingPage() {
                       list="dl-model"
                       value={formData.model}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอก Model"
                       required
                     />
@@ -790,7 +790,7 @@ export default function ReceivingPage() {
                       list="dl-partNumber"
                       value={formData.partNumber}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอก Part Number"
                       required
                     />
@@ -804,7 +804,7 @@ export default function ReceivingPage() {
                       list="dl-partName"
                       value={formData.partName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอก Part Name"
                       required
                     />
@@ -818,7 +818,7 @@ export default function ReceivingPage() {
                       list="dl-revision"
                       value={formData.revision}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอก Revision (ถ้ามี)"
                     />
                   </div>
@@ -830,7 +830,7 @@ export default function ReceivingPage() {
                       name="receivedQty"
                       value={formData.receivedQty}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="0"
                       min="1"
                       required
@@ -840,7 +840,7 @@ export default function ReceivingPage() {
               </div>
 
               {/* ข้อมูลการรับเข้า */}
-              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+              <div className="bg-violet-900/20 border border-violet-500/30 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   📦 ข้อมูลการรับเข้า
                 </h3>
@@ -852,7 +852,7 @@ export default function ReceivingPage() {
                       name="receivedDate"
                       value={formData.receivedDate}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -865,7 +865,7 @@ export default function ReceivingPage() {
                       list="dl-poNumber"
                       value={formData.poNumber}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอกเลข Purchase"
                       required
                     />
@@ -879,7 +879,7 @@ export default function ReceivingPage() {
                       list="dl-supplier"
                       value={formData.supplier}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอกชื่อ Supplier"
                     />
                   </div>
@@ -892,7 +892,7 @@ export default function ReceivingPage() {
                       list="dl-customer"
                       value={formData.customer}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                       placeholder="กรอกชื่อ Customer"
                     />
                   </div>
@@ -905,7 +905,7 @@ export default function ReceivingPage() {
                     value={formData.remarks}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-3 py-2 bg-violet-800/30 border border-violet-500/40 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all resize-none"
                     placeholder="กรอกหมายเหตุเพิ่มเติม (ถ้ามี)"
                   />
                 </div>
@@ -925,7 +925,7 @@ export default function ReceivingPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
+                  className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
                 >
                   💾 {editingItem ? 'อัปเดต' : 'บันทึก'}
                 </button>
