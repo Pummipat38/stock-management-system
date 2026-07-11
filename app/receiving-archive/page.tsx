@@ -82,46 +82,52 @@ export default function ReceivingArchivePage() {
     );
   }
 
-  const buildArchivedItems = () => {
+  const buildArchivedGroups = () => {
     const balanceMap = getBalanceMap(stockItems);
     const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-    return receivedItems
-      .filter(item => (balanceMap.get(getGroupKey(item)) || 0) <= 0)
-      .sort((a, b) => {
-        const myobCompare = a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
-        if (myobCompare !== 0) return myobCompare;
-        const partCompare = a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
-        if (partCompare !== 0) return partCompare;
-        return new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime();
-      });
+    const archivedItems = receivedItems.filter(item => (balanceMap.get(getGroupKey(item)) || 0) <= 0);
+
+    const groupedMap = new Map<string, ArchivedGroup>();
+    archivedItems.forEach(item => {
+      const key = getGroupKey(item);
+      const existing = groupedMap.get(key);
+      if (existing) {
+        existing.totalReceived += item.receivedQty;
+        if (item.model && !existing.model.split(',').map(s => s.trim()).filter(Boolean).includes(item.model)) {
+          existing.model = existing.model ? `${existing.model}, ${item.model}` : item.model;
+        }
+        existing.entries.push(item);
+        if (new Date(item.receivedDate).getTime() > new Date(existing.lastReceivedDate).getTime()) {
+          existing.lastReceivedDate = item.receivedDate;
+        }
+      } else {
+        groupedMap.set(key, {
+          key,
+          myobNumber: item.myobNumber,
+          model: item.model,
+          partNumber: item.partNumber,
+          partName: item.partName,
+          totalReceived: item.receivedQty,
+          lastReceivedDate: item.receivedDate,
+          entries: [item],
+        });
+      }
+    });
+
+    return Array.from(groupedMap.values()).sort((a, b) => {
+      const myobCompare = a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+      if (myobCompare !== 0) return myobCompare;
+      const partCompare = a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+      if (partCompare !== 0) return partCompare;
+      return a.model.localeCompare(b.model, 'en', { numeric: true, sensitivity: 'base' });
+    });
   };
 
-  const getArchivedGroupDetails = (item: StockItem): ArchivedGroup => {
-    const entries = stockItems.filter(
-      entry => entry.myobNumber === item.myobNumber && entry.partNumber === item.partNumber && entry.receivedQty > 0
-    );
-    const totalReceived = entries.reduce((sum: number, entry: StockItem) => sum + entry.receivedQty, 0);
-    const lastReceivedDate = entries.reduce((latest: string, entry: StockItem) =>
-      new Date(entry.receivedDate).getTime() > new Date(latest).getTime() ? entry.receivedDate : latest,
-      entries[0]?.receivedDate || item.receivedDate
-    );
-    return {
-      key: getGroupKey(item),
-      myobNumber: item.myobNumber,
-      model: item.model,
-      partNumber: item.partNumber,
-      partName: item.partName,
-      totalReceived,
-      lastReceivedDate,
-      entries,
-    };
-  };
-
-  const archivedItems = buildArchivedItems();
-  const totalPages = Math.ceil(archivedItems.length / itemsPerPage);
+  const archivedGroups = buildArchivedGroups();
+  const totalPages = Math.ceil(archivedGroups.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentItems = archivedItems.slice(startIndex, endIndex);
+  const currentItems = archivedGroups.slice(startIndex, endIndex);
   const emptyRowsCount = Math.max(0, itemsPerPage - currentItems.length);
   const emptyRows = Array(emptyRowsCount).fill(null);
 
@@ -193,21 +199,18 @@ export default function ReceivingArchivePage() {
                   <tr>
                     <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">MYOB</th>
                     <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-32">MODEL</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-36">PART NUMBER</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-40">PART NAME</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">รับเข้า</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-28">วันที่รับเข้า</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-40">PART NUMBER</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-48">PART NAME</th>
                     <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-28">จัดการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
                   {currentItems.map((item, index) => {
-                    const colorKey = `${item.myobNumber}${item.partNumber}`;
-                    const colorIndex = Math.abs(colorKey.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0)) % partColors.length;
+                    const colorIndex = Math.abs(item.key.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0)) % partColors.length;
                     const partColor = partColors[colorIndex];
 
                     return (
-                      <tr key={`${item.id}-${index}`} className="hover:bg-white/5 transition-colors">
+                      <tr key={item.key} className="hover:bg-white/5 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-24">
                           <div className={`truncate ${partColor}`}>{item.myobNumber}</div>
                         </td>
@@ -216,29 +219,19 @@ export default function ReceivingArchivePage() {
                             {item.model}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-36">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-40">
                           <div className="truncate text-white" title={item.partNumber}>
                             {item.partNumber}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-40">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-48">
                           <div className="truncate text-white" title={item.partName}>
                             {item.partName}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-center w-24">
-                          <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-sm font-semibold bg-rose-100 text-rose-700">
-                            {item.receivedQty.toLocaleString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-center w-28">
-                          <div className="text-white">
-                            {new Date(item.receivedDate).toLocaleDateString('th-TH')}
-                          </div>
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center w-28">
                           <button
-                            onClick={() => setSelectedGroup(getArchivedGroupDetails(item))}
+                            onClick={() => setSelectedGroup(item)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
                           >
                             🔍 ดูรายละเอียด
@@ -252,10 +245,8 @@ export default function ReceivingArchivePage() {
                     <tr key={`empty-${index}`} className="h-16">
                       <td className="px-4 py-4 w-24">&nbsp;</td>
                       <td className="px-4 py-4 w-32">&nbsp;</td>
-                      <td className="px-4 py-4 w-36">&nbsp;</td>
                       <td className="px-4 py-4 w-40">&nbsp;</td>
-                      <td className="px-4 py-4 w-24">&nbsp;</td>
-                      <td className="px-4 py-4 w-28">&nbsp;</td>
+                      <td className="px-4 py-4 w-48">&nbsp;</td>
                       <td className="px-4 py-4 w-28">&nbsp;</td>
                     </tr>
                   ))}
@@ -378,12 +369,12 @@ export default function ReceivingArchivePage() {
         <div className="mt-6 bg-white/10 backdrop-blur-sm p-6 rounded-lg border border-white/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
             <div>
-              <div className="text-4xl font-bold text-white">{archivedItems.length}</div>
+              <div className="text-4xl font-bold text-white">{archivedGroups.length}</div>
               <div className="text-white/70 text-lg">รายการที่ไม่มีสต็อก</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-blue-300">
-                {archivedItems.reduce((sum: number, item: StockItem) => sum + item.receivedQty, 0).toLocaleString()}
+                {archivedGroups.reduce((sum: number, item: ArchivedGroup) => sum + item.totalReceived, 0).toLocaleString()}
               </div>
               <div className="text-white/70 text-lg">จำนวนที่เคยรับทั้งหมด</div>
             </div>
