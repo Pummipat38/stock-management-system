@@ -1192,24 +1192,41 @@ export default function IssuingPage() {
       </div>
 
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">
-              {editingItem ? '✏️ แก้ไขข้อมูลการจ่ายออก' : '📤 บันทึกการจ่ายออกใหม่'}
-            </h2>
-            
-            <form onSubmit={editingItem ? handleUpdateIssue : handleIssueSubmit} className="space-y-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  {editingItem ? '✏️ แก้ไขข้อมูลการจ่ายออก' : '📤 บันทึกการจ่ายออกใหม่'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setIsFormOpen(false);
+                    setEditingItem(null);
+                    setSelectedItem(null);
+                  }}
+                  className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={editingItem ? handleUpdateIssue : handleIssueSubmit} className="p-6 space-y-4">
               {/* เลือกสินค้า */}
               {!editingItem && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">🔍 เลือกสินค้า</h3>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">🔍 เลือกสินค้า</h3>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">สินค้าที่มีสต็อกคงเหลือ *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">สินค้าที่มีสต็อกคงเหลือ *</label>
                     <select
                       name="stockItemId"
                       value={formData.stockItemId}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     >
                       <option value="">-- เลือกสินค้า --</option>
@@ -1221,30 +1238,30 @@ export default function IssuingPage() {
                     </select>
                   </div>
 
-                  {selectedItem && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-gray-800 mb-2">ข้อมูลสินค้าที่เลือก:</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div><strong>Model:</strong> {selectedItem.model}</div>
-                        <div><strong>Part Number:</strong> {selectedItem.partNumber}</div>
-                        <div><strong>รับเข้า:</strong> {(() => {
-                          const sameItemGroup = stockItems.filter(stock => 
+                    {selectedItem && (
+                    <div className="mt-3 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                      <h4 className="font-medium text-white mb-2">ข้อมูลสินค้าที่เลือก:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
+                        <div><span className="text-white/60">Model:</span> {selectedItem.model}</div>
+                        <div><span className="text-white/60">Part Number:</span> {selectedItem.partNumber}</div>
+                        <div><span className="text-white/60">รับเข้า:</span> {(() => {
+                          const sameItemGroup = stockItems.filter(stock =>
                             stock.myobNumber === selectedItem.myobNumber &&
-                            stock.partNumber === selectedItem.partNumber && 
+                            stock.partNumber === selectedItem.partNumber &&
                             stock.receivedQty > 0
                           );
                           return sameItemGroup.reduce((sum, stock) => sum + stock.receivedQty, 0);
                         })()}</div>
-                        <div><strong>จ่ายออกแล้ว:</strong> {(() => {
-                          const sameItemGroup = stockItems.filter(stock => 
+                        <div><span className="text-white/60">จ่ายออกแล้ว:</span> {(() => {
+                          const sameItemGroup = stockItems.filter(stock =>
                             stock.myobNumber === selectedItem.myobNumber &&
-                            stock.partNumber === selectedItem.partNumber && 
+                            stock.partNumber === selectedItem.partNumber &&
                             stock.issuedQty && stock.issuedQty > 0
                           );
                           return sameItemGroup.reduce((sum, stock) => sum + (stock.issuedQty || 0), 0);
                         })()}</div>
                         <div className="col-span-2">
-                          <strong>คงเหลือ:</strong> 
+                          <span className="text-white/60">คงเหลือ:</span>
                           <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${getBalanceColor(getBalance(selectedItem))}`}>
                             {getBalance(selectedItem)}
                           </span>
@@ -1264,11 +1281,11 @@ export default function IssuingPage() {
                     if (issuedItems.length <= 1) return null;
 
                     return (
-                      <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                        <h4 className="text-sm font-semibold text-orange-800 mb-2">
+                      <div className="mt-3 p-3 bg-amber-900/20 border border-amber-500/30 rounded-lg">
+                        <h4 className="text-sm font-semibold text-amber-200 mb-1">
                           รายการจ่ายออก ({issuedItems.length} รายการ)
                         </h4>
-                        <div className="text-xs text-orange-600 mb-3">
+                        <div className="text-xs text-amber-300/80 mb-2">
                           พบรายการจ่ายออกซ้ำ สามารถลบรายการเก่าเพื่อปรับสต๊อก
                         </div>
                         <button
@@ -1277,7 +1294,7 @@ export default function IssuingPage() {
                             if (confirm(confirmMessage)) {
                               // ลบรายการเก่าทั้งหมด เหลือไว้แค่รายการล่าสุด
                               const itemsToDelete = issuedItems.slice(1);
-                              
+
                               try {
                                 let deletedCount = 0;
                                 for (const item of itemsToDelete) {
@@ -1286,7 +1303,7 @@ export default function IssuingPage() {
                                     deletedCount++;
                                   }
                                 }
-                                
+
                                 await fetchStockItems();
                                 alert(`ลบรายการจ่ายออกซ้ำ ${deletedCount} รายการเรียบร้อยแล้ว`);
                               } catch (error) {
@@ -1295,7 +1312,7 @@ export default function IssuingPage() {
                               }
                             }
                           }}
-                          className="w-full bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                          className="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                         >
                           🗑️ ลบรายการจ่ายออกซ้ำ ({issuedItems.length - 1} รายการ)
                         </button>
@@ -1306,41 +1323,41 @@ export default function IssuingPage() {
               )}
 
               {/* ตัวเลือกประเภทงาน */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">ประเภทงาน *</label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">ประเภทงาน *</label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       name="isNGItem"
                       value="false"
                       checked={!formData.isNGItem}
                       onChange={(e) => setFormData({...formData, isNGItem: false, ngProblem: ''})}
-                      className="mr-2"
+                      className="mr-2 accent-amber-500"
                     />
-                    <span className="text-sm text-gray-700">งานตัดออกปกติ</span>
+                    <span className="text-sm text-gray-300">งานตัดออกปกติ</span>
                   </label>
-                  <label className="flex items-center">
+                  <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       name="isNGItem"
                       value="true"
                       checked={formData.isNGItem === true}
                       onChange={(e) => setFormData({...formData, isNGItem: true})}
-                      className="mr-2"
+                      className="mr-2 accent-red-500"
                     />
-                    <span className="text-sm text-red-700 font-medium">งานตัดออกเป็นงาน NG</span>
+                    <span className="text-sm text-red-400 font-medium">งานตัดออกเป็นงาน NG</span>
                   </label>
                 </div>
               </div>
 
               {/* ข้อมูลการจ่ายออก - แสดงเมื่อเลือกงานปกติ */}
               {!formData.isNGItem && (
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">📤 ข้อมูลการจ่ายออก</h3>
-                  <div className="grid grid-cols-1 gap-4">
+                <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">📤 ข้อมูลการจ่ายออก</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนที่จ่ายออก *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">จำนวนที่จ่ายออก *</label>
                       <input
                         type="number"
                         name="issuedQty"
@@ -1348,98 +1365,98 @@ export default function IssuingPage() {
                         onChange={handleChange}
                         min="0"
                         max={selectedItem && !editingItem ? getBalance(selectedItem) : undefined}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         required
                       />
                       {selectedItem && !editingItem && (
-                        <p className="text-xs text-gray-500 mt-1">สูงสุด: {getBalance(selectedItem)}</p>
+                        <p className="text-xs text-gray-400 mt-1">สูงสุด: {getBalance(selectedItem)}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">เลข Invoice ออก *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">เลข Invoice ออก *</label>
                       <input
                         type="text"
                         name="invoiceNumber"
                         list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">วันที่จ่ายออก *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">วันที่จ่ายออก *</label>
                       <input
                         type="date"
                         name="issueDate"
                         value={formData.issueDate}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Due ที่ส่ง</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Due ที่ส่ง</label>
                       <input
                         type="date"
                         name="dueDate"
                         value={formData.dueDate || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Event</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Event</label>
                       <input
                         type="text"
                         name="event"
                         list="dl-event"
                         value={formData.event || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         placeholder="ชื่อ Event หรือโครงการ"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Supplier</label>
                       <input
                         type="text"
                         name="supplier"
                         list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         placeholder="ชื่อผู้จำหน่าย/ซัพพลายเออร์"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Customer</label>
                       <input
                         type="text"
                         name="customer"
                         list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         placeholder="ชื่อลูกค้า"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">เลขใบเบิก</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">เลขใบเบิก</label>
                       <input
                         type="text"
                         name="withdrawalNumber"
                         list="dl-withdrawalNumber"
                         value={formData.withdrawalNumber || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         placeholder="หมายเลขใบเบิกสินค้า"
                       />
                     </div>
@@ -1449,29 +1466,29 @@ export default function IssuingPage() {
 
               {/* ข้อมูลงาน NG - แสดงเมื่อเลือกงาน NG */}
               {formData.isNGItem && (
-                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                  <div className="flex items-center mb-4">
-                    <div className="bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium mr-3">
+                <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-medium mr-3">
                       NG
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800">🚫 ข้อมูลงาน NG</h3>
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">🚫 ข้อมูลงาน NG</h3>
                   </div>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">เลข INVOICE (ถ้ามี)</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">เลข INVOICE (ถ้ามี)</label>
                       <input
                         type="text"
                         name="invoiceNumber"
                         list="dl-invoiceNumber"
                         value={formData.invoiceNumber}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                         placeholder="หมายเลข Invoice"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนชิ้นงาน *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">จำนวนชิ้นงาน *</label>
                       <input
                         type="number"
                         name="issuedQty"
@@ -1479,61 +1496,61 @@ export default function IssuingPage() {
                         onChange={handleChange}
                         min="0"
                         max={selectedItem && !editingItem ? getBalance(selectedItem) : undefined}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                         required
                         placeholder="จำนวนชิ้น"
                       />
                       {selectedItem && !editingItem && (
-                        <p className="text-xs text-gray-500 mt-1">สูงสุด: {getBalance(selectedItem)}</p>
+                        <p className="text-xs text-gray-400 mt-1">สูงสุด: {getBalance(selectedItem)}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">วันที่บันทึก *</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">วันที่บันทึก *</label>
                       <input
                         type="date"
                         name="issueDate"
                         value={formData.issueDate}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Supplier</label>
                       <input
                         type="text"
                         name="supplier"
                         list="dl-supplier"
                         value={formData.supplier || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                         placeholder="ชื่อผู้จำหน่าย/ซัพพลายเออร์"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Customer</label>
                       <input
                         type="text"
                         name="customer"
                         list="dl-customer"
                         value={formData.customer || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                         placeholder="ชื่อลูกค้า"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-red-700 mb-1">ปัญหาของชิ้นงาน *</label>
+                      <label className="block text-sm font-medium text-red-300 mb-2">ปัญหาของชิ้นงาน *</label>
                       <textarea
                         name="ngProblem"
                         value={formData.ngProblem || ''}
                         onChange={handleChange}
                         rows={3}
-                        className="w-full px-3 py-2 border border-red-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
                         placeholder="อธิบายปัญหาที่พบในชิ้นงาน..."
                         required={formData.isNGItem}
                       />
@@ -1543,23 +1560,23 @@ export default function IssuingPage() {
               )}
 
               {/* หมายเหตุ */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">📝 หมายเหตุ</h3>
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">📝 หมายเหตุ</h3>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Remarks</label>
                   <textarea
                     name="remarks"
                     value={formData.remarks || ''}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none"
                     placeholder="ใส่หมายเหตุเพิ่มเติม..."
                   />
                 </div>
               </div>
 
               {/* ปุ่มควบคุม */}
-              <div className="flex justify-end space-x-3 pt-4 border-t">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1567,13 +1584,13 @@ export default function IssuingPage() {
                     setEditingItem(null);
                     setSelectedItem(null);
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
                   ❌ ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
                 >
                   {editingItem ? '💾 อัปเดต' : '💾 บันทึก'}
                 </button>
