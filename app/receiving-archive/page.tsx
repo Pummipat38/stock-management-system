@@ -20,6 +20,7 @@ export default function ReceivingArchivePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedGroup, setSelectedGroup] = useState<ArchivedGroup | null>(null);
   const itemsPerPage = 10;
 
   const normalizeSearchText = (value?: string) =>
@@ -196,12 +197,11 @@ export default function ReceivingArchivePage() {
               <table className="w-full table-fixed divide-y divide-gray-200">
                 <thead className="bg-white/5">
                   <tr>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-20">MYOB</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">MODEL</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-32">PART NUMBER</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-40">PART NAME</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">รับเข้ารวม</th>
-                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-28">รับเข้าล่าสุด</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">MYOB</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-32">MODEL</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-40">PART NUMBER</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-48">PART NAME</th>
+                    <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-28">จัดการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
@@ -211,33 +211,31 @@ export default function ReceivingArchivePage() {
 
                     return (
                       <tr key={item.key} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-20">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-24">
                           <div className={`truncate ${partColor}`}>{item.myobNumber}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl text-center w-24">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl text-center w-32">
                           <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-base font-bold border-2 ${partColor} ${partColor.replace('text-', 'bg-')}/10 ${partColor.replace('text-', 'border-')}/50`}>
                             {item.model}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-32">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-40">
                           <div className="truncate text-white" title={item.partNumber}>
                             {item.partNumber}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-40">
+                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-48">
                           <div className="truncate text-white" title={item.partName}>
                             {item.partName}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-center w-24">
-                          <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-sm font-semibold bg-rose-100 text-rose-700">
-                            {item.totalReceived.toLocaleString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-center w-28">
-                          <div className="text-white">
-                            {new Date(item.lastReceivedDate).toLocaleDateString('th-TH')}
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap text-center w-28">
+                          <button
+                            onClick={() => setSelectedGroup(item)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                          >
+                            🔍 ดูรายละเอียด
+                          </button>
                         </td>
                       </tr>
                     );
@@ -245,11 +243,10 @@ export default function ReceivingArchivePage() {
 
                   {emptyRows.map((_, index) => (
                     <tr key={`empty-${index}`} className="h-16">
-                      <td className="px-4 py-4 w-20">&nbsp;</td>
                       <td className="px-4 py-4 w-24">&nbsp;</td>
                       <td className="px-4 py-4 w-32">&nbsp;</td>
                       <td className="px-4 py-4 w-40">&nbsp;</td>
-                      <td className="px-4 py-4 w-24">&nbsp;</td>
+                      <td className="px-4 py-4 w-48">&nbsp;</td>
                       <td className="px-4 py-4 w-28">&nbsp;</td>
                     </tr>
                   ))}
@@ -258,6 +255,116 @@ export default function ReceivingArchivePage() {
             </div>
           </div>
         </div>
+
+        {/* Detail Modal */}
+        {selectedGroup && (
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={() => setSelectedGroup(null)}
+          >
+            <div className="bg-gray-900 border border-white/20 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    📋 รายละเอียดการรับเข้า
+                  </h2>
+                  <button
+                    onClick={() => setSelectedGroup(null)}
+                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="text-white/80 mt-1 text-sm">
+                  {selectedGroup.myobNumber} • {selectedGroup.model} • {selectedGroup.partNumber} • {selectedGroup.partName}
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-rose-300">{selectedGroup.totalReceived.toLocaleString()}</div>
+                    <div className="text-white/60 text-sm mt-1">รับเข้ารวม</div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-emerald-300">
+                      {new Date(selectedGroup.lastReceivedDate).toLocaleDateString('th-TH')}
+                    </div>
+                    <div className="text-white/60 text-sm mt-1">รับเข้าล่าสุด</div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-blue-300">{selectedGroup.entries.length}</div>
+                    <div className="text-white/60 text-sm mt-1">จำนวนครั้งที่รับเข้า</div>
+                  </div>
+                </div>
+
+                {/* Entries Table */}
+                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-white/10 font-semibold text-white">
+                    ประวัติการรับเข้าทั้งหมด
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-white/5">
+                        <tr>
+                          <th className="px-4 py-3 text-white/70">วันที่รับเข้า</th>
+                          <th className="px-4 py-3 text-white/70">PO / Purchase</th>
+                          <th className="px-4 py-3 text-white/70 text-center">จำนวน</th>
+                          <th className="px-4 py-3 text-white/70">Supplier</th>
+                          <th className="px-4 py-3 text-white/70">Customer</th>
+                          <th className="px-4 py-3 text-white/70">หมายเหตุ</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/10">
+                        {selectedGroup.entries
+                          .slice()
+                          .sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
+                          .map((entry, idx) => (
+                            <tr key={entry.id || idx} className="hover:bg-white/5 transition-colors">
+                              <td className="px-4 py-3 text-white whitespace-nowrap">
+                                {new Date(entry.receivedDate).toLocaleDateString('th-TH')}
+                              </td>
+                              <td className="px-4 py-3 text-white whitespace-nowrap">
+                                {entry.poNumber || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-white text-center whitespace-nowrap">
+                                <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                                  {entry.receivedQty.toLocaleString()}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-white whitespace-nowrap">
+                                {entry.supplier || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-white whitespace-nowrap">
+                                {entry.customer || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-white/80 whitespace-nowrap">
+                                {entry.remarks || '-'}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <div className="flex justify-end pt-2 border-t border-white/10">
+                  <button
+                    onClick={() => setSelectedGroup(null)}
+                    className="px-6 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    ปิด
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 bg-white/10 backdrop-blur-sm p-6 rounded-lg border border-white/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
