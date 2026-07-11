@@ -62,34 +62,8 @@ export default function ReceivingPage() {
   const [selectedDeleteIds, setSelectedDeleteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 13;
+  const itemsPerPage = 12;
 
-  // Handle mouse wheel scrolling
-  useEffect(() => {
-    const handleWheel = (event: Event) => {
-      const wheelEvent = event as WheelEvent;
-      const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-      const totalPages = Math.ceil(receivedItems.length / itemsPerPage);
-      
-      if (totalPages <= 1) return;
-
-      wheelEvent.preventDefault();
-      
-      if (wheelEvent.deltaY > 0) {
-        // Scroll down - next page
-        setCurrentPage(prev => Math.min(prev + 1, totalPages));
-      } else {
-        // Scroll up - previous page
-        setCurrentPage(prev => Math.max(prev - 1, 1));
-      }
-    };
-
-    const tableContainer = document.querySelector('.receiving-table-container');
-    if (tableContainer) {
-      tableContainer.addEventListener('wheel', handleWheel, { passive: false });
-      return () => tableContainer.removeEventListener('wheel', handleWheel);
-    }
-  }, [filteredItems, itemsPerPage]);
   const [formData, setFormData] = useState<ReceivingFormData>({
     myobNumber: '',
     model: '',
@@ -169,17 +143,6 @@ export default function ReceivingPage() {
     (value || '').toString().toLowerCase().replace(/[\s-]+/g, '');
 
   const getGroupKey = (item: StockItem) => `${item.myobNumber}||${item.partNumber}`;
-
-  const getBalanceMap = (items: StockItem[]) => {
-    const balanceMap = new Map<string, number>();
-    items.forEach(item => {
-      const key = getGroupKey(item);
-      const received = item.receivedQty > 0 ? item.receivedQty : 0;
-      const issued = item.issuedQty && item.issuedQty > 0 ? item.issuedQty : 0;
-      balanceMap.set(key, (balanceMap.get(key) || 0) + received - issued);
-    });
-    return balanceMap;
-  };
 
   const handleDeleteSelected = async () => {
     if (selectedDeleteIds.length === 0) {
@@ -530,6 +493,7 @@ export default function ReceivingPage() {
             พบ <span className="text-emerald-300 font-bold">{filteredItems.length}</span> รายการจากทั้งหมด <span className="text-emerald-300 font-bold">{stockItems.length}</span> รายการ
           </p>
         )}
+      </div>
 
       {isDetailOpen && detailGroupKey && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -729,7 +693,6 @@ export default function ReceivingPage() {
           </div>
         </div>
       )}
-      </div>
 
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -1270,168 +1233,182 @@ export default function ReceivingPage() {
         </div>
       )}
 
-      {/* ตารางแสดงรายการรับเข้า */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl flex receiving-table-container overflow-hidden border border-white/20">
-        <div className="flex-1 min-w-0">
-          <div className="p-5 border-b border-white/20 bg-white/5">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <span>📋</span> รายการการรับเข้าทั้งหมด
-            </h3>
-          </div>
-          <div className="overflow-hidden">
-            <table className="w-full table-fixed divide-y divide-white/10">
-              <thead className="bg-white/10">
-                <tr>
-                  {isDeleteMode && (
-                    <th className="px-3 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-16">
-                      เลือก
-                    </th>
-                  )}
-                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-20">MYOB</th>
-                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-24">MODEL</th>
-                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-32">PART NUMBER</th>
-                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-40">PART NAME</th>
-                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-20">จัดการ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {(() => {
-                const balanceMap = getBalanceMap(stockItems);
-                const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-                // แสดงรายการที่รับเข้าทั้งหมด ไม่ว่า balance จะเป็นเท่าไหร่
-                const inStockReceivedItems = receivedItems;
-                
-                // แยกรายการกัน ไม่รวมเป็นกลุ่ม
-                const sortedItems = inStockReceivedItems
-                  .slice()
-                  .sort((a, b) => {
-                    // เรียงตาม MYOB ก่อน แล้วค่อยตาม Part Number
-                    if (a.myobNumber !== b.myobNumber) {
-                      return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
-                    }
-                    return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
-                  });
+      {/* Card Grid แสดงรายการรับเข้า */}
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-5">
+        <div className="mb-5">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>📋</span> รายการการรับเข้าทั้งหมด
+          </h3>
+        </div>
 
-                const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
-                const startIndex = (currentPage - 1) * itemsPerPage;
-                const endIndex = startIndex + itemsPerPage;
-                const currentItems = sortedItems.slice(startIndex, endIndex);
+        {(() => {
+          const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
+          const inStockReceivedItems = receivedItems;
 
-                // สร้าง empty rows เพื่อให้ตารางมีความสูงคงที่
-                const emptyRowsCount = Math.max(0, itemsPerPage - currentItems.length);
-                const emptyRows = Array(emptyRowsCount).fill(null);
+          const sortedItems = inStockReceivedItems
+            .slice()
+            .sort((a, b) => {
+              if (a.myobNumber !== b.myobNumber) {
+                return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+              }
+              return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+            });
 
-                return [
-                  ...currentItems.map((item, index) => {
-                    
-                    // สร้างสีที่แตกต่างกันสำหรับแต่ละ part
-                    const partKey = `${item.myobNumber}-${item.partNumber}`;
-                    const partColors = [
-                      'text-blue-400',
-                      'text-green-400', 
-                      'text-purple-400',
-                      'text-red-400',
-                      'text-indigo-400',
-                      'text-pink-400',
-                      'text-yellow-400',
-                      'text-teal-400',
-                      'text-orange-400',
-                      'text-cyan-400'
-                    ];
-                    const colorIndex = Math.abs(partKey.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % partColors.length;
-                    const partColor = partColors[colorIndex];
-                    
-                    return (
-                      <tr key={item.id} className="hover:bg-white/10 transition-colors group">
+          const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const endIndex = startIndex + itemsPerPage;
+          const currentItems = sortedItems.slice(startIndex, endIndex);
+
+          const partColors = [
+            'text-blue-400',
+            'text-green-400',
+            'text-purple-400',
+            'text-red-400',
+            'text-indigo-400',
+            'text-pink-400',
+            'text-yellow-400',
+            'text-teal-400',
+            'text-orange-400',
+            'text-cyan-400'
+          ];
+
+          return (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {currentItems.map((item) => {
+                  const partKey = `${item.myobNumber}-${item.partNumber}`;
+                  const colorIndex = Math.abs(partKey.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % partColors.length;
+                  const partColor = partColors[colorIndex];
+                  const createdDate = new Date(item.createdAt);
+                  const currentDate = new Date();
+                  const daysDiff = Math.floor((currentDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                  const canEdit = daysDiff <= 2;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white/10 border border-white/20 rounded-xl p-4 hover:bg-white/15 hover:border-white/30 transition-all group flex flex-col"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <div className={`text-2xl font-bold truncate ${partColor}`} title={item.myobNumber}>
+                          {item.myobNumber}
+                        </div>
                         {isDeleteMode && (
-                          <td className="px-3 py-3.5 whitespace-nowrap text-center w-16">
-                            <input
-                              type="checkbox"
-                              checked={selectedDeleteIds.includes(item.id)}
-                              onChange={() => {
-                                setSelectedDeleteIds((prev: string[]) => {
-                                  if (prev.includes(item.id)) {
-                                    return prev.filter((id: string) => id !== item.id);
-                                  }
-                                  return [...prev, item.id];
-                                });
-                              }}
-                              className="h-4 w-4 text-emerald-600 border-white/30 rounded focus:ring-emerald-400"
-                            />
-                          </td>
+                          <input
+                            type="checkbox"
+                            checked={selectedDeleteIds.includes(item.id)}
+                            onChange={() => {
+                              setSelectedDeleteIds((prev: string[]) => {
+                                if (prev.includes(item.id)) {
+                                  return prev.filter((id: string) => id !== item.id);
+                                }
+                                return [...prev, item.id];
+                              });
+                            }}
+                            className="h-5 w-5 text-emerald-600 border-white/30 rounded focus:ring-emerald-400 cursor-pointer mt-1"
+                          />
                         )}
-                        <td className="px-6 py-3.5 whitespace-nowrap text-lg font-bold text-center w-20">
-                          <div className={`truncate ${partColor}`}>{item.myobNumber}</div>
-                        </td>
-                        <td className="px-6 py-3.5 whitespace-nowrap text-center w-24">
-                          <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-sm font-bold border ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
+                      </div>
+
+                      <div className="space-y-3 flex-1">
+                        <div>
+                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Model</div>
+                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold border w-full ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
                             {item.model || '-'}
                           </span>
-                        </td>
-                        <td className="px-6 py-3.5 whitespace-nowrap text-base font-semibold text-center w-32">
-                          <div className="truncate text-white/90" title={item.partNumber}>
+                        </div>
+
+                        <div>
+                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Part Number</div>
+                          <div className="text-base font-semibold text-white/90 truncate" title={item.partNumber}>
                             {item.partNumber}
                           </div>
-                        </td>
-                        <td className="px-6 py-3.5 whitespace-nowrap text-base font-medium text-center w-40">
-                          <div className="truncate text-white/80" title={item.partName}>
+                        </div>
+
+                        <div>
+                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Part Name</div>
+                          <div className="text-sm font-medium text-white/80 truncate" title={item.partName}>
                             {item.partName}
                           </div>
-                        </td>
-                        <td className="px-6 py-3.5 whitespace-nowrap text-center w-20">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => {
-                                setDetailGroupKey(getGroupKey(item));
-                                setIsDetailOpen(true);
-                              }}
-                              className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:text-yellow-200 transition-colors"
-                              title="ดูรายละเอียด"
-                            >
-                              <span className="text-lg">🔍</span>
-                            </button>
-                            {(() => {
-                              const createdDate = new Date(item.createdAt);
-                              const currentDate = new Date();
-                              const daysDiff = Math.floor((currentDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-                              
-                              if (daysDiff <= 2) {
-                                return (
-                                  <button
-                                    onClick={() => handleEdit(item)}
-                                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
-                                    title="แก้ไข"
-                                  >
-                                    <span className="text-lg">✏️</span>
-                                  </button>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  }),
-                  ...emptyRows.map((_, index) => (
-                    <tr key={`empty-${index}`} className="h-16">
-                      {isDeleteMode && <td className="px-4 py-4">&nbsp;</td>}
-                      <td className="px-4 py-4">&nbsp;</td>
-                      <td className="px-4 py-4">&nbsp;</td>
-                      <td className="px-4 py-4">&nbsp;</td>
-                      <td className="px-4 py-4">&nbsp;</td>
-                      <td className="px-4 py-4">&nbsp;</td>
-                    </tr>
-                  ))
-                ];
-                })()}
-              </tbody>
-          </table>
-        </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setDetailGroupKey(getGroupKey(item));
+                            setIsDetailOpen(true);
+                          }}
+                          className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:text-yellow-200 transition-colors"
+                          title="ดูรายละเอียด"
+                        >
+                          <span className="text-lg">🔍</span>
+                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
+                            title="แก้ไข"
+                          >
+                            <span className="text-lg">✏️</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {sortedItems.length === 0 && (
+                <div className="text-center py-16 text-white/60">
+                  <div className="text-5xl mb-4">📭</div>
+                  <p className="text-lg">ไม่พบรายการรับเข้า</p>
+                </div>
+              )}
+
+              {totalPages > 1 && (
+                <div className="mt-6 flex items-center justify-between gap-4 border-t border-white/20 pt-4">
+                  <div className="text-sm text-white/70">
+                    หน้า <span className="font-bold text-emerald-300">{currentPage}</span> / {totalPages}
+                    <span className="ml-2">({sortedItems.length} รายการ)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ≪
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ก่อนหน้า
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ถัดไป
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ≫
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
 
-
-      </div>
       </div>
     </div>
   );
