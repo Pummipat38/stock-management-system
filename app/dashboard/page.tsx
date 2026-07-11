@@ -61,6 +61,42 @@ const formatDueDate = (value?: string) => {
   }).format(date);
 };
 
+const generateGearPath = (
+  teeth: number,
+  outerRadius: number,
+  innerRadius: number,
+  centerX: number,
+  centerY: number,
+  toothWidth: number
+) => {
+  const points: string[] = [];
+  const step = 360 / teeth;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+
+  for (let i = 0; i < teeth; i++) {
+    const angle = i * step;
+    const a1 = angle - toothWidth / 2;
+    const a2 = angle + toothWidth / 2;
+    const a3 = a2 + (step - toothWidth);
+
+    const p1 = { x: centerX + outerRadius * Math.cos(toRad(a1)), y: centerY + outerRadius * Math.sin(toRad(a1)) };
+    const p2 = { x: centerX + outerRadius * Math.cos(toRad(a2)), y: centerY + outerRadius * Math.sin(toRad(a2)) };
+    const p3 = { x: centerX + innerRadius * Math.cos(toRad(a2)), y: centerY + innerRadius * Math.sin(toRad(a2)) };
+    const p4 = { x: centerX + innerRadius * Math.cos(toRad(a3)), y: centerY + innerRadius * Math.sin(toRad(a3)) };
+    const p5 = { x: centerX + outerRadius * Math.cos(toRad(a3)), y: centerY + outerRadius * Math.sin(toRad(a3)) };
+
+    if (i === 0) {
+      points.push(`M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`);
+    }
+    points.push(`L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`);
+    points.push(`L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`);
+    points.push(`L ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`);
+    points.push(`L ${p5.x.toFixed(2)} ${p5.y.toFixed(2)}`);
+  }
+  points.push('Z');
+  return points.join(' ');
+};
+
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [dueAlerts, setDueAlerts] = useState<DueAlertItem[]>([]);
@@ -199,22 +235,22 @@ export default function Dashboard() {
       ></div>
 
       {/* Background gear watermark */}
-      <div className="absolute -top-28 -left-24 w-[380px] h-[380px] text-white/[0.10] animate-[spin_30s_linear_infinite] pointer-events-none select-none z-0">
+      <div className="absolute -top-20 -left-20 w-[365px] h-[365px] text-white/[0.10] animate-[spin_30s_linear_infinite] pointer-events-none select-none z-0">
         <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
-          <circle cx="50" cy="50" r="20" fill="black" />
+          <path d={generateGearPath(16, 48, 38, 50, 50, 12)} />
+          <circle cx="50" cy="50" r="18" fill="black" />
         </svg>
       </div>
-      <div className="absolute -top-8 left-1/3 w-[260px] h-[260px] text-white/[0.10] animate-[spin_22s_linear_infinite_reverse] pointer-events-none select-none z-0">
+      <div className="absolute -top-9 left-[220px] w-[274px] h-[274px] text-white/[0.10] animate-[spin_22s_linear_infinite_reverse] pointer-events-none select-none z-0">
         <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
-          <circle cx="50" cy="50" r="20" fill="black" />
+          <path d={generateGearPath(12, 36, 28, 50, 50, 16)} />
+          <circle cx="50" cy="50" r="14" fill="black" />
         </svg>
       </div>
-      <div className="absolute -top-16 -right-10 w-[320px] h-[320px] text-white/[0.10] animate-[spin_26s_linear_infinite] pointer-events-none select-none z-0">
+      <div className="absolute -top-5 left-[480px] w-[228px] h-[228px] text-white/[0.10] animate-[spin_18s_linear_infinite] pointer-events-none select-none z-0">
         <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
-          <circle cx="50" cy="50" r="20" fill="black" />
+          <path d={generateGearPath(10, 30, 23, 50, 50, 19.2)} />
+          <circle cx="50" cy="50" r="11" fill="black" />
         </svg>
       </div>
 
