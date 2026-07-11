@@ -63,6 +63,8 @@ export default function ReceivingPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const [groupBy, setGroupBy] = useState<'myob' | 'partNumber'>('myob');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const [formData, setFormData] = useState<ReceivingFormData>({
     myobNumber: '',
@@ -1233,31 +1235,50 @@ export default function ReceivingPage() {
         </div>
       )}
 
-      {/* Card Grid แสดงรายการรับเข้า */}
+      {/* Grouped Accordion List แสดงรายการรับเข้า */}
       <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-5">
-        <div className="mb-5">
+        <div className="mb-5 flex items-center justify-between gap-4 flex-wrap">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <span>📋</span> รายการการรับเข้าทั้งหมด
           </h3>
+          <div className="flex items-center gap-2 bg-white/10 rounded-xl p-1 border border-white/20">
+            <button
+              onClick={() => { setGroupBy('myob'); setCurrentPage(1); setExpandedGroups(new Set()); }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${groupBy === 'myob' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+            >
+              จัดกลุ่มตาม MYOB
+            </button>
+            <button
+              onClick={() => { setGroupBy('partNumber'); setCurrentPage(1); setExpandedGroups(new Set()); }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${groupBy === 'partNumber' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+            >
+              จัดกลุ่มตาม Part Number
+            </button>
+          </div>
         </div>
 
         {(() => {
           const receivedItems = filteredItems.filter(item => item.receivedQty > 0);
-          const inStockReceivedItems = receivedItems;
 
-          const sortedItems = inStockReceivedItems
-            .slice()
-            .sort((a, b) => {
-              if (a.myobNumber !== b.myobNumber) {
-                return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
-              }
-              return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
-            });
+          const sortedItems = receivedItems.slice().sort((a, b) => {
+            if (groupBy === 'myob') {
+              return a.myobNumber.localeCompare(b.myobNumber, 'en', { numeric: true, sensitivity: 'base' });
+            }
+            return a.partNumber.localeCompare(b.partNumber, 'en', { numeric: true, sensitivity: 'base' });
+          });
 
-          const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
-          const startIndex = (currentPage - 1) * itemsPerPage;
-          const endIndex = startIndex + itemsPerPage;
-          const currentItems = sortedItems.slice(startIndex, endIndex);
+          const groups = new Map<string, StockItem[]>();
+          sortedItems.forEach(item => {
+            const key = groupBy === 'myob' ? item.myobNumber : item.partNumber;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key)!.push(item);
+          });
+
+          const groupKeys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }));
+          const groupsPerPage = 10;
+          const totalPages = Math.ceil(groupKeys.length / groupsPerPage) || 1;
+          const startIndex = (currentPage - 1) * groupsPerPage;
+          const currentGroupKeys = groupKeys.slice(startIndex, startIndex + groupsPerPage);
 
           const partColors = [
             'text-blue-400',
@@ -1272,94 +1293,148 @@ export default function ReceivingPage() {
             'text-cyan-400'
           ];
 
+          const toggleGroup = (key: string) => {
+            setExpandedGroups(prev => {
+              const next = new Set(prev);
+              if (next.has(key)) next.delete(key);
+              else next.add(key);
+              return next;
+            });
+          };
+
+          const expandAll = () => setExpandedGroups(new Set(currentGroupKeys));
+          const collapseAll = () => setExpandedGroups(new Set());
+
           return (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {currentItems.map((item) => {
-                  const partKey = `${item.myobNumber}-${item.partNumber}`;
-                  const colorIndex = Math.abs(partKey.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % partColors.length;
-                  const partColor = partColors[colorIndex];
-                  const createdDate = new Date(item.createdAt);
-                  const currentDate = new Date();
-                  const daysDiff = Math.floor((currentDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-                  const canEdit = daysDiff <= 2;
+              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                <div className="text-sm text-white/70">
+                  <span className="font-bold text-emerald-300">{groupKeys.length}</span> กลุ่ม / <span className="font-bold text-emerald-300">{sortedItems.length}</span> รายการ
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={expandAll}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/10"
+                  >
+                    ขยายทั้งหมด
+                  </button>
+                  <button
+                    onClick={collapseAll}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/10"
+                  >
+                    ยุบทั้งหมด
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {currentGroupKeys.map(key => {
+                  const items = groups.get(key) || [];
+                  const isExpanded = expandedGroups.has(key);
+                  const groupColor = partColors[Math.abs(key.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % partColors.length];
 
                   return (
-                    <div
-                      key={item.id}
-                      className="bg-white/10 border border-white/20 rounded-xl p-4 hover:bg-white/15 hover:border-white/30 transition-all group flex flex-col"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-3">
-                        <div className={`text-2xl font-bold truncate ${partColor}`} title={item.myobNumber}>
-                          {item.myobNumber}
-                        </div>
-                        {isDeleteMode && (
-                          <input
-                            type="checkbox"
-                            checked={selectedDeleteIds.includes(item.id)}
-                            onChange={() => {
-                              setSelectedDeleteIds((prev: string[]) => {
-                                if (prev.includes(item.id)) {
-                                  return prev.filter((id: string) => id !== item.id);
-                                }
-                                return [...prev, item.id];
-                              });
-                            }}
-                            className="h-5 w-5 text-emerald-600 border-white/30 rounded focus:ring-emerald-400 cursor-pointer mt-1"
-                          />
-                        )}
-                      </div>
-
-                      <div className="space-y-3 flex-1">
-                        <div>
-                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Model</div>
-                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold border w-full ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
-                            {item.model || '-'}
+                    <div key={key} className="bg-white/10 border border-white/20 rounded-xl overflow-hidden hover:border-white/30 transition-colors">
+                      <button
+                        onClick={() => toggleGroup(key)}
+                        className="w-full px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-white/10 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <span className={`text-lg font-bold truncate ${groupColor}`}>{key}</span>
+                          <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-white/80 font-medium whitespace-nowrap">
+                            {items.length} รายการ
                           </span>
                         </div>
-
-                        <div>
-                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Part Number</div>
-                          <div className="text-base font-semibold text-white/90 truncate" title={item.partNumber}>
-                            {item.partNumber}
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="text-xs text-emerald-200/70 mb-1 uppercase tracking-wider">Part Name</div>
-                          <div className="text-sm font-medium text-white/80 truncate" title={item.partName}>
-                            {item.partName}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            setDetailGroupKey(getGroupKey(item));
-                            setIsDetailOpen(true);
-                          }}
-                          className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:text-yellow-200 transition-colors"
-                          title="ดูรายละเอียด"
+                        <svg
+                          className={`w-5 h-5 text-white/60 transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          <span className="text-lg">🔍</span>
-                        </button>
-                        {canEdit && (
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
-                            title="แก้ไข"
-                          >
-                            <span className="text-lg">✏️</span>
-                          </button>
-                        )}
-                      </div>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="border-t border-white/20 px-4 py-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {items.map(item => {
+                              const partKey = `${item.myobNumber}-${item.partNumber}`;
+                              const colorIndex = Math.abs(partKey.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % partColors.length;
+                              const partColor = partColors[colorIndex];
+                              const createdDate = new Date(item.createdAt);
+                              const currentDate = new Date();
+                              const daysDiff = Math.floor((currentDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                              const canEdit = daysDiff <= 2;
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors flex flex-col"
+                                >
+                                  <div className="flex items-start justify-between gap-2 mb-2">
+                                    <div className={`text-lg font-bold truncate ${partColor}`}>
+                                      {groupBy === 'myob' ? item.partNumber : item.myobNumber}
+                                    </div>
+                                    {isDeleteMode && (
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedDeleteIds.includes(item.id)}
+                                        onChange={() => {
+                                          setSelectedDeleteIds((prev: string[]) => {
+                                            if (prev.includes(item.id)) {
+                                              return prev.filter((id: string) => id !== item.id);
+                                            }
+                                            return [...prev, item.id];
+                                          });
+                                        }}
+                                        className="h-4 w-4 text-emerald-600 border-white/30 rounded focus:ring-emerald-400 cursor-pointer mt-0.5"
+                                      />
+                                    )}
+                                  </div>
+                                  <div className="space-y-1.5 flex-1">
+                                    <div className="text-xs text-emerald-200/70 uppercase tracking-wider">Model</div>
+                                    <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-bold border w-full ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
+                                      {item.model || '-'}
+                                    </span>
+                                    <div className="text-xs text-emerald-200/70 uppercase tracking-wider mt-2">Part Name</div>
+                                    <div className="text-sm font-medium text-white/80 truncate" title={item.partName}>
+                                      {item.partName}
+                                    </div>
+                                  </div>
+                                  <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setDetailGroupKey(getGroupKey(item));
+                                        setIsDetailOpen(true);
+                                      }}
+                                      className="w-8 h-8 flex items-center justify-center rounded-md bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:text-yellow-200 transition-colors"
+                                      title="ดูรายละเอียด"
+                                    >
+                                      <span className="text-base">🔍</span>
+                                    </button>
+                                    {canEdit && (
+                                      <button
+                                        onClick={() => handleEdit(item)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
+                                        title="แก้ไข"
+                                      >
+                                        <span className="text-base">✏️</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
 
-              {sortedItems.length === 0 && (
+              {groupKeys.length === 0 && (
                 <div className="text-center py-16 text-white/60">
                   <div className="text-5xl mb-4">📭</div>
                   <p className="text-lg">ไม่พบรายการรับเข้า</p>
@@ -1370,7 +1445,7 @@ export default function ReceivingPage() {
                 <div className="mt-6 flex items-center justify-between gap-4 border-t border-white/20 pt-4">
                   <div className="text-sm text-white/70">
                     หน้า <span className="font-bold text-emerald-300">{currentPage}</span> / {totalPages}
-                    <span className="ml-2">({sortedItems.length} รายการ)</span>
+                    <span className="ml-2">({groupKeys.length} กลุ่ม)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
