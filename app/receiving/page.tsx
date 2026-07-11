@@ -940,7 +940,7 @@ export default function ReceivingPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
+            <div className="bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 rounded-t-2xl border-b border-gray-700">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   📦 บันทึกการรับเข้าหลาย Part พร้อมกัน
@@ -1015,14 +1015,14 @@ export default function ReceivingPage() {
                 console.error('Error saving bulk receiving data:', error);
                 alert('เกิดข้อผิดพลาดในการบันทึก: ' + (error instanceof Error ? error.message : 'Unknown error'));
               }
-            }} className="p-6 space-y-6">
+            }} className="p-6 space-y-4">
               
               {/* ข้อมูลทั่วไป */}
-              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <div className="bg-slate-800/50 border border-sky-500/30 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   ข้อมูลทั่วไป (ใช้ร่วมกันทุก Part)
                 </h3>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">เลข Purchase *</label>
                     <input
@@ -1030,7 +1030,7 @@ export default function ReceivingPage() {
                       list="dl-poNumber"
                       value={bulkFormData.poNumber}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, poNumber: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-slate-700/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="กรอกเลข Purchase"
                       required
                     />
@@ -1042,7 +1042,7 @@ export default function ReceivingPage() {
                       type="date"
                       value={bulkFormData.receivedDate}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, receivedDate: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-slate-700/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -1054,7 +1054,7 @@ export default function ReceivingPage() {
                       list="dl-supplier"
                       value={bulkFormData.supplier || ''}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, supplier: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-slate-700/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="กรอกชื่อ Supplier"
                     />
                   </div>
@@ -1066,27 +1066,27 @@ export default function ReceivingPage() {
                       list="dl-customer"
                       value={bulkFormData.customer || ''}
                       onChange={(e) => setBulkFormData(prev => ({ ...prev, customer: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 bg-slate-700/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="กรอกชื่อ Customer"
                     />
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-300 mb-2">หมายเหตุ</label>
                   <textarea
                     value={bulkFormData.remarks || ''}
                     onChange={(e) => setBulkFormData(prev => ({ ...prev, remarks: e.target.value }))}
                     rows={3}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-3 py-2 bg-slate-700/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all resize-none"
                     placeholder="กรอกหมายเหตุเพิ่มเติม (ถ้ามี)"
                   />
                 </div>
               </div>
 
               {/* รายการ Parts */}
-              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
-                <div className="flex justify-between items-center mb-4">
+              <div className="bg-slate-800/50 border border-sky-500/30 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     📦 รายการ Parts
                   </h3>
@@ -1105,15 +1105,15 @@ export default function ReceivingPage() {
                         }]
                       }));
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                   >
                     ➕ เพิ่ม Part
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {bulkFormData.parts.map((part, index) => (
-                    <div key={index} className="bg-gray-700/50 border border-gray-600 rounded-xl p-4 relative">
+                    <div key={index} className="bg-slate-700/50 border border-slate-500/40 rounded-xl p-4 relative">
                       {bulkFormData.parts.length > 1 && (
                         <button
                           type="button"
@@ -1133,7 +1133,7 @@ export default function ReceivingPage() {
                         📋 Part #{index + 1}
                       </h4>
                       
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                           <input
@@ -1145,7 +1145,7 @@ export default function ReceivingPage() {
                               newParts[index].myobNumber = e.target.value;
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="กรอกเลข MYOB"
                             required
                           />
@@ -1162,7 +1162,7 @@ export default function ReceivingPage() {
                               newParts[index].model = e.target.value;
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="กรอก Model"
                             required
                           />
@@ -1179,7 +1179,7 @@ export default function ReceivingPage() {
                               newParts[index].partNumber = e.target.value;
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="กรอก Part Number"
                             required
                           />
@@ -1196,7 +1196,7 @@ export default function ReceivingPage() {
                               newParts[index].partName = e.target.value;
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="กรอก Part Name"
                             required
                           />
@@ -1213,7 +1213,7 @@ export default function ReceivingPage() {
                               newParts[index].revision = e.target.value;
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="กรอก Revision (ถ้ามี)"
                           />
                         </div>
@@ -1229,7 +1229,7 @@ export default function ReceivingPage() {
                               setBulkFormData(prev => ({ ...prev, parts: newParts }));
                             }}
                             min="1"
-                            className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            className="w-full px-3 py-2 bg-slate-600/60 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                             placeholder="0"
                             required
                           />
@@ -1253,7 +1253,7 @@ export default function ReceivingPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
+                  className="px-6 py-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg"
                 >
                   💾 บันทึกทั้งหมด
                 </button>
