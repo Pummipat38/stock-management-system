@@ -198,6 +198,26 @@ export default function Dashboard() {
         style={{ animationDelay: '2s', animationDuration: '2.2s' }}
       ></div>
 
+      {/* Background gear watermark */}
+      <div className="absolute -bottom-20 -left-20 w-[360px] h-[360px] text-white/[0.04] animate-[spin_30s_linear_infinite] pointer-events-none select-none z-0">
+        <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
+          <circle cx="50" cy="50" r="20" fill="black" />
+        </svg>
+      </div>
+      <div className="absolute bottom-10 left-64 w-[220px] h-[220px] text-white/[0.04] animate-[spin_22s_linear_infinite_reverse] pointer-events-none select-none z-0">
+        <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
+          <circle cx="50" cy="50" r="20" fill="black" />
+        </svg>
+      </div>
+      <div className="absolute -top-10 -right-10 w-[260px] h-[260px] text-white/[0.04] animate-[spin_26s_linear_infinite] pointer-events-none select-none z-0">
+        <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 0 L60 25 L85 15 L90 40 L100 50 L90 60 L85 85 L60 75 L50 100 L40 75 L15 85 L10 60 L0 50 L10 40 L15 15 L40 25 Z" />
+          <circle cx="50" cy="50" r="20" fill="black" />
+        </svg>
+      </div>
+
       <div className="container mx-auto px-4 py-8 relative z-10 min-h-screen flex flex-col justify-center">
         <div className="flex flex-col items-center justify-center">
           <div className="text-center mb-8">
