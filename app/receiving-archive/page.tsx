@@ -262,7 +262,7 @@ export default function ReceivingArchivePage() {
             className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedGroup(null)}
           >
-            <div className="bg-gray-900 border border-white/20 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gray-900 border border-white/20 rounded-2xl w-full max-w-[95%] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl border-b border-white/10">
                 <div className="flex items-center justify-between">
@@ -342,7 +342,7 @@ export default function ReceivingArchivePage() {
                               <td className="px-4 py-3 text-white whitespace-nowrap">
                                 {entry.customer || '-'}
                               </td>
-                              <td className="px-4 py-3 text-white/80 whitespace-nowrap">
+                              <td className="px-4 py-3 text-white/80 break-words max-w-xs">
                                 {entry.remarks || '-'}
                               </td>
                             </tr>
