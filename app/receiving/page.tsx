@@ -753,7 +753,7 @@ export default function ReceivingPage() {
                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   📋 ข้อมูลสินค้า
                 </h3>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">เลข MYOB *</label>
                     <input
@@ -844,7 +844,7 @@ export default function ReceivingPage() {
                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   📦 ข้อมูลการรับเข้า
                 </h3>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">วันที่รับเข้า *</label>
                     <input
