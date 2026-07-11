@@ -1285,11 +1285,11 @@ export default function ReceivingPage() {
                   return (
                     <div
                       key={item.id}
-                      className="group bg-white/10 border border-white/20 rounded-xl p-4 hover:bg-white/15 hover:border-white/30 transition-all"
+                      className="group bg-white/10 border border-white/20 rounded-xl p-3 hover:bg-white/15 hover:border-white/30 transition-all"
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                         {/* Left: MYOB + Model */}
-                        <div className="flex items-center gap-4 min-w-0 lg:w-[260px] flex-shrink-0">
+                        <div className="flex items-center gap-4 min-w-0 lg:w-[300px] flex-shrink-0">
                           {isDeleteMode && (
                             <input
                               type="checkbox"
@@ -1305,26 +1305,26 @@ export default function ReceivingPage() {
                               className="h-5 w-5 text-emerald-600 border-white/30 rounded focus:ring-emerald-400 cursor-pointer flex-shrink-0"
                             />
                           )}
-                          <div className={`text-xl font-bold truncate ${partColor}`} title={item.myobNumber}>
+                          <div className={`text-2xl font-bold truncate ${partColor}`} title={item.myobNumber}>
                             {item.myobNumber}
                           </div>
-                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
+                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-2xl font-bold border whitespace-nowrap ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
                             {item.model || '-'}
                           </span>
                         </div>
 
                         {/* Divider */}
-                        <div className="hidden lg:block w-px h-10 bg-white/20"></div>
+                        <div className="hidden lg:block w-px h-14 bg-white/20"></div>
                         <div className="lg:hidden h-px w-full bg-white/20"></div>
 
                         {/* Middle: Part Number + Part Name */}
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <div className="text-base font-semibold text-white/90 truncate" title={item.partNumber}>
+                            <div className="text-2xl font-semibold text-white/90 truncate" title={item.partNumber}>
                               {item.partNumber}
                             </div>
-                            <div className="hidden sm:block w-1 h-1 rounded-full bg-white/40"></div>
-                            <div className="text-sm font-medium text-white/70 truncate" title={item.partName}>
+                            <div className="hidden sm:block w-2 h-2 rounded-full bg-white/40"></div>
+                            <div className="text-2xl font-medium text-white/70 truncate" title={item.partName}>
                               {item.partName}
                             </div>
                           </div>
