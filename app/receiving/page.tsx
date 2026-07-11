@@ -395,132 +395,139 @@ export default function ReceivingPage() {
       
       <div className="container mx-auto px-8 py-8 relative z-10 max-w-[95%]">
         {/* Header with Back Button */}
-        <div className="mb-8 relative">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-indigo-200 bg-clip-text text-transparent">
-            📥 RECEIVING
-            <div className="text-2xl font-normal text-white/70 mt-2">
-              (รับงานเข้า)
-            </div>
-          </h1>
-          
-          {/* Back Button - positioned absolute top right */}
-          <div className="absolute top-0 right-0">
-            <button
-              onClick={() => window.location.href = '/dashboard'}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-12 py-6 rounded-lg text-2xl font-bold shadow-lg transition-all duration-200 border border-white/30 hover:border-white/50 hover:shadow-xl"
-            >
-              ← BACK
-            </button>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-emerald-100 to-teal-200 bg-clip-text text-transparent">
+              📥 RECEIVING
+            </h1>
+            <p className="text-lg text-white/70 mt-1">
+              รับงานเข้า
+            </p>
           </div>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-xl text-base font-semibold shadow-lg transition-all duration-200 border border-white/20 hover:border-white/40 hover:shadow-xl flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            BACK
+          </button>
         </div>
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => {
-              setEditingItem(null);
-              setFormData({
-                myobNumber: '',
-                model: '',
-                partName: '',
-                partNumber: '',
-                revision: '',
-                poNumber: '',
-                receivedQty: 0,
-                receivedDate: new Date().toISOString().split('T')[0],
-                supplier: '',
-                remarks: '',
-              });
-              setIsFormOpen(true);
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
-          >
-            📥 บันทึกการรับเข้าใหม่
-          </button>
-
-          <button
-            onClick={() => {
-              setBulkFormData({
-                poNumber: '',
-                receivedDate: new Date().toISOString().split('T')[0],
-                supplier: '',
-                customer: '',
-                remarks: '',
-                parts: [
-                  {
-                    myobNumber: '',
-                    model: '',
-                    partName: '',
-                    partNumber: '',
-                    revision: '',
-                    receivedQty: 0,
-                  }
-                ]
-              });
-              setIsBulkFormOpen(true);
-            }}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
-          >
-            📦 บันทึกการรับเข้าใหม่ &gt;1
-          </button>
-
-          <button
-            onClick={() => window.location.href = '/receiving-archive'}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
-          >
-            🗂️ รายการรับเข้า (ไม่มีสต็อก)
-          </button>
-
-          <button
-            onClick={() => window.location.href = '/parts'}
-            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
-          >
-            📋 ดู Part ทั้งหมด
-          </button>
-          <button
-            onClick={() => {
-              setIsDeleteMode(prev => !prev);
-              setSelectedDeleteIds([]);
-            }}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors border border-white/30"
-          >
-            ⚙️ ตัวเลือก
-          </button>
-          {isDeleteMode && (
+        {/* Action Buttons Toolbar */}
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 mb-6 shadow-lg">
+          <div className="flex flex-wrap gap-3 items-center">
             <button
-              onClick={handleEditSelected}
-              className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
+              onClick={() => {
+                setEditingItem(null);
+                setFormData({
+                  myobNumber: '',
+                  model: '',
+                  partName: '',
+                  partNumber: '',
+                  revision: '',
+                  poNumber: '',
+                  receivedQty: 0,
+                  receivedDate: new Date().toISOString().split('T')[0],
+                  supplier: '',
+                  remarks: '',
+                });
+                setIsFormOpen(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
             >
-              ✏️ แก้ไขที่เลือก ({selectedDeleteIds.length})
+              <span>📥</span> บันทึกการรับเข้าใหม่
             </button>
-          )}
-          {isDeleteMode && (
+
             <button
-              onClick={handleDeleteSelected}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
+              onClick={() => {
+                setBulkFormData({
+                  poNumber: '',
+                  receivedDate: new Date().toISOString().split('T')[0],
+                  supplier: '',
+                  customer: '',
+                  remarks: '',
+                  parts: [
+                    {
+                      myobNumber: '',
+                      model: '',
+                      partName: '',
+                      partNumber: '',
+                      revision: '',
+                      receivedQty: 0,
+                    }
+                  ]
+                });
+                setIsBulkFormOpen(true);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
             >
-              🗑️ ลบที่เลือก ({selectedDeleteIds.length})
+              <span>📦</span> บันทึกการรับเข้าใหม่ &gt;1
             </button>
-          )}
+
+            <button
+              onClick={() => window.location.href = '/receiving-archive'}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              <span>🗂️</span> รายการรับเข้า (ไม่มีสต็อก)
+            </button>
+
+            <button
+              onClick={() => window.location.href = '/parts'}
+              className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              <span>📋</span> ดู Part ทั้งหมด
+            </button>
+
+            <div className="flex-1"></div>
+
+            <button
+              onClick={() => {
+                setIsDeleteMode(prev => !prev);
+                setSelectedDeleteIds([]);
+              }}
+              className={`px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2 border ${isDeleteMode ? 'bg-amber-500/90 border-amber-400 text-white' : 'bg-white/10 border-white/30 text-white hover:bg-white/20'}`}
+            >
+              <span>⚙️</span> ตัวเลือก
+            </button>
+            {isDeleteMode && (
+              <button
+                onClick={handleEditSelected}
+                className="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                <span>✏️</span> แก้ไข ({selectedDeleteIds.length})
+              </button>
+            )}
+            {isDeleteMode && (
+              <button
+                onClick={handleDeleteSelected}
+                className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                <span>🗑️</span> ลบ ({selectedDeleteIds.length})
+              </button>
+            )}
+          </div>
         </div>
 
       {/* Search Box */}
       <div className="mb-6">
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-emerald-700/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           <input
             type="text"
             placeholder="ค้นหา MYOB, Model, Part Name, Part Number, PO Number..."
-            className="block w-full pl-10 pr-3 py-2 border border-white/30 rounded-md leading-5 bg-white/10 backdrop-blur-sm placeholder-white/60 text-white focus:outline-none focus:placeholder-white/40 focus:ring-1 focus:ring-white/50 focus:border-white/50"
+            className="block w-full pl-11 pr-4 py-3.5 border border-white/30 rounded-xl leading-5 bg-white/90 backdrop-blur-sm placeholder-emerald-700/50 text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 shadow-lg transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         {searchTerm && (
-          <p className="mt-2 text-sm text-white/70">
-            พบ {filteredItems.length} รายการจากทั้งหมด {stockItems.length} รายการ
+          <p className="mt-2 text-sm text-white/80 font-medium">
+            พบ <span className="text-emerald-300 font-bold">{filteredItems.length}</span> รายการจากทั้งหมด <span className="text-emerald-300 font-bold">{stockItems.length}</span> รายการ
           </p>
         )}
 
@@ -1264,25 +1271,27 @@ export default function ReceivingPage() {
       )}
 
       {/* ตารางแสดงรายการรับเข้า */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg shadow-sm flex receiving-table-container overflow-hidden border border-white/20">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl flex receiving-table-container overflow-hidden border border-white/20">
         <div className="flex-1 min-w-0">
-          <div className="p-4 border-b border-white/20">
-            <h3 className="text-lg font-semibold text-white">รายการการรับเข้าทั้งหมด</h3>
+          <div className="p-5 border-b border-white/20 bg-white/5">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <span>📋</span> รายการการรับเข้าทั้งหมด
+            </h3>
           </div>
           <div className="overflow-hidden">
-            <table className="w-full table-fixed divide-y divide-gray-200">
-              <thead className="bg-white/5">
+            <table className="w-full table-fixed divide-y divide-white/10">
+              <thead className="bg-white/10">
                 <tr>
                   {isDeleteMode && (
-                    <th className="px-3 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-16">
+                    <th className="px-3 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-16">
                       เลือก
                     </th>
                   )}
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-20">MYOB</th>
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-24">MODEL</th>
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-32">PART NUMBER</th>
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-40">PART NAME</th>
-                  <th className="px-6 py-3 text-center text-lg font-medium text-white/70 uppercase tracking-wider w-20">จัดการ</th>
+                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-20">MYOB</th>
+                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-24">MODEL</th>
+                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-32">PART NUMBER</th>
+                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-40">PART NAME</th>
+                  <th className="px-6 py-3.5 text-center text-base font-semibold text-emerald-100 uppercase tracking-wider w-20">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -1333,9 +1342,9 @@ export default function ReceivingPage() {
                     const partColor = partColors[colorIndex];
                     
                     return (
-                      <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={item.id} className="hover:bg-white/10 transition-colors group">
                         {isDeleteMode && (
-                          <td className="px-3 py-4 whitespace-nowrap text-center w-16">
+                          <td className="px-3 py-3.5 whitespace-nowrap text-center w-16">
                             <input
                               type="checkbox"
                               checked={selectedDeleteIds.includes(item.id)}
@@ -1347,39 +1356,39 @@ export default function ReceivingPage() {
                                   return [...prev, item.id];
                                 });
                               }}
-                              className="h-4 w-4 text-red-600 border-gray-300 rounded"
+                              className="h-4 w-4 text-emerald-600 border-white/30 rounded focus:ring-emerald-400"
                             />
                           </td>
                         )}
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-20">
+                        <td className="px-6 py-3.5 whitespace-nowrap text-lg font-bold text-center w-20">
                           <div className={`truncate ${partColor}`}>{item.myobNumber}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl text-center w-24">
-                          <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-base font-bold border-2 ${partColor} ${partColor.replace('text-', 'bg-')}/10 ${partColor.replace('text-', 'border-')}/50`}>
+                        <td className="px-6 py-3.5 whitespace-nowrap text-center w-24">
+                          <span className={`inline-flex items-center justify-center w-44 px-3 py-1 rounded-full text-sm font-bold border ${partColor} ${partColor.replace('text-', 'bg-')}/15 ${partColor.replace('text-', 'border-')}/40`}>
                             {item.model || '-'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-32">
-                          <div className="truncate text-white" title={item.partNumber}>
+                        <td className="px-6 py-3.5 whitespace-nowrap text-base font-semibold text-center w-32">
+                          <div className="truncate text-white/90" title={item.partNumber}>
                             {item.partNumber}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xl font-bold text-center w-40">
-                          <div className="truncate text-white" title={item.partName}>
+                        <td className="px-6 py-3.5 whitespace-nowrap text-base font-medium text-center w-40">
+                          <div className="truncate text-white/80" title={item.partName}>
                             {item.partName}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center w-20">
-                          <div className="flex space-x-1 justify-center">
+                        <td className="px-6 py-3.5 whitespace-nowrap text-center w-20">
+                          <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => {
                                 setDetailGroupKey(getGroupKey(item));
                                 setIsDetailOpen(true);
                               }}
-                              className="text-yellow-300 hover:text-yellow-200 transition-colors text-2xl"
+                              className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:text-yellow-200 transition-colors"
                               title="ดูรายละเอียด"
                             >
-                              🔍
+                              <span className="text-lg">🔍</span>
                             </button>
                             {(() => {
                               const createdDate = new Date(item.createdAt);
@@ -1388,15 +1397,13 @@ export default function ReceivingPage() {
                               
                               if (daysDiff <= 2) {
                                 return (
-                                  <>
-                                    <button
-                                      onClick={() => handleEdit(item)}
-                                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 px-1 py-1 rounded transition-colors"
-                                      title="แก้ไข"
-                                    >
-                                      ✏️
-                                    </button>
-                                  </>
+                                  <button
+                                    onClick={() => handleEdit(item)}
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
+                                    title="แก้ไข"
+                                  >
+                                    <span className="text-lg">✏️</span>
+                                  </button>
                                 );
                               }
                               return null;
