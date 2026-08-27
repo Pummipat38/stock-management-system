@@ -2172,7 +2172,7 @@ function DueDeliveryPage() {
                         <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>DWG NO.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Event</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Supplier</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Q'TY to Customer</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words w-24">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words">MYOB</span>
                         <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words ${listMode !== 'delivered' ? 'hidden' : ''}`}>ISSUE PR Date</span>
@@ -2298,7 +2298,7 @@ function DueDeliveryPage() {
                             >
                               {record.supplier || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{record.quantity} PCS</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 w-24">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
