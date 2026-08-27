@@ -2273,7 +2273,7 @@ function DueDeliveryPage() {
                               {record.sampleRequestSheet || '-'}
                             </div>
                             <div
-                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis`}
+                              className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit`}
                               title={record.model}
                             >
                               {record.model}
@@ -2318,16 +2318,16 @@ function DueDeliveryPage() {
                             <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.withdrawalNumber || ''}>
                               {record.withdrawalNumber || '-'}
                             </div>
-                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.purchase || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.purchase || ''}>
                               {record.purchase || '-'}
                             </div>
-                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceIn || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceIn || ''}>
                               {record.invoiceIn || '-'}
                             </div>
-                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 whitespace-nowrap overflow-hidden text-ellipsis ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceOut || ''}>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`} title={record.invoiceOut || ''}>
                               {record.invoiceOut || '-'}
                             </div>
-                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 ${listMode !== 'delivered' ? 'hidden' : ''}`}>{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
+                            <div className={`px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`}>{record.deliveredAt ? record.deliveredAt.split('T')[0] : '-'}</div>
                             <div className="px-1 py-1 flex items-center justify-start text-center border-l border-white/20 overflow-hidden">
                               <div className="flex items-center justify-start gap-2">
                                 {listMode === 'pending' ? (
