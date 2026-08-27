@@ -2172,7 +2172,7 @@ function DueDeliveryPage() {
                         <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`}>DWG NO.</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit">Event</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit">Supplier</span>
-                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit">Q'TY to Customer</span>
+                        <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words w-20">Q'TY to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit">Due RK to Customer</span>
                         <span className="px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit">MYOB</span>
                         <span className={`px-2 py-2 flex items-center justify-center border-l border-white/20 leading-tight whitespace-normal break-words min-w-fit ${listMode !== 'delivered' ? 'hidden' : ''}`}>ISSUE PR Date</span>
@@ -2298,7 +2298,7 @@ function DueDeliveryPage() {
                             >
                               {record.supplier || '-'}
                             </div>
-                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit">{record.quantity} PCS</div>
+                            <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 w-20">{record.quantity} PCS</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit">{formatDueDate(record.dueRkToCustomer || record.dueDate)}</div>
                             <div className="px-2 py-0 flex items-center justify-center text-center border-l border-white/20 min-w-fit" title={record.myobNumber || ''}>
                               {record.myobNumber || '-'}
